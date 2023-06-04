@@ -108,11 +108,18 @@ function run() {
                 commit_sha: sha
             });
             core.debug(`Source Commit: ${JSON.stringify(sourceCommit)}`);
+            const newTree = yield octokit.rest.git.createTree({
+                owner: 'statsig-io',
+                repo: publicRepo,
+                base_tree: sourceCommit.data.tree.sha,
+                tree: []
+            });
+            core.debug(`New Tree: ${JSON.stringify(newTree)}`);
             const newCommit = yield octokit.rest.git.createCommit({
                 owner: 'statsig-io',
                 repo: publicRepo,
                 message: sourceCommit.data.message,
-                tree: sourceCommit.data.tree.sha,
+                tree: newTree.data.sha,
                 parents: ['main']
             });
             core.debug(`New Commit: ${JSON.stringify(newCommit)}`);
