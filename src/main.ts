@@ -21,6 +21,8 @@ async function run(): Promise<void> {
     const dir = process.cwd() + '/private-sdk';
 
     await git
+      .addConfig('user.name', 'statsig-kong[bot]')
+      .addConfig('user.email', 'statsig-kong[bot]@users.noreply.github.com')
       .clone(createGitRepoUrl(token, privateRepo), dir)
       .then(() => console.log('cloned'))
       .then(() => git.cwd(dir))

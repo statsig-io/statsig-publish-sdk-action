@@ -109,6 +109,8 @@ function run() {
             const git = (0, simple_git_1.simpleGit)();
             const dir = process.cwd() + '/private-sdk';
             yield git
+                .addConfig('user.name', 'statsig-kong[bot]')
+                .addConfig('user.email', 'statsig-kong[bot]@users.noreply.github.com')
                 .clone((0, helpers_1.createGitRepoUrl)(token, privateRepo), dir)
                 .then(() => console.log('cloned'))
                 .then(() => git.cwd(dir))
