@@ -18,16 +18,17 @@ async function run(): Promise<void> {
     const token = core.getInput('gh-token');
 
     const git: SimpleGit = simpleGit({
-      baseDir: process.cwd() + '/private-sdk',
+      baseDir: process.cwd(),
       binary: 'git',
       maxConcurrentProcesses: 6,
       trimmed: false
     }).clean(CleanOptions.FORCE);
 
+    // .clone(createGitRepoUrl(token, privateRepo))
+    // .then(() => console.log('cloned'))
+    // .then(() => git.checkout(sha)
     await git
-      .clone(createGitRepoUrl(token, privateRepo))
-      .then(() => console.log('cloned'))
-      .then(() => git.checkout(sha))
+      .checkout(sha)
       .then(() => console.log('checked out'))
       .then(() => git.addAnnotatedTag(version, title))
       .then(() => console.log('tagged'))
