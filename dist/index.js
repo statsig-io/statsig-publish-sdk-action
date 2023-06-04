@@ -24,6 +24,10 @@ function validateAndExtractArgsFromPayload(payload) {
     if (((_e = payload.pull_request) === null || _e === void 0 ? void 0 : _e.merged) !== true) {
         throw new types_1.SkipActionError('Not a merged pull request');
     }
+    const { title, body } = payload.pull_request;
+    if (typeof title !== 'string' || !title.startsWith('[release] ')) {
+        throw new types_1.SkipActionError('[release] not present in title');
+    }
     if (!payload.repository) {
         throw new Error('Unable to load repository info');
     }
@@ -35,10 +39,11 @@ function validateAndExtractArgsFromPayload(payload) {
     if (!publicRepo) {
         throw new Error(`Unable to get public repo for ${privateRepo}`);
     }
-    const { title, body } = payload.pull_request;
+    const parts = title.split(' ').slice(1);
+    const version = parts[0];
     return {
-        version: '1',
-        title,
+        version,
+        title: parts.join(' '),
         body: body !== null && body !== void 0 ? body : '',
         publicRepo,
         privateRepo,
