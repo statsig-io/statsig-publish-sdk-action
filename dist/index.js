@@ -114,6 +114,8 @@ function run() {
                 config: [`Authorization: token ${token}`]
             }).clean(simple_git_1.CleanOptions.FORCE);
             const dir = process.cwd() + '/private-sdk';
+            core.debug(`Private: ${(0, helpers_1.createGitRepoUrl)(privateRepo)}`);
+            core.debug(`Public: ${(0, helpers_1.createGitRepoUrl)(publicRepo)}`);
             yield git
                 .clone((0, helpers_1.createGitRepoUrl)(privateRepo), dir)
                 .then(() => console.log('cloned'))

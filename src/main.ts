@@ -26,6 +26,9 @@ async function run(): Promise<void> {
     }).clean(CleanOptions.FORCE);
 
     const dir = process.cwd() + '/private-sdk';
+    core.debug(`Private: ${createGitRepoUrl(privateRepo)}`);
+    core.debug(`Public: ${createGitRepoUrl(publicRepo)}`);
+
     await git
       .clone(createGitRepoUrl(privateRepo), dir)
       .then(() => console.log('cloned'))
