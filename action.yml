@@ -1,9 +1,10 @@
 name: 'Statsig Publish SDK Action'
 description: 'Pushes releases from private to public SDK repositories'
 author: 'Statsig'
+
 inputs:
   gh-token:
-    description: "The Github Token"
+    description: 'The Github Token'
     required: true
 
 runs:
