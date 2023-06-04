@@ -106,17 +106,14 @@ function run() {
             core.debug(`Extracted args: ${JSON.stringify(args)}`);
             const { title, body, version, privateRepo, publicRepo, sha } = args;
             const token = core.getInput('gh-token');
-            const git = (0, simple_git_1.simpleGit)({
-                baseDir: process.cwd(),
-                binary: 'git',
-                maxConcurrentProcesses: 6,
-                trimmed: false
-            }).clean(simple_git_1.CleanOptions.FORCE);
-            // .clone(createGitRepoUrl(token, privateRepo))
-            // .then(() => console.log('cloned'))
-            // .then(() => git.checkout(sha)
+            const git = (0, simple_git_1.simpleGit)();
+            const dir = process.cwd() + '/private-sdk';
             yield git
-                .checkout(sha)
+                .clone((0, helpers_1.createGitRepoUrl)(token, privateRepo), dir)
+                .then(() => console.log('cloned'))
+                .then(() => git.cwd(dir))
+                .then(() => console.log('changed dir'))
+                .then(() => git.checkout(sha))
                 .then(() => console.log('checked out'))
                 .then(() => git.addAnnotatedTag(version, title))
                 .then(() => console.log('tagged'))
