@@ -36,12 +36,11 @@ async function run(): Promise<void> {
       .then(() => console.log('tagged'))
       .then(() => git.addRemote('public', createGitRepoUrl(token, publicRepo)))
       .then(() => console.log('added remote'))
-      .then(() => git.push('public', 'main'))
-      .then(() => git.pushTags())
+      .then(() => git.push('public', 'main', ['--follow-tags']))
       .then(() => console.log('pushed'));
 
     const octokit = github.getOctokit(token);
-    octokit.rest.repos.createRelease({
+    const response = await octokit.rest.repos.createRelease({
       owner: 'statsig-io',
       repo: publicRepo,
       tag_name: version,
@@ -94,8 +93,7 @@ async function run(): Promise<void> {
     //   type: 'commit'
     // });
 
-    const json = JSON.stringify(github.context.payload, undefined, 2);
-    console.log(`The event payload: ${json}`);
+    console.log(`Released: ${response}`);
   } catch (error) {
     if (error instanceof SkipActionError) {
       console.log(`Skipped: ${error.message}`);
