@@ -123,8 +123,18 @@ function run() {
                 .then(() => git.addRemote('public', (0, helpers_1.createGitRepoUrl)(token, publicRepo)))
                 .then(() => console.log('added remote'))
                 .then(() => git.push('public', 'main'))
+                .then(() => git.pushTags())
                 .then(() => console.log('pushed'));
-            // const octokit = github.getOctokit(token);
+            const octokit = github.getOctokit(token);
+            octokit.rest.repos.createRelease({
+                owner: 'statsig-io',
+                repo: publicRepo,
+                tag_name: version,
+                body,
+                draft: true,
+                generate_release_notes: true,
+                name: title
+            });
             // const sourceCommit = await octokit.rest.git.getCommit({
             //   owner: 'statsig-io',
             //   repo: privateRepo,
