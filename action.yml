@@ -1,9 +1,11 @@
-name: "Hello World"
-description: "Greet someone and record the time"
+name: 'Statsig Publish SDK Action'
+description: 'Pushes releases from private to public SDK repositories'
+author: 'Statsig'
 inputs:
   gh-token:
     description: "The Github Token"
     required: true
+
 runs:
-  using: "node16"
-  main: "index.js"
+  using: 'node16'
+  main: 'dist/index.js'
