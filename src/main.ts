@@ -1,9 +1,8 @@
 import * as core from '@actions/core';
 import * as github from '@actions/github';
+import {SimpleGit, simpleGit} from 'simple-git';
 import {createGitRepoUrl, validateAndExtractArgsFromPayload} from './helpers';
 import {SkipActionError} from './types';
-import {execSync} from 'child_process';
-import {simpleGit, SimpleGit, CleanOptions} from 'simple-git';
 
 async function run(): Promise<void> {
   try {
@@ -22,76 +21,27 @@ async function run(): Promise<void> {
 
     await git
       .clone(createGitRepoUrl(token, privateRepo), dir)
-      .then(() => console.log('cloned'))
       .then(() =>
         git
           .cwd(dir)
           .addConfig('user.name', 'statsig-kong[bot]')
           .addConfig('user.email', 'statsig-kong[bot]@users.noreply.github.com')
       )
-      .then(() => console.log('changed dir'))
       .then(() => git.checkout(sha))
-      .then(() => console.log('checked out'))
       .then(() => git.addAnnotatedTag(version, title))
-      .then(() => console.log('tagged'))
       .then(() => git.addRemote('public', createGitRepoUrl(token, publicRepo)))
-      .then(() => console.log('added remote'))
-      .then(() => git.push('public', 'main', ['--follow-tags']))
-      .then(() => console.log('pushed'));
+      .then(() => git.push('public', 'main', ['--follow-tags']));
 
     const octokit = github.getOctokit(token);
+
     const response = await octokit.rest.repos.createRelease({
       owner: 'statsig-io',
       repo: publicRepo,
       tag_name: version,
       body,
-      draft: true,
       generate_release_notes: true,
       name: title
     });
-
-    // const sourceCommit = await octokit.rest.git.getCommit({
-    //   owner: 'statsig-io',
-    //   repo: privateRepo,
-    //   commit_sha: sha
-    // });
-
-    // core.debug(`Source Commit: ${JSON.stringify(sourceCommit)}`);
-
-    // const newTree = await octokit.rest.git.createTree({
-    //   owner: 'statsig-io',
-    //   repo: publicRepo,
-    //   base_tree: sourceCommit.data.tree.sha,
-    //   tree: []
-    // });
-
-    // core.debug(`New Tree: ${JSON.stringify(newTree)}`);
-
-    // const newCommit = await octokit.rest.git.createCommit({
-    //   owner: 'statsig-io',
-    //   repo: publicRepo,
-    //   message: sourceCommit.data.message,
-    //   tree: newTree.data.sha,
-    //   parents: ['main']
-    // });
-
-    // core.debug(`New Commit: ${JSON.stringify(newCommit)}`);
-
-    // await octokit.rest.git.updateRef({
-    //   owner: 'statsig-io',
-    //   repo: publicRepo,
-    //   ref: `heads/main`,
-    //   sha: newCommit.data.sha
-    // });
-
-    // const tag = await octokit.rest.git.createTag({
-    //   owner: 'statsig-io',
-    //   repo: publicRepo,
-    //   tag: version,
-    //   message: title,
-    //   object: newCommit.data.sha,
-    //   type: 'commit'
-    // });
 
     console.log(`Released: ${response}`);
   } catch (error) {
