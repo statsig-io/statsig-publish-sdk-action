@@ -134,6 +134,7 @@ function run() {
                 return;
             }
             if (error instanceof Error) {
+                console.error(error);
                 core.setFailed(error.message);
             }
         }
