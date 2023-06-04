@@ -96,7 +96,10 @@ function run() {
     return __awaiter(this, void 0, void 0, function* () {
         try {
             const payload = github.context.payload;
-            const { title, body, version, privateRepo, publicRepo, sha } = (0, helpers_1.validateAndExtractArgsFromPayload)(payload);
+            core.debug(`Payload: ${JSON.stringify(payload)}`);
+            const args = (0, helpers_1.validateAndExtractArgsFromPayload)(payload);
+            core.debug(`Extracted args: ${JSON.stringify(args)}`);
+            const { title, body, version, privateRepo, publicRepo, sha } = args;
             const token = core.getInput('gh-token');
             const octokit = github.getOctokit(token);
             const sourceCommit = yield octokit.rest.git.getCommit({
@@ -104,6 +107,7 @@ function run() {
                 repo: privateRepo,
                 commit_sha: sha
             });
+            core.debug(`Source Commit: ${JSON.stringify(sourceCommit)}`);
             const newCommit = yield octokit.rest.git.createCommit({
                 owner: 'statsig-io',
                 repo: publicRepo,
@@ -111,6 +115,7 @@ function run() {
                 tree: sourceCommit.data.tree.sha,
                 parents: ['main']
             });
+            core.debug(`New Commit: ${JSON.stringify(newCommit)}`);
             yield octokit.rest.git.updateRef({
                 owner: 'statsig-io',
                 repo: publicRepo,

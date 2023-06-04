@@ -6,9 +6,12 @@ import {SkipActionError} from './types';
 async function run(): Promise<void> {
   try {
     const payload = github.context.payload;
+    core.debug(`Payload: ${JSON.stringify(payload)}`);
 
-    const {title, body, version, privateRepo, publicRepo, sha} =
-      validateAndExtractArgsFromPayload(payload);
+    const args = validateAndExtractArgsFromPayload(payload);
+
+    core.debug(`Extracted args: ${JSON.stringify(args)}`);
+    const {title, body, version, privateRepo, publicRepo, sha} = args;
 
     const token = core.getInput('gh-token');
     const octokit = github.getOctokit(token);
@@ -19,6 +22,8 @@ async function run(): Promise<void> {
       commit_sha: sha
     });
 
+    core.debug(`Source Commit: ${JSON.stringify(sourceCommit)}`);
+
     const newCommit = await octokit.rest.git.createCommit({
       owner: 'statsig-io',
       repo: publicRepo,
@@ -26,6 +31,8 @@ async function run(): Promise<void> {
       tree: sourceCommit.data.tree.sha,
       parents: ['main']
     });
+
+    core.debug(`New Commit: ${JSON.stringify(newCommit)}`);
 
     await octokit.rest.git.updateRef({
       owner: 'statsig-io',
