@@ -2,6 +2,8 @@ import * as core from '@actions/core';
 import * as github from '@actions/github';
 import {validateAndExtractArgsFromPayload} from './helpers';
 import {SkipActionError} from './types';
+import {execSync} from 'child_process';
+import {simpleGit, SimpleGit, CleanOptions} from 'simple-git';
 
 async function run(): Promise<void> {
   try {
@@ -14,50 +16,72 @@ async function run(): Promise<void> {
     const {title, body, version, privateRepo, publicRepo, sha} = args;
 
     const token = core.getInput('gh-token');
-    const octokit = github.getOctokit(token);
 
-    const sourceCommit = await octokit.rest.git.getCommit({
-      owner: 'statsig-io',
-      repo: privateRepo,
-      commit_sha: sha
-    });
+    const git: SimpleGit = simpleGit({
+      baseDir: process.cwd(),
+      binary: 'git',
+      maxConcurrentProcesses: 6,
+      trimmed: false,
+      config: [`Authorization: token ${token}`]
+    }).clean(CleanOptions.FORCE);
 
-    core.debug(`Source Commit: ${JSON.stringify(sourceCommit)}`);
+    const dir = process.cwd() + '/private-sdk';
+    await git
+      .clone(privateRepo, dir)
+      .then(() => console.log('cloned'))
+      .then(() => git.checkout(sha))
+      .then(() => console.log('checked out'))
+      .then(() => git.addAnnotatedTag(version, title))
+      .then(() => console.log('tagged'))
+      .then(() => git.addRemote('public', publicRepo))
+      .then(() => console.log('added remote'))
+      .then(() => git.push('public', 'main'))
+      .then(() => console.log('pushed'));
 
-    const newTree = await octokit.rest.git.createTree({
-      owner: 'statsig-io',
-      repo: publicRepo,
-      base_tree: sourceCommit.data.tree.sha,
-      tree: []
-    });
+    // const octokit = github.getOctokit(token);
 
-    core.debug(`New Tree: ${JSON.stringify(newTree)}`);
+    // const sourceCommit = await octokit.rest.git.getCommit({
+    //   owner: 'statsig-io',
+    //   repo: privateRepo,
+    //   commit_sha: sha
+    // });
 
-    const newCommit = await octokit.rest.git.createCommit({
-      owner: 'statsig-io',
-      repo: publicRepo,
-      message: sourceCommit.data.message,
-      tree: newTree.data.sha,
-      parents: ['main']
-    });
+    // core.debug(`Source Commit: ${JSON.stringify(sourceCommit)}`);
 
-    core.debug(`New Commit: ${JSON.stringify(newCommit)}`);
+    // const newTree = await octokit.rest.git.createTree({
+    //   owner: 'statsig-io',
+    //   repo: publicRepo,
+    //   base_tree: sourceCommit.data.tree.sha,
+    //   tree: []
+    // });
 
-    await octokit.rest.git.updateRef({
-      owner: 'statsig-io',
-      repo: publicRepo,
-      ref: `heads/main`,
-      sha: newCommit.data.sha
-    });
+    // core.debug(`New Tree: ${JSON.stringify(newTree)}`);
 
-    const tag = await octokit.rest.git.createTag({
-      owner: 'statsig-io',
-      repo: publicRepo,
-      tag: version,
-      message: title,
-      object: newCommit.data.sha,
-      type: 'commit'
-    });
+    // const newCommit = await octokit.rest.git.createCommit({
+    //   owner: 'statsig-io',
+    //   repo: publicRepo,
+    //   message: sourceCommit.data.message,
+    //   tree: newTree.data.sha,
+    //   parents: ['main']
+    // });
+
+    // core.debug(`New Commit: ${JSON.stringify(newCommit)}`);
+
+    // await octokit.rest.git.updateRef({
+    //   owner: 'statsig-io',
+    //   repo: publicRepo,
+    //   ref: `heads/main`,
+    //   sha: newCommit.data.sha
+    // });
+
+    // const tag = await octokit.rest.git.createTag({
+    //   owner: 'statsig-io',
+    //   repo: publicRepo,
+    //   tag: version,
+    //   message: title,
+    //   object: newCommit.data.sha,
+    //   type: 'commit'
+    // });
 
     const json = JSON.stringify(github.context.payload, undefined, 2);
     console.log(`The event payload: ${json}`);
