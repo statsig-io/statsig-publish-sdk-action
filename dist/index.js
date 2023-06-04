@@ -46,8 +46,8 @@ function validateAndExtractArgsFromPayload(payload) {
     };
 }
 exports.validateAndExtractArgsFromPayload = validateAndExtractArgsFromPayload;
-function createGitRepoUrl(repo) {
-    return `https://github.com/statsig-io/${repo}.git`;
+function createGitRepoUrl(token, repo) {
+    return `https://oauth2:${token}@github.com/statsig-io/${repo}.git`;
 }
 exports.createGitRepoUrl = createGitRepoUrl;
 
@@ -107,23 +107,19 @@ function run() {
             const { title, body, version, privateRepo, publicRepo, sha } = args;
             const token = core.getInput('gh-token');
             const git = (0, simple_git_1.simpleGit)({
-                baseDir: process.cwd(),
+                baseDir: process.cwd() + '/private-sdk',
                 binary: 'git',
                 maxConcurrentProcesses: 6,
-                trimmed: false,
-                config: [`Authorization: token ${token}`]
+                trimmed: false
             }).clean(simple_git_1.CleanOptions.FORCE);
-            const dir = process.cwd() + '/private-sdk';
-            core.debug(`Private: ${(0, helpers_1.createGitRepoUrl)(privateRepo)}`);
-            core.debug(`Public: ${(0, helpers_1.createGitRepoUrl)(publicRepo)}`);
             yield git
-                .clone((0, helpers_1.createGitRepoUrl)(privateRepo), dir)
+                .clone((0, helpers_1.createGitRepoUrl)(token, privateRepo))
                 .then(() => console.log('cloned'))
                 .then(() => git.checkout(sha))
                 .then(() => console.log('checked out'))
                 .then(() => git.addAnnotatedTag(version, title))
                 .then(() => console.log('tagged'))
-                .then(() => git.addRemote('public', (0, helpers_1.createGitRepoUrl)(publicRepo)))
+                .then(() => git.addRemote('public', (0, helpers_1.createGitRepoUrl)(token, publicRepo)))
                 .then(() => console.log('added remote'))
                 .then(() => git.push('public', 'main'))
                 .then(() => console.log('pushed'));

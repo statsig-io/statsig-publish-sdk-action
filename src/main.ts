@@ -18,25 +18,20 @@ async function run(): Promise<void> {
     const token = core.getInput('gh-token');
 
     const git: SimpleGit = simpleGit({
-      baseDir: process.cwd(),
+      baseDir: process.cwd() + '/private-sdk',
       binary: 'git',
       maxConcurrentProcesses: 6,
-      trimmed: false,
-      config: [`Authorization: token ${token}`]
+      trimmed: false
     }).clean(CleanOptions.FORCE);
 
-    const dir = process.cwd() + '/private-sdk';
-    core.debug(`Private: ${createGitRepoUrl(privateRepo)}`);
-    core.debug(`Public: ${createGitRepoUrl(publicRepo)}`);
-
     await git
-      .clone(createGitRepoUrl(privateRepo), dir)
+      .clone(createGitRepoUrl(token, privateRepo))
       .then(() => console.log('cloned'))
       .then(() => git.checkout(sha))
       .then(() => console.log('checked out'))
       .then(() => git.addAnnotatedTag(version, title))
       .then(() => console.log('tagged'))
-      .then(() => git.addRemote('public', createGitRepoUrl(publicRepo)))
+      .then(() => git.addRemote('public', createGitRepoUrl(token, publicRepo)))
       .then(() => console.log('added remote'))
       .then(() => git.push('public', 'main'))
       .then(() => console.log('pushed'));
