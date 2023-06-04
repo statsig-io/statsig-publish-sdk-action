@@ -7,7 +7,7 @@ require('./sourcemap-register.js');/******/ (() => { // webpackBootstrap
 "use strict";
 
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.validateAndExtractArgsFromPayload = void 0;
+exports.createGitRepoUrl = exports.validateAndExtractArgsFromPayload = void 0;
 const types_1 = __nccwpck_require__(8164);
 const PRIV_TO_PUB_REPO_MAP = {
     'private-js-client-sdk': 'js-client',
@@ -46,6 +46,10 @@ function validateAndExtractArgsFromPayload(payload) {
     };
 }
 exports.validateAndExtractArgsFromPayload = validateAndExtractArgsFromPayload;
+function createGitRepoUrl(repo) {
+    return `https://github.com/statsig-io/${repo}.git`;
+}
+exports.createGitRepoUrl = createGitRepoUrl;
 
 
 /***/ }),
@@ -111,13 +115,13 @@ function run() {
             }).clean(simple_git_1.CleanOptions.FORCE);
             const dir = process.cwd() + '/private-sdk';
             yield git
-                .clone(privateRepo, dir)
+                .clone((0, helpers_1.createGitRepoUrl)(privateRepo), dir)
                 .then(() => console.log('cloned'))
                 .then(() => git.checkout(sha))
                 .then(() => console.log('checked out'))
                 .then(() => git.addAnnotatedTag(version, title))
                 .then(() => console.log('tagged'))
-                .then(() => git.addRemote('public', publicRepo))
+                .then(() => git.addRemote('public', (0, helpers_1.createGitRepoUrl)(publicRepo)))
                 .then(() => console.log('added remote'))
                 .then(() => git.push('public', 'main'))
                 .then(() => console.log('pushed'));
