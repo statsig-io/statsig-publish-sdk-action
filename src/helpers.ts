@@ -56,3 +56,7 @@ export function validateAndExtractArgsFromPayload(
     sha
   };
 }
+
+export function createGitRepoUrl(repo: string): string {
+  return `https://github.com/statsig-io/${repo}.git`;
+}

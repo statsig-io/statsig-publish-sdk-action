@@ -1,6 +1,6 @@
 import * as core from '@actions/core';
 import * as github from '@actions/github';
-import {validateAndExtractArgsFromPayload} from './helpers';
+import {createGitRepoUrl, validateAndExtractArgsFromPayload} from './helpers';
 import {SkipActionError} from './types';
 import {execSync} from 'child_process';
 import {simpleGit, SimpleGit, CleanOptions} from 'simple-git';
@@ -27,13 +27,13 @@ async function run(): Promise<void> {
 
     const dir = process.cwd() + '/private-sdk';
     await git
-      .clone(privateRepo, dir)
+      .clone(createGitRepoUrl(privateRepo), dir)
       .then(() => console.log('cloned'))
       .then(() => git.checkout(sha))
       .then(() => console.log('checked out'))
       .then(() => git.addAnnotatedTag(version, title))
       .then(() => console.log('tagged'))
-      .then(() => git.addRemote('public', publicRepo))
+      .then(() => git.addRemote('public', createGitRepoUrl(publicRepo)))
       .then(() => console.log('added remote'))
       .then(() => git.push('public', 'main'))
       .then(() => console.log('pushed'));
