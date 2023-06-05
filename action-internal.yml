@@ -1,0 +1,16 @@
+name: 'Statsig Publish SDK Action - Internal'
+description: ''
+author: 'Statsig'
+
+inputs:
+  gh-token:
+    description: 'The Github Token'
+    required: true
+
+runs:
+  using: 'node16'
+  main: 'dist/index.js'
+
+branding:
+  icon: 'star'
+  color: 'blue'

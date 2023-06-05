@@ -8,5 +8,16 @@ inputs:
     required: true
 
 runs:
-  using: 'node16'
-  main: 'dist/index.js'
+  using: 'composite'
+  steps:
+    - name: Publish
+      if: |
+        github.event.pull_request.merged == true &&
+        startsWith(github.head_ref, 'releases/')
+      uses: './internal'
+      with:
+        gh-token: ${{ inputs.gh-token }}
+
+branding:
+  icon: 'star'
+  color: 'blue'
