@@ -75,7 +75,7 @@ run();
 /***/ }),
 
 /***/ 8837:
-/***/ (function(__unused_webpack_module, exports) {
+/***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
 
 "use strict";
 
@@ -90,9 +90,39 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.prepare = void 0;
+const types_1 = __nccwpck_require__(8164);
+const child_process_1 = __nccwpck_require__(2081);
+const simple_git_1 = __nccwpck_require__(9103);
+function runNpmInstall(pullRequest) {
+    var _a;
+    return __awaiter(this, void 0, void 0, function* () {
+        if (!((_a = pullRequest === null || pullRequest === void 0 ? void 0 : pullRequest.head) === null || _a === void 0 ? void 0 : _a.ref)) {
+            throw new Error('Failed to get head.ref from payload');
+        }
+        (0, child_process_1.execSync)('npm install', { cwd: process.cwd() });
+        const git = (0, simple_git_1.simpleGit)({ baseDir: process.cwd(), binary: 'git' });
+        yield git
+            .add('./*')
+            .commit('files changed')
+            .push('origin', pullRequest.head.ref);
+    });
+}
 function prepare(payload) {
+    var _a, _b, _c;
     return __awaiter(this, void 0, void 0, function* () {
         console.log(`Got Payload: ${JSON.stringify(payload)}`);
+        if (!payload.repository) {
+            throw new Error('Failed to load repository information');
+        }
+        if (!payload.pull_request) {
+            throw new Error('Failed to load pull_request information');
+        }
+        switch ((_a = payload.repository) === null || _a === void 0 ? void 0 : _a.name) {
+            case 'test-sdk-repo-private':
+                return runNpmInstall(payload.pull_request);
+            default:
+                throw new types_1.SkipActionError(`Prepare not supported for repository: ${(_c = (_b = payload.repository) === null || _b === void 0 ? void 0 : _b.name) !== null && _c !== void 0 ? _c : null}`);
+        }
     });
 }
 exports.prepare = prepare;
@@ -173,9 +203,10 @@ function release(payload) {
             tag_name: version,
             body,
             name: title,
+            draft: core.getBooleanInput('is-draft'),
             generate_release_notes: true
         });
-        console.log(`Released: ${response}`);
+        console.log(`Released: ${JSON.stringify(response)}`);
     });
 }
 exports.release = release;

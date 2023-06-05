@@ -52,10 +52,11 @@ export async function release(payload: WebhookPayload) {
     tag_name: version,
     body,
     name: title,
+    draft: core.getBooleanInput('is-draft'),
     generate_release_notes: true
   });
 
-  console.log(`Released: ${response}`);
+  console.log(`Released: ${JSON.stringify(response)}`);
 }
 
 function validateAndExtractArgsFromPayload(

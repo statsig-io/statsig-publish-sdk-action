@@ -6,6 +6,9 @@ inputs:
   gh-token:
     description: 'The Github Token'
     required: true
+  is-draft:
+    description: 'Draft Release?'
+    default: false
 
 runs:
   using: 'node16'
