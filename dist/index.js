@@ -178,6 +178,7 @@ function prepare(payload) {
         }
         switch ((_a = payload.repository) === null || _a === void 0 ? void 0 : _a.name) {
             case 'test-sdk-repo-private':
+            case 'private-js-client-sdk':
                 return runNpmInstall(payload);
             default:
                 throw new types_1.SkipActionError(`Prepare not supported for repository: ${(_c = (_b = payload.repository) === null || _b === void 0 ? void 0 : _b.name) !== null && _c !== void 0 ? _c : null}`);
