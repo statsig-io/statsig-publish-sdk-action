@@ -34,12 +34,23 @@ async function run(): Promise<void> {
 
     const octokit = github.getOctokit(token);
 
+    const latest = await octokit.rest.repos.getLatestRelease({
+      owner: 'statsig-io',
+      repo: publicRepo
+    });
+
+    const notes = await octokit.rest.repos.generateReleaseNotes({
+      owner: 'statsig-io',
+      repo: publicRepo,
+      tag_name: version,
+      previous_tag_name: latest.data.tag_name
+    });
+
     const response = await octokit.rest.repos.createRelease({
       owner: 'statsig-io',
       repo: publicRepo,
       tag_name: version,
-      body,
-      generate_release_notes: true,
+      body: `${body}\n\n###Genereated\n${notes.data.body}`,
       name: title
     });
 
