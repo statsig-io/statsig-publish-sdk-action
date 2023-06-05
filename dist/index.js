@@ -144,18 +144,26 @@ function runNpmInstall(payload) {
         const token = core.getInput('gh-token');
         const git = (0, simple_git_1.simpleGit)();
         const dir = process.cwd() + '/private-sdk';
+        console.log('Prep 1');
         yield git
             .clone((0, helpers_1.createGitRepoUrl)(token, repo), dir)
+            .then(() => git
             .cwd(dir)
             .addConfig('user.name', 'statsig-kong[bot]')
-            .addConfig('user.email', 'statsig-kong[bot]@users.noreply.github.com')
+            .addConfig('user.email', 'statsig-kong[bot]@users.noreply.github.com'))
             .then(() => git.checkout(branch));
+        console.log('Prep 2');
         (0, child_process_1.execSync)('npm install', { cwd: dir });
+        console.log('Prep 3');
         yield git.status().then(status => {
             if (status.isClean()) {
                 return;
             }
-            return git.add('./*').commit('files changed').push('origin', branch);
+            console.log('Prep 4');
+            return git
+                .add('./*')
+                .then(() => git.commit('files changed'))
+                .then(() => git.push('origin', branch));
         });
     });
 }

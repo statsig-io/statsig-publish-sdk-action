@@ -15,22 +15,33 @@ async function runNpmInstall(payload: WebhookPayload) {
 
   const git: SimpleGit = simpleGit();
   const dir = process.cwd() + '/private-sdk';
+  console.log('Prep 1');
 
   await git
     .clone(createGitRepoUrl(token, repo), dir)
-    .cwd(dir)
-    .addConfig('user.name', 'statsig-kong[bot]')
-    .addConfig('user.email', 'statsig-kong[bot]@users.noreply.github.com')
+    .then(() =>
+      git
+        .cwd(dir)
+        .addConfig('user.name', 'statsig-kong[bot]')
+        .addConfig('user.email', 'statsig-kong[bot]@users.noreply.github.com')
+    )
     .then(() => git.checkout(branch));
 
+  console.log('Prep 2');
+
   execSync('npm install', {cwd: dir});
+  console.log('Prep 3');
 
   await git.status().then(status => {
     if (status.isClean()) {
       return;
     }
+    console.log('Prep 4');
 
-    return git.add('./*').commit('files changed').push('origin', branch);
+    return git
+      .add('./*')
+      .then(() => git.commit('files changed'))
+      .then(() => git.push('origin', branch));
   });
 }
 
