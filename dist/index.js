@@ -144,7 +144,6 @@ function runNpmInstall(payload) {
         const token = core.getInput('gh-token');
         const git = (0, simple_git_1.simpleGit)();
         const dir = process.cwd() + '/private-sdk';
-        console.log('Prep 1');
         yield git
             .clone((0, helpers_1.createGitRepoUrl)(token, repo), dir)
             .then(() => git
@@ -152,17 +151,18 @@ function runNpmInstall(payload) {
             .addConfig('user.name', 'statsig-kong[bot]')
             .addConfig('user.email', 'statsig-kong[bot]@users.noreply.github.com'))
             .then(() => git.checkout(branch));
-        console.log('Prep 2');
         (0, child_process_1.execSync)('npm install', { cwd: dir });
-        console.log('Prep 3');
         yield git.status().then(status => {
             if (status.isClean()) {
                 return;
             }
-            console.log('Prep 4');
+            const supported = ['package-lock.json', 'src/SDKVersion.ts'];
+            const files = status.files
+                .filter(file => supported.includes(file.path))
+                .map(file => file.path);
             return git
-                .add('./*')
-                .then(() => git.commit('files changed'))
+                .add(files)
+                .then(() => git.commit(`Updated Files: [${files.join(', ')}]`))
                 .then(() => git.push('origin', branch));
         });
     });
@@ -170,7 +170,6 @@ function runNpmInstall(payload) {
 function prepare(payload) {
     var _a, _b, _c;
     return __awaiter(this, void 0, void 0, function* () {
-        console.log(`Got Payload: ${JSON.stringify(payload)}`);
         if (!payload.repository) {
             throw new Error('Failed to load repository information');
         }

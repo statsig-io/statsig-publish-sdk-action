@@ -8,14 +8,14 @@ import {createGitRepoUrl} from './helpers';
 async function runNpmInstall(payload: WebhookPayload) {
   const repo = payload.repository?.name;
   const branch = payload.pull_request?.head?.ref;
+
   if (!repo || !branch) {
     throw new Error('Missing required information');
   }
-  const token = core.getInput('gh-token');
 
+  const token = core.getInput('gh-token');
   const git: SimpleGit = simpleGit();
   const dir = process.cwd() + '/private-sdk';
-  console.log('Prep 1');
 
   await git
     .clone(createGitRepoUrl(token, repo), dir)
@@ -27,27 +27,26 @@ async function runNpmInstall(payload: WebhookPayload) {
     )
     .then(() => git.checkout(branch));
 
-  console.log('Prep 2');
-
   execSync('npm install', {cwd: dir});
-  console.log('Prep 3');
 
   await git.status().then(status => {
     if (status.isClean()) {
       return;
     }
-    console.log('Prep 4');
+
+    const supported = ['package-lock.json', 'src/SDKVersion.ts'];
+    const files = status.files
+      .filter(file => supported.includes(file.path))
+      .map(file => file.path);
 
     return git
-      .add('./*')
-      .then(() => git.commit('files changed'))
+      .add(files)
+      .then(() => git.commit(`Updated Files: [${files.join(', ')}]`))
       .then(() => git.push('origin', branch));
   });
 }
 
 export async function prepare(payload: WebhookPayload) {
-  console.log(`Got Payload: ${JSON.stringify(payload)}`);
-
   if (!payload.repository) {
     throw new Error('Failed to load repository information');
   }
