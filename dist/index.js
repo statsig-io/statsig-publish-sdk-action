@@ -162,7 +162,7 @@ function runNpmInstall(payload) {
                 .map(file => file.path);
             return git
                 .add(files)
-                .then(() => git.commit(`Updated Files: [${files.join(', ')}]`))
+                .then(() => git.commit(`Bot: Updated File/s [${files.join(', ')}]`))
                 .then(() => git.push('origin', branch));
         });
     });
