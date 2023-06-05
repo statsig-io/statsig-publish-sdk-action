@@ -1,20 +1,37 @@
 import {WebhookPayload} from '@actions/github/lib/interfaces';
+import * as core from '@actions/core';
 import {SkipActionError} from './types';
 import {execSync} from 'child_process';
 import {SimpleGit, simpleGit} from 'simple-git';
+import {createGitRepoUrl} from './helpers';
 
-async function runNpmInstall(pullRequest: WebhookPayload['pull_request']) {
-  if (!pullRequest?.head?.ref) {
-    throw new Error('Failed to get head.ref from payload');
+async function runNpmInstall(payload: WebhookPayload) {
+  const repo = payload.repository?.name;
+  const branch = payload.pull_request?.head?.ref;
+  if (!repo || !branch) {
+    throw new Error('Missing required information');
   }
+  const token = core.getInput('gh-token');
 
-  execSync('npm install', {cwd: process.cwd()});
+  const git: SimpleGit = simpleGit();
+  const dir = process.cwd() + '/private-sdk';
 
-  const git: SimpleGit = simpleGit({baseDir: process.cwd(), binary: 'git'});
   await git
-    .add('./*')
-    .commit('files changed')
-    .push('origin', pullRequest.head.ref);
+    .clone(createGitRepoUrl(token, repo), dir)
+    .cwd(dir)
+    .addConfig('user.name', 'statsig-kong[bot]')
+    .addConfig('user.email', 'statsig-kong[bot]@users.noreply.github.com')
+    .then(() => git.checkout(branch));
+
+  execSync('npm install', {cwd: dir});
+
+  await git.status().then(status => {
+    if (status.isClean()) {
+      return;
+    }
+
+    return git.add('./*').commit('files changed').push('origin', branch);
+  });
 }
 
 export async function prepare(payload: WebhookPayload) {
@@ -30,7 +47,7 @@ export async function prepare(payload: WebhookPayload) {
 
   switch (payload.repository?.name) {
     case 'test-sdk-repo-private':
-      return runNpmInstall(payload.pull_request);
+      return runNpmInstall(payload);
 
     default:
       throw new SkipActionError(

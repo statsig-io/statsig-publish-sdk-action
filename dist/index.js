@@ -1,6 +1,21 @@
 require('./sourcemap-register.js');/******/ (() => { // webpackBootstrap
 /******/ 	var __webpack_modules__ = ({
 
+/***/ 5008:
+/***/ ((__unused_webpack_module, exports) => {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.createGitRepoUrl = void 0;
+function createGitRepoUrl(token, repo) {
+    return `https://oauth2:${token}@github.com/statsig-io/${repo}.git`;
+}
+exports.createGitRepoUrl = createGitRepoUrl;
+
+
+/***/ }),
+
 /***/ 3109:
 /***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
 
@@ -79,6 +94,29 @@ run();
 
 "use strict";
 
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
+    return result;
+};
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
@@ -90,21 +128,35 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.prepare = void 0;
+const core = __importStar(__nccwpck_require__(2186));
 const types_1 = __nccwpck_require__(8164);
 const child_process_1 = __nccwpck_require__(2081);
 const simple_git_1 = __nccwpck_require__(9103);
-function runNpmInstall(pullRequest) {
-    var _a;
+const helpers_1 = __nccwpck_require__(5008);
+function runNpmInstall(payload) {
+    var _a, _b, _c;
     return __awaiter(this, void 0, void 0, function* () {
-        if (!((_a = pullRequest === null || pullRequest === void 0 ? void 0 : pullRequest.head) === null || _a === void 0 ? void 0 : _a.ref)) {
-            throw new Error('Failed to get head.ref from payload');
+        const repo = (_a = payload.repository) === null || _a === void 0 ? void 0 : _a.name;
+        const branch = (_c = (_b = payload.pull_request) === null || _b === void 0 ? void 0 : _b.head) === null || _c === void 0 ? void 0 : _c.ref;
+        if (!repo || !branch) {
+            throw new Error('Missing required information');
         }
-        (0, child_process_1.execSync)('npm install', { cwd: process.cwd() });
-        const git = (0, simple_git_1.simpleGit)({ baseDir: process.cwd(), binary: 'git' });
+        const token = core.getInput('gh-token');
+        const git = (0, simple_git_1.simpleGit)();
+        const dir = process.cwd() + '/private-sdk';
         yield git
-            .add('./*')
-            .commit('files changed')
-            .push('origin', pullRequest.head.ref);
+            .clone((0, helpers_1.createGitRepoUrl)(token, repo), dir)
+            .cwd(dir)
+            .addConfig('user.name', 'statsig-kong[bot]')
+            .addConfig('user.email', 'statsig-kong[bot]@users.noreply.github.com')
+            .then(() => git.checkout(branch));
+        (0, child_process_1.execSync)('npm install', { cwd: dir });
+        yield git.status().then(status => {
+            if (status.isClean()) {
+                return;
+            }
+            return git.add('./*').commit('files changed').push('origin', branch);
+        });
     });
 }
 function prepare(payload) {
@@ -119,7 +171,7 @@ function prepare(payload) {
         }
         switch ((_a = payload.repository) === null || _a === void 0 ? void 0 : _a.name) {
             case 'test-sdk-repo-private':
-                return runNpmInstall(payload.pull_request);
+                return runNpmInstall(payload);
             default:
                 throw new types_1.SkipActionError(`Prepare not supported for repository: ${(_c = (_b = payload.repository) === null || _b === void 0 ? void 0 : _b.name) !== null && _c !== void 0 ? _c : null}`);
         }
@@ -173,6 +225,7 @@ const core = __importStar(__nccwpck_require__(2186));
 const github = __importStar(__nccwpck_require__(5438));
 const simple_git_1 = __nccwpck_require__(9103);
 const types_1 = __nccwpck_require__(8164);
+const helpers_1 = __nccwpck_require__(5008);
 const PRIV_TO_PUB_REPO_MAP = {
     'private-js-client-sdk': 'js-client',
     'private-rust-sdk': 'rust-sdk',
@@ -187,14 +240,14 @@ function release(payload) {
         const git = (0, simple_git_1.simpleGit)();
         const dir = process.cwd() + '/private-sdk';
         yield git
-            .clone(createGitRepoUrl(token, privateRepo), dir)
+            .clone((0, helpers_1.createGitRepoUrl)(token, privateRepo), dir)
             .then(() => git
             .cwd(dir)
             .addConfig('user.name', 'statsig-kong[bot]')
             .addConfig('user.email', 'statsig-kong[bot]@users.noreply.github.com'))
             .then(() => git.checkout(sha))
             .then(() => git.addAnnotatedTag(version, title))
-            .then(() => git.addRemote('public', createGitRepoUrl(token, publicRepo)))
+            .then(() => git.addRemote('public', (0, helpers_1.createGitRepoUrl)(token, publicRepo)))
             .then(() => git.push('public', 'main', ['--follow-tags']));
         const octokit = github.getOctokit(token);
         const response = yield octokit.rest.repos.createRelease({
@@ -245,9 +298,6 @@ function validateAndExtractArgsFromPayload(payload) {
         privateRepo,
         sha
     };
-}
-function createGitRepoUrl(token, repo) {
-    return `https://oauth2:${token}@github.com/statsig-io/${repo}.git`;
 }
 
 

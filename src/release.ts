@@ -4,6 +4,7 @@ import * as github from '@actions/github';
 import {SimpleGit, simpleGit} from 'simple-git';
 import {WebhookPayload} from '@actions/github/lib/interfaces';
 import {SkipActionError} from './types';
+import {createGitRepoUrl} from './helpers';
 
 type ActionArgs = {
   version: string;
@@ -104,8 +105,4 @@ function validateAndExtractArgsFromPayload(
     privateRepo,
     sha
   };
-}
-
-function createGitRepoUrl(token: string, repo: string): string {
-  return `https://oauth2:${token}@github.com/statsig-io/${repo}.git`;
 }
