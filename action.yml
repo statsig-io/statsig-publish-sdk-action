@@ -8,12 +8,8 @@ inputs:
     required: true
 
 runs:
-  using: 'composite'
-  steps:
-    - name: Run
-      uses: './action-impl'
-      with:
-        gh-token: ${{ inputs.gh-token }}
+  using: 'node16'
+  main: 'dist/index.js'
 
 branding:
   icon: 'star'
