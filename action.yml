@@ -11,10 +11,7 @@ runs:
   using: 'composite'
   steps:
     - name: Publish
-      if: |
-        github.event.pull_request.merged == true &&
-        startsWith(github.head_ref, 'releases/')
-      uses: './internal'
+      uses: './action-internal'
       with:
         gh-token: ${{ inputs.gh-token }}
 
