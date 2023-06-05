@@ -58,6 +58,7 @@ export async function prepare(payload: WebhookPayload) {
   switch (payload.repository?.name) {
     case 'test-sdk-repo-private':
     case 'private-js-client-sdk':
+    case 'private-node-js-server-sdk':
       return runNpmInstall(payload);
 
     default:
