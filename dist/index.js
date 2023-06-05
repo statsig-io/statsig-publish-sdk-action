@@ -124,22 +124,13 @@ function run() {
                 .then(() => git.addRemote('public', (0, helpers_1.createGitRepoUrl)(token, publicRepo)))
                 .then(() => git.push('public', 'main', ['--follow-tags']));
             const octokit = github.getOctokit(token);
-            const latest = yield octokit.rest.repos.getLatestRelease({
-                owner: 'statsig-io',
-                repo: publicRepo
-            });
-            const notes = yield octokit.rest.repos.generateReleaseNotes({
-                owner: 'statsig-io',
-                repo: publicRepo,
-                tag_name: version,
-                previous_tag_name: latest.data.tag_name
-            });
             const response = yield octokit.rest.repos.createRelease({
                 owner: 'statsig-io',
                 repo: publicRepo,
                 tag_name: version,
-                body: `${body}\n\n###Genereated\n${notes.data.body}`,
-                name: title
+                body,
+                name: title,
+                generate_release_notes: true
             });
             console.log(`Released: ${response}`);
         }
