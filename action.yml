@@ -10,8 +10,8 @@ inputs:
 runs:
   using: 'composite'
   steps:
-    - name: Publish
-      uses: './action-internal'
+    - name: Run
+      uses: './action-impl'
       with:
         gh-token: ${{ inputs.gh-token }}
 
