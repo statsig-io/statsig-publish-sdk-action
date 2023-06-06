@@ -63,7 +63,7 @@ export async function prepare(payload: WebhookPayload) {
 
     default:
       throw new SkipActionError(
-        `Prepare not supported for repository: ${
+        `Core.prepare not supported for repository: ${
           payload.repository?.name ?? null
         }`
       );

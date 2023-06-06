@@ -31,42 +31,33 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
 Object.defineProperty(exports, "__esModule", { value: true });
 const core = __importStar(require("@actions/core"));
-const github = __importStar(require("@actions/github"));
-const createPublicReleaseOnGithub_1 = require("./createPublicReleaseOnGithub");
 const types_1 = require("./types");
-const prepare_1 = require("./prepare");
-const postGithubRelease_1 = __importDefault(require("./postGithubRelease"));
-function run() {
+const child_process_1 = require("child_process");
+function postGithubRelease(payload) {
+    var _a, _b, _c;
+    switch ((_a = payload.repository) === null || _a === void 0 ? void 0 : _a.name) {
+        case 'test-sdk-repo-private':
+        case 'private-js-client-sdk':
+        case 'private-node-js-server-sdk':
+            return runNpmPublish();
+        default:
+            throw new types_1.SkipActionError(`Core.postGithubRelease not supported for repository: ${(_c = (_b = payload.repository) === null || _b === void 0 ? void 0 : _b.name) !== null && _c !== void 0 ? _c : null}`);
+    }
+}
+exports.default = postGithubRelease;
+function runNpmPublish() {
+    var _a;
     return __awaiter(this, void 0, void 0, function* () {
-        try {
-            const payload = github.context.payload;
-            core.debug(`Payload: ${JSON.stringify(payload)}`);
-            switch (payload.action) {
-                case 'opened':
-                case 'reopened':
-                    return (0, prepare_1.prepare)(payload);
-                case 'closed':
-                    return (0, createPublicReleaseOnGithub_1.createPublicReleaseOnGithub)(payload);
-                case 'released':
-                case 'prereleased':
-                    return (0, postGithubRelease_1.default)(payload);
-            }
+        const NPM_TOKEN = (_a = core.getInput('npm-token')) !== null && _a !== void 0 ? _a : '';
+        if (NPM_TOKEN === '') {
+            throw new Error('Call to NPM Publish without settng npm-token');
         }
-        catch (error) {
-            if (error instanceof types_1.SkipActionError) {
-                console.log(`Skipped: ${error.message}`);
-                return;
-            }
-            if (error instanceof Error) {
-                console.error(error);
-                core.setFailed(error.message);
-            }
-        }
+        const result = (0, child_process_1.execSync)('npm publish', {
+            cwd: process.cwd(),
+            env: Object.assign(Object.assign({}, process.env), { NPM_TOKEN })
+        });
+        console.log(`Published: ${JSON.stringify(result.toString())}`);
     });
 }
-run();
