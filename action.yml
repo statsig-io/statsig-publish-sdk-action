@@ -22,7 +22,6 @@ runs:
       shell: bash
 
     - name: NPM Publish - Setup
-      if: ${{ inputs.npm-token != '' }}
       uses: actions/setup-node@v3
       with:
         node-version: "16.x"
