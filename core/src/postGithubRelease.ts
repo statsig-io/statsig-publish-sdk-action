@@ -6,9 +6,9 @@ import {execSync} from 'child_process';
 
 export default function postGithubRelease(payload: WebhookPayload) {
   switch (payload.repository?.name) {
-    case 'test-sdk-repo-public':
-    case 'js-client':
-    case 'node-js-server-sdk':
+    case 'test-sdk-repo-private':
+    case 'private-js-client-sdk':
+    case 'private-node-js-server-sdk':
       return runNpmPublish();
 
     default:
