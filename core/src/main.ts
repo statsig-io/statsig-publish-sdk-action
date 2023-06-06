@@ -1,9 +1,8 @@
 import * as core from '@actions/core';
 import * as github from '@actions/github';
-import {createPublicReleaseOnGithub} from './createPublicReleaseOnGithub';
+import {release} from './release';
 import {SkipActionError} from './types';
 import {prepare} from './prepare';
-import postGithubRelease from './postGithubRelease';
 
 async function run(): Promise<void> {
   try {
@@ -16,11 +15,7 @@ async function run(): Promise<void> {
         return prepare(payload);
 
       case 'closed':
-        return createPublicReleaseOnGithub(payload);
-
-      case 'released':
-      case 'prereleased':
-        return postGithubRelease(payload);
+        return release(payload);
     }
   } catch (error) {
     if (error instanceof SkipActionError) {

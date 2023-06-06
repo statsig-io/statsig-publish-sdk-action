@@ -2,6 +2,7 @@ import * as core from '@actions/core';
 import * as github from '@actions/github';
 
 import {WebhookPayload} from '@actions/github/lib/interfaces';
+import {execSync} from 'child_process';
 import {SimpleGit, simpleGit} from 'simple-git';
 import {createGitRepoUrl} from './helpers';
 import {SkipActionError} from './types';
@@ -22,14 +23,17 @@ const PRIV_TO_PUB_REPO_MAP: Record<string, string> = {
   'test-sdk-repo-private': 'test-sdk-repo-public'
 };
 
-export async function createPublicReleaseOnGithub(payload: WebhookPayload) {
+export async function release(payload: WebhookPayload) {
   const workingDir = process.cwd() + '/private-sdk';
 
   const args = validateAndExtractArgsFromPayload(payload);
   core.debug(`Extracted args: ${JSON.stringify(args)}`);
 
+  const postRelease = getPostReleaseAction(payload);
+
   await pushToPublic(workingDir, args);
   await createGithubRelease(args);
+  await postRelease(workingDir, args);
 }
 
 function validateAndExtractArgsFromPayload(
@@ -81,6 +85,22 @@ function validateAndExtractArgsFromPayload(
   };
 }
 
+function getPostReleaseAction(payload: WebhookPayload) {
+  switch (payload.repository?.name) {
+    case 'test-sdk-repo-private':
+    case 'private-js-client-sdk':
+    case 'private-node-js-server-sdk':
+      return runNpmPublish;
+
+    default:
+      throw new SkipActionError(
+        `Release not supported for repository: ${
+          payload.repository?.name ?? null
+        }`
+      );
+  }
+}
+
 async function pushToPublic(dir: string, args: ActionArgs) {
   const {title, version, privateRepo, publicRepo, sha, token} = args;
 
@@ -115,4 +135,18 @@ async function createGithubRelease(args: ActionArgs) {
   });
 
   console.log(`Released: ${JSON.stringify(response)}`);
+}
+
+async function runNpmPublish(dir: string, args: ActionArgs) {
+  const NPM_TOKEN = core.getInput('npm-token') ?? '';
+  if (NPM_TOKEN === '') {
+    throw new Error('Call to NPM Publish without settng npm-token');
+  }
+
+  const result = execSync('npm publish', {
+    cwd: dir,
+    env: {...process.env, NPM_TOKEN}
+  });
+
+  console.log(`Published: ${JSON.stringify(result.toString())}`);
 }
