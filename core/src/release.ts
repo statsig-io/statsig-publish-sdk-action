@@ -145,7 +145,7 @@ async function runNpmPublish(dir: string, args: ActionArgs) {
 
   const result = execSync('npm publish', {
     cwd: dir,
-    env: {...process.env, NPM_TOKEN}
+    env: {...process.env, NPM_TOKEN, NPM_AUTH_TOKEN: NPM_TOKEN}
   });
 
   console.log(`Published: ${JSON.stringify(result.toString())}`);
