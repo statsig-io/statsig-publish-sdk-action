@@ -1,0 +1,23 @@
+name: 'Statsig Publish SDK Action'
+description: 'Pushes releases from private to public SDK repositories'
+author: 'Statsig'
+
+inputs:
+  gh-token:
+    description: 'The Github Token'
+    required: true
+
+  npm-token:
+    description: 'The NPM Access Token'
+
+  is-draft:
+    description: 'Draft Release?'
+    default: false
+
+runs:
+  using: 'node16'
+  main: 'dist/index.js'
+
+branding:
+  icon: 'star'
+  color: 'blue'

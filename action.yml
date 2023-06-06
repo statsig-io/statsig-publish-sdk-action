@@ -1,23 +1,28 @@
-name: 'Statsig Publish SDK Action'
-description: 'Pushes releases from private to public SDK repositories'
-author: 'Statsig'
+name: "Statsig Publish SDK Action"
+description: "Pushes releases from private to public SDK repositories"
+author: "Statsig"
 
 inputs:
   gh-token:
-    description: 'The Github Token'
+    description: "The Github Token"
     required: true
 
   npm-token:
-    description: 'The NPM Access Token'
+    description: "The NPM Access Token"
 
   is-draft:
-    description: 'Draft Release?'
+    description: "Draft Release?"
     default: false
 
 runs:
-  using: 'node16'
-  main: 'dist/index.js'
+  using: "composite"
+  steps:
+    - name: Say Hello
+      run: echo Hello!
 
-branding:
-  icon: 'star'
-  color: 'blue'
+    - name: Run Core
+      uses: statsig-io/statsig-publish-sdk-action/core@main
+      with:
+        gh-token: ${{ inputs.gh-token }}
+        npm-token: ${{ inputs.npm-token }}
+        is-draft: ${{ inputs.is-draft }}
