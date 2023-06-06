@@ -273,9 +273,9 @@ const child_process_1 = __nccwpck_require__(2081);
 function postGithubRelease(payload) {
     var _a, _b, _c;
     switch ((_a = payload.repository) === null || _a === void 0 ? void 0 : _a.name) {
-        case 'test-sdk-repo-private':
-        case 'private-js-client-sdk':
-        case 'private-node-js-server-sdk':
+        case 'test-sdk-repo-public':
+        case 'js-client':
+        case 'node-js-server-sdk':
             return runNpmPublish();
         default:
             throw new types_1.SkipActionError(`Core.postGithubRelease not supported for repository: ${(_c = (_b = payload.repository) === null || _b === void 0 ? void 0 : _b.name) !== null && _c !== void 0 ? _c : null}`);
