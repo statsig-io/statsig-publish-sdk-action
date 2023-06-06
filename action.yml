@@ -21,13 +21,6 @@ runs:
       run: echo Hello!
       shell: bash
 
-    - name: Run Core
-      uses: statsig-io/statsig-publish-sdk-action/core@main
-      with:
-        gh-token: ${{ inputs.gh-token }}
-        npm-token: ${{ inputs.npm-token }}
-        is-draft: ${{ inputs.is-draft }}
-
     - name: NPM Publish - Setup
       if: ${{ inputs.npm-token != '' }}
       uses: actions/setup-node@v3
@@ -35,9 +28,9 @@ runs:
         node-version: "16.x"
         registry-url: "https://registry.npmjs.org"
 
-    - name: NPM Publish - Publish
-      if: ${{ inputs.npm-token != '' }}
-      run: npm ci && npm publish
-      shell: bash
-      env:
-        NODE_AUTH_TOKEN: ${{ inputs.npm-token }}
+    - name: Run Core
+      uses: statsig-io/statsig-publish-sdk-action/core@main
+      with:
+        gh-token: ${{ inputs.gh-token }}
+        npm-token: ${{ inputs.npm-token }}
+        is-draft: ${{ inputs.is-draft }}

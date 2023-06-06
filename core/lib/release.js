@@ -35,6 +35,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.release = void 0;
 const core = __importStar(require("@actions/core"));
 const github = __importStar(require("@actions/github"));
+const child_process_1 = require("child_process");
 const simple_git_1 = require("simple-git");
 const helpers_1 = require("./helpers");
 const types_1 = require("./types");
@@ -48,8 +49,10 @@ function release(payload) {
         const workingDir = process.cwd() + '/private-sdk';
         const args = validateAndExtractArgsFromPayload(payload);
         core.debug(`Extracted args: ${JSON.stringify(args)}`);
+        const postRelease = getPostReleaseAction(payload);
         yield pushToPublic(workingDir, args);
         yield createGithubRelease(args);
+        yield postRelease(workingDir, args);
     });
 }
 exports.release = release;
@@ -91,6 +94,17 @@ function validateAndExtractArgsFromPayload(payload) {
         token
     };
 }
+function getPostReleaseAction(payload) {
+    var _a, _b, _c;
+    switch ((_a = payload.repository) === null || _a === void 0 ? void 0 : _a.name) {
+        case 'test-sdk-repo-private':
+        case 'private-js-client-sdk':
+        case 'private-node-js-server-sdk':
+            return runNpmPublish;
+        default:
+            throw new types_1.SkipActionError(`Release not supported for repository: ${(_c = (_b = payload.repository) === null || _b === void 0 ? void 0 : _b.name) !== null && _c !== void 0 ? _c : null}`);
+    }
+}
 function pushToPublic(dir, args) {
     return __awaiter(this, void 0, void 0, function* () {
         const { title, version, privateRepo, publicRepo, sha, token } = args;
@@ -121,5 +135,19 @@ function createGithubRelease(args) {
             generate_release_notes: true
         });
         console.log(`Released: ${JSON.stringify(response)}`);
+    });
+}
+function runNpmPublish(dir, args) {
+    var _a;
+    return __awaiter(this, void 0, void 0, function* () {
+        const NPM_TOKEN = (_a = core.getInput('npm-token')) !== null && _a !== void 0 ? _a : '';
+        if (NPM_TOKEN === '') {
+            throw new Error('Call to NPM Publish without settng npm-token');
+        }
+        const result = (0, child_process_1.execSync)('npm publish', {
+            cwd: dir,
+            env: { NPM_TOKEN }
+        });
+        console.log(`Published: ${JSON.stringify(result.toString())}`);
     });
 }
