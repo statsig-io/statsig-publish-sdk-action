@@ -232,9 +232,10 @@ Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.release = void 0;
 const core = __importStar(__nccwpck_require__(2186));
 const github = __importStar(__nccwpck_require__(5438));
+const child_process_1 = __nccwpck_require__(2081);
 const simple_git_1 = __nccwpck_require__(9103);
-const types_1 = __nccwpck_require__(8164);
 const helpers_1 = __nccwpck_require__(5008);
+const types_1 = __nccwpck_require__(8164);
 const PRIV_TO_PUB_REPO_MAP = {
     'private-js-client-sdk': 'js-client',
     'private-rust-sdk': 'rust-sdk',
@@ -242,33 +243,13 @@ const PRIV_TO_PUB_REPO_MAP = {
 };
 function release(payload) {
     return __awaiter(this, void 0, void 0, function* () {
+        const workingDir = process.cwd() + '/private-sdk';
         const args = validateAndExtractArgsFromPayload(payload);
         core.debug(`Extracted args: ${JSON.stringify(args)}`);
-        const { title, body, version, privateRepo, publicRepo, sha } = args;
-        const token = core.getInput('gh-token');
-        const git = (0, simple_git_1.simpleGit)();
-        const dir = process.cwd() + '/private-sdk';
-        yield git
-            .clone((0, helpers_1.createGitRepoUrl)(token, privateRepo), dir)
-            .then(() => git
-            .cwd(dir)
-            .addConfig('user.name', 'statsig-kong[bot]')
-            .addConfig('user.email', 'statsig-kong[bot]@users.noreply.github.com'))
-            .then(() => git.checkout(sha))
-            .then(() => git.addAnnotatedTag(version, title))
-            .then(() => git.addRemote('public', (0, helpers_1.createGitRepoUrl)(token, publicRepo)))
-            .then(() => git.push('public', 'main', ['--follow-tags']));
-        const octokit = github.getOctokit(token);
-        const response = yield octokit.rest.repos.createRelease({
-            owner: 'statsig-io',
-            repo: publicRepo,
-            tag_name: version,
-            body,
-            name: title,
-            draft: core.getBooleanInput('is-draft'),
-            generate_release_notes: true
-        });
-        console.log(`Released: ${JSON.stringify(response)}`);
+        const postRelease = getPostReleaseAction(payload);
+        yield pushToPublic(workingDir, args);
+        yield createGithubRelease(args);
+        yield postRelease(workingDir, args);
     });
 }
 exports.release = release;
@@ -299,14 +280,65 @@ function validateAndExtractArgsFromPayload(payload) {
     }
     const parts = title.split(' ').slice(1);
     const version = parts[0];
+    const token = core.getInput('gh-token');
     return {
         version,
         title: parts.join(' '),
         body: body !== null && body !== void 0 ? body : '',
         publicRepo,
         privateRepo,
-        sha
+        sha,
+        token
     };
+}
+function getPostReleaseAction(payload) {
+    var _a, _b, _c;
+    switch ((_a = payload.repository) === null || _a === void 0 ? void 0 : _a.name) {
+        case 'test-sdk-repo-private':
+        case 'private-js-client-sdk':
+        case 'private-node-js-server-sdk':
+            return runNpmPublish;
+        default:
+            throw new types_1.SkipActionError(`Release not supported for repository: ${(_c = (_b = payload.repository) === null || _b === void 0 ? void 0 : _b.name) !== null && _c !== void 0 ? _c : null}`);
+    }
+}
+function pushToPublic(dir, args) {
+    return __awaiter(this, void 0, void 0, function* () {
+        const { title, version, privateRepo, publicRepo, sha, token } = args;
+        const git = (0, simple_git_1.simpleGit)();
+        yield git
+            .clone((0, helpers_1.createGitRepoUrl)(token, privateRepo), dir)
+            .then(() => git
+            .cwd(dir)
+            .addConfig('user.name', 'statsig-kong[bot]')
+            .addConfig('user.email', 'statsig-kong[bot]@users.noreply.github.com'))
+            .then(() => git.checkout(sha))
+            .then(() => git.addAnnotatedTag(version, title))
+            .then(() => git.addRemote('public', (0, helpers_1.createGitRepoUrl)(token, publicRepo)))
+            .then(() => git.push('public', 'main', ['--follow-tags']));
+    });
+}
+function createGithubRelease(args) {
+    return __awaiter(this, void 0, void 0, function* () {
+        const { title, version, body, publicRepo, token } = args;
+        const octokit = github.getOctokit(token);
+        const response = yield octokit.rest.repos.createRelease({
+            owner: 'statsig-io',
+            repo: publicRepo,
+            tag_name: version,
+            body,
+            name: title,
+            draft: core.getBooleanInput('is-draft'),
+            generate_release_notes: true
+        });
+        console.log(`Released: ${JSON.stringify(response)}`);
+    });
+}
+function runNpmPublish(dir, args) {
+    return __awaiter(this, void 0, void 0, function* () {
+        const result = (0, child_process_1.execSync)('npm publish', { cwd: dir });
+        console.log(`Published: ${JSON.stringify(result.toString())}`);
+    });
 }
 
 
