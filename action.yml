@@ -28,13 +28,16 @@ runs:
         npm-token: ${{ inputs.npm-token }}
         is-draft: ${{ inputs.is-draft }}
 
-    - name: NPM Publish
+    - name: NPM Publish - Setup
       if: ${{ inputs.npm-token != '' }}
       uses: actions/setup-node@v3
       with:
         node-version: "16.x"
         registry-url: "https://registry.npmjs.org"
-    - run: npm ci && npm publish
+
+    - name: NPM Publish - Publish
       if: ${{ inputs.npm-token != '' }}
+      run: npm ci && npm publish
+      shell: bash
       env:
         NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
