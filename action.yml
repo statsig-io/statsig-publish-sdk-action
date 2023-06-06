@@ -27,3 +27,14 @@ runs:
         gh-token: ${{ inputs.gh-token }}
         npm-token: ${{ inputs.npm-token }}
         is-draft: ${{ inputs.is-draft }}
+
+    - name: NPM Publish
+      if: ${{ inputs.npm-token != '' }}
+      uses: actions/setup-node@v3
+      with:
+        node-version: "16.x"
+        registry-url: "https://registry.npmjs.org"
+    - run: npm ci && npm publish
+      if: ${{ inputs.npm-token != '' }}
+      env:
+        NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
