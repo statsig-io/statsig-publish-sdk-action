@@ -143,10 +143,13 @@ async function runNpmPublish(dir: string, args: ActionArgs) {
     throw new Error('Call to NPM Publish without settng npm-token');
   }
 
-  const result = execSync('npm publish', {
-    cwd: dir,
-    env: {...process.env, NPM_TOKEN, NPM_AUTH_TOKEN: NPM_TOKEN}
-  });
+  const result = execSync(
+    `npm config set //registry.npmjs.org/:_authToken ${NPM_TOKEN} && npm publish`,
+    {
+      cwd: dir,
+      env: {...process.env, NPM_TOKEN, NPM_AUTH_TOKEN: NPM_TOKEN}
+    }
+  );
 
   console.log(`Published: ${JSON.stringify(result.toString())}`);
 }

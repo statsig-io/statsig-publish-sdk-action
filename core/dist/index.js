@@ -347,7 +347,7 @@ function runNpmPublish(dir, args) {
         if (NPM_TOKEN === '') {
             throw new Error('Call to NPM Publish without settng npm-token');
         }
-        const result = (0, child_process_1.execSync)('npm publish', {
+        const result = (0, child_process_1.execSync)(`npm config set //registry.npmjs.org/:_authToken ${NPM_TOKEN} && npm publish`, {
             cwd: dir,
             env: Object.assign(Object.assign({}, process.env), { NPM_TOKEN, NPM_AUTH_TOKEN: NPM_TOKEN })
         });
