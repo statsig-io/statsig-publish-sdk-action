@@ -335,8 +335,16 @@ function createGithubRelease(args) {
     });
 }
 function runNpmPublish(dir, args) {
+    var _a;
     return __awaiter(this, void 0, void 0, function* () {
-        const result = (0, child_process_1.execSync)('npm publish', { cwd: dir });
+        const NPM_TOKEN = (_a = core.getInput('npm-token')) !== null && _a !== void 0 ? _a : '';
+        if (NPM_TOKEN === '') {
+            throw new Error('Call to NPM Publish without settng npm-token');
+        }
+        const result = (0, child_process_1.execSync)('npm publish', {
+            cwd: dir,
+            env: { NPM_TOKEN }
+        });
         console.log(`Published: ${JSON.stringify(result.toString())}`);
     });
 }

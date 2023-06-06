@@ -6,6 +6,10 @@ inputs:
   gh-token:
     description: 'The Github Token'
     required: true
+
+  npm-token:
+    description: 'The NPM Access Token'
+
   is-draft:
     description: 'Draft Release?'
     default: false

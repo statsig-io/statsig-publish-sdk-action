@@ -138,6 +138,15 @@ async function createGithubRelease(args: ActionArgs) {
 }
 
 async function runNpmPublish(dir: string, args: ActionArgs) {
-  const result = execSync('npm publish', {cwd: dir});
+  const NPM_TOKEN = core.getInput('npm-token') ?? '';
+  if (NPM_TOKEN === '') {
+    throw new Error('Call to NPM Publish without settng npm-token');
+  }
+
+  const result = execSync('npm publish', {
+    cwd: dir,
+    env: {NPM_TOKEN}
+  });
+
   console.log(`Published: ${JSON.stringify(result.toString())}`);
 }
