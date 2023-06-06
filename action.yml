@@ -19,6 +19,7 @@ runs:
   steps:
     - name: Say Hello
       run: echo Hello!
+      shell: bash
 
     - name: Run Core
       uses: statsig-io/statsig-publish-sdk-action/core@main
