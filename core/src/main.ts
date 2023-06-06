@@ -5,13 +5,6 @@ import {SkipActionError} from './types';
 import {prepare} from './prepare';
 import postGithubRelease from './postGithubRelease';
 
-/**
- *
- *
- *
- * See also: test-sdk-repo-private and test-sdk-repo-public.
- */
-
 async function run(): Promise<void> {
   try {
     const payload = github.context.payload;
