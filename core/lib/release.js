@@ -146,7 +146,7 @@ function runNpmPublish(dir, args) {
         }
         const result = (0, child_process_1.execSync)('npm publish', {
             cwd: dir,
-            env: { NPM_TOKEN }
+            env: Object.assign(Object.assign({}, process.env), { NPM_TOKEN })
         });
         console.log(`Published: ${JSON.stringify(result.toString())}`);
     });
