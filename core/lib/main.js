@@ -37,6 +37,12 @@ const github = __importStar(require("@actions/github"));
 const release_1 = require("./release");
 const types_1 = require("./types");
 const prepare_1 = require("./prepare");
+/**
+ *
+ *
+ *
+ * See also: test-sdk-repo-private and test-sdk-repo-public.
+ */
 function run() {
     return __awaiter(this, void 0, void 0, function* () {
         try {

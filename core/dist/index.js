@@ -59,6 +59,12 @@ const github = __importStar(__nccwpck_require__(5438));
 const release_1 = __nccwpck_require__(878);
 const types_1 = __nccwpck_require__(8164);
 const prepare_1 = __nccwpck_require__(8837);
+/**
+ *
+ *
+ *
+ * See also: test-sdk-repo-private and test-sdk-repo-public.
+ */
 function run() {
     return __awaiter(this, void 0, void 0, function* () {
         try {
