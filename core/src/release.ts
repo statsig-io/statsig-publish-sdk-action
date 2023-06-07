@@ -21,6 +21,7 @@ const PRIV_TO_PUB_REPO_MAP: Record<string, string> = {
   'private-js-client-sdk': 'js-client',
   'private-rust-sdk': 'rust-sdk',
   'private-node-js-server-sdk': 'node-js-server-sdk',
+  'ios-client-sdk': 'ios-sdk',
   'test-sdk-repo-private': 'test-sdk-repo-public'
 };
 
