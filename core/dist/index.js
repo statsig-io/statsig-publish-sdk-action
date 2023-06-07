@@ -147,6 +147,7 @@ function runNpmInstall(payload) {
         if (!repo || !branch) {
             throw new Error('Missing required information');
         }
+        core.debug(`Running NPM Install: ${repo} ${branch}`);
         const token = core.getInput('gh-token');
         const git = (0, simple_git_1.simpleGit)();
         const dir = process.cwd() + '/private-sdk';

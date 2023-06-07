@@ -13,6 +13,8 @@ async function runNpmInstall(payload: WebhookPayload) {
     throw new Error('Missing required information');
   }
 
+  core.debug(`Running NPM Install: ${repo} ${branch}`);
+
   const token = core.getInput('gh-token');
   const git: SimpleGit = simpleGit();
   const dir = process.cwd() + '/private-sdk';
