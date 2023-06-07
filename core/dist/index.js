@@ -246,6 +246,7 @@ const types_1 = __nccwpck_require__(8164);
 const PRIV_TO_PUB_REPO_MAP = {
     'private-js-client-sdk': 'js-client',
     'private-rust-sdk': 'rust-sdk',
+    'private-node-js-server-sdk': 'node-js-server-sdk',
     'test-sdk-repo-private': 'test-sdk-repo-public'
 };
 function release(payload) {
