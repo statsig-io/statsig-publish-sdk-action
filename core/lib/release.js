@@ -103,6 +103,8 @@ function getPostReleaseAction(payload) {
         case 'private-js-client-sdk':
         case 'private-node-js-server-sdk':
             return runNpmPublish;
+        case 'ios-client-sdk':
+            return noop;
         default:
             throw new types_1.SkipActionError(`Release not supported for repository: ${(_c = (_b = payload.repository) === null || _b === void 0 ? void 0 : _b.name) !== null && _c !== void 0 ? _c : null}`);
     }
@@ -152,4 +154,7 @@ function runNpmPublish(dir, args) {
         });
         console.log(`Published: ${JSON.stringify(result.toString())}`);
     });
+}
+function noop() {
+    return __awaiter(this, void 0, void 0, function* () { });
 }

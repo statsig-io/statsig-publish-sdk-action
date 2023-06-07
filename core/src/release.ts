@@ -94,6 +94,9 @@ function getPostReleaseAction(payload: WebhookPayload) {
     case 'private-node-js-server-sdk':
       return runNpmPublish;
 
+    case 'ios-client-sdk':
+      return noop;
+
     default:
       throw new SkipActionError(
         `Release not supported for repository: ${
@@ -155,3 +158,5 @@ async function runNpmPublish(dir: string, args: ActionArgs) {
 
   console.log(`Published: ${JSON.stringify(result.toString())}`);
 }
+
+async function noop() {}
