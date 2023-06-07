@@ -19,10 +19,10 @@ async function run(): Promise<void> {
     switch (payload.action) {
       case 'opened':
       case 'reopened':
-        return prepare(payload);
+        return await prepare(payload);
 
       case 'closed':
-        return release(payload);
+        return await release(payload);
     }
   } catch (error) {
     if (error instanceof SkipActionError) {

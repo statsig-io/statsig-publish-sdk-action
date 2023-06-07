@@ -73,9 +73,9 @@ function run() {
             switch (payload.action) {
                 case 'opened':
                 case 'reopened':
-                    return (0, prepare_1.prepare)(payload);
+                    return yield (0, prepare_1.prepare)(payload);
                 case 'closed':
-                    return (0, release_1.release)(payload);
+                    return yield (0, release_1.release)(payload);
             }
         }
         catch (error) {
