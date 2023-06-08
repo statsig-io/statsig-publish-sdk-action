@@ -149,7 +149,7 @@ async function runNpmPublish(dir: string, args: ActionArgs) {
   }
 
   const result = execSync(
-    `npm config set //registry.npmjs.org/:_authToken ${NPM_TOKEN} && npm publish`,
+    `npm install && npm config set //registry.npmjs.org/:_authToken ${NPM_TOKEN} && npm publish`,
     {
       cwd: dir,
       env: {...process.env, NPM_TOKEN, NPM_AUTH_TOKEN: NPM_TOKEN}
