@@ -13,13 +13,10 @@ export async function postRelease(payload: WebhookPayload) {
 
 function getPostReleaseAction(payload: WebhookPayload) {
   switch (payload.repository?.name) {
-    case 'test-sdk-repo-private':
-    case 'private-js-client-sdk':
-    case 'private-node-js-server-sdk':
+    case 'test-sdk-repo-public':
+    case 'js-client':
+    case 'node-js-server-sdk':
       return runNpmPublish;
-
-    case 'ios-client-sdk':
-      return noop;
 
     default:
       throw new SkipActionError(

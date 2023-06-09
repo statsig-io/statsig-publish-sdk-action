@@ -149,12 +149,10 @@ exports.postRelease = postRelease;
 function getPostReleaseAction(payload) {
     var _a, _b, _c;
     switch ((_a = payload.repository) === null || _a === void 0 ? void 0 : _a.name) {
-        case 'test-sdk-repo-private':
-        case 'private-js-client-sdk':
-        case 'private-node-js-server-sdk':
+        case 'test-sdk-repo-public':
+        case 'js-client':
+        case 'node-js-server-sdk':
             return runNpmPublish;
-        case 'ios-client-sdk':
-            return noop;
         default:
             throw new types_1.SkipActionError(`Release not supported for repository: ${(_c = (_b = payload.repository) === null || _b === void 0 ? void 0 : _b.name) !== null && _c !== void 0 ? _c : null}`);
     }
