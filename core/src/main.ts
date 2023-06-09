@@ -3,6 +3,7 @@ import * as github from '@actions/github';
 import {release} from './release';
 import {SkipActionError} from './types';
 import {prepare} from './prepare';
+import {postRelease} from './post_release';
 
 /**
  * See also: test-sdk-repo-private and test-sdk-repo-public.
@@ -20,6 +21,10 @@ async function run(): Promise<void> {
 
       case 'closed':
         return await release(payload);
+
+      case 'released':
+      case 'prereleased':
+        return await postRelease(payload);
     }
   } catch (error) {
     if (error instanceof SkipActionError) {

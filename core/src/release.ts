@@ -31,11 +31,8 @@ export async function release(payload: WebhookPayload) {
   const args = validateAndExtractArgsFromPayload(payload);
   core.debug(`Extracted args: ${JSON.stringify(args)}`);
 
-  const postRelease = getPostReleaseAction(payload);
-
   await pushToPublic(workingDir, args);
   await createGithubRelease(args);
-  await postRelease(workingDir, args);
 }
 
 function validateAndExtractArgsFromPayload(
@@ -87,25 +84,6 @@ function validateAndExtractArgsFromPayload(
   };
 }
 
-function getPostReleaseAction(payload: WebhookPayload) {
-  switch (payload.repository?.name) {
-    case 'test-sdk-repo-private':
-    case 'private-js-client-sdk':
-    case 'private-node-js-server-sdk':
-      return runNpmPublish;
-
-    case 'ios-client-sdk':
-      return noop;
-
-    default:
-      throw new SkipActionError(
-        `Release not supported for repository: ${
-          payload.repository?.name ?? null
-        }`
-      );
-  }
-}
-
 async function pushToPublic(dir: string, args: ActionArgs) {
   const {title, version, privateRepo, publicRepo, sha, token} = args;
 
@@ -141,22 +119,3 @@ async function createGithubRelease(args: ActionArgs) {
 
   console.log(`Released: ${JSON.stringify(response)}`);
 }
-
-async function runNpmPublish(dir: string, args: ActionArgs) {
-  const NPM_TOKEN = core.getInput('npm-token') ?? '';
-  if (NPM_TOKEN === '') {
-    throw new Error('Call to NPM Publish without settng npm-token');
-  }
-
-  const result = execSync(
-    `npm install && npm config set //registry.npmjs.org/:_authToken ${NPM_TOKEN} && npm publish`,
-    {
-      cwd: dir,
-      env: {...process.env, NPM_TOKEN, NPM_AUTH_TOKEN: NPM_TOKEN}
-    }
-  );
-
-  console.log(`Published: ${JSON.stringify(result.toString())}`);
-}
-
-async function noop() {}

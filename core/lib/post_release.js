@@ -32,41 +32,45 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.postRelease = void 0;
 const core = __importStar(require("@actions/core"));
-const github = __importStar(require("@actions/github"));
-const release_1 = require("./release");
+const child_process_1 = require("child_process");
 const types_1 = require("./types");
-const prepare_1 = require("./prepare");
-const post_release_1 = require("./post_release");
-/**
- * See also: test-sdk-repo-private and test-sdk-repo-public.
- */
-function run() {
+function postRelease(payload) {
     return __awaiter(this, void 0, void 0, function* () {
-        try {
-            const payload = github.context.payload;
-            core.debug(`Payload: ${JSON.stringify(payload)}`);
-            switch (payload.action) {
-                case 'opened':
-                case 'reopened':
-                    return yield (0, prepare_1.prepare)(payload);
-                case 'closed':
-                    return yield (0, release_1.release)(payload);
-                case 'released':
-                case 'prereleased':
-                    return yield (0, post_release_1.postRelease)(payload);
-            }
-        }
-        catch (error) {
-            if (error instanceof types_1.SkipActionError) {
-                console.log(`Skipped: ${error.message}`);
-                return;
-            }
-            if (error instanceof Error) {
-                console.error(error);
-                core.setFailed(error.message);
-            }
-        }
+        const workingDir = process.cwd() + '/private-sdk';
+        const action = getPostReleaseAction(payload);
+        yield action(workingDir);
     });
 }
-run();
+exports.postRelease = postRelease;
+function getPostReleaseAction(payload) {
+    var _a, _b, _c;
+    switch ((_a = payload.repository) === null || _a === void 0 ? void 0 : _a.name) {
+        case 'test-sdk-repo-private':
+        case 'private-js-client-sdk':
+        case 'private-node-js-server-sdk':
+            return runNpmPublish;
+        case 'ios-client-sdk':
+            return noop;
+        default:
+            throw new types_1.SkipActionError(`Release not supported for repository: ${(_c = (_b = payload.repository) === null || _b === void 0 ? void 0 : _b.name) !== null && _c !== void 0 ? _c : null}`);
+    }
+}
+function runNpmPublish(dir) {
+    var _a;
+    return __awaiter(this, void 0, void 0, function* () {
+        const NPM_TOKEN = (_a = core.getInput('npm-token')) !== null && _a !== void 0 ? _a : '';
+        if (NPM_TOKEN === '') {
+            throw new Error('Call to NPM Publish without settng npm-token');
+        }
+        const result = (0, child_process_1.execSync)(`npm install && npm config set //registry.npmjs.org/:_authToken ${NPM_TOKEN} && npm publish`, {
+            cwd: dir,
+            env: Object.assign(Object.assign({}, process.env), { NPM_TOKEN, NPM_AUTH_TOKEN: NPM_TOKEN })
+        });
+        console.log(`Published: ${JSON.stringify(result.toString())}`);
+    });
+}
+function noop() {
+    return __awaiter(this, void 0, void 0, function* () { });
+}
