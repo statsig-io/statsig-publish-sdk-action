@@ -36,26 +36,52 @@ exports.postRelease = void 0;
 const core = __importStar(require("@actions/core"));
 const child_process_1 = require("child_process");
 const types_1 = require("./types");
+const simple_git_1 = require("simple-git");
+const helpers_1 = require("./helpers");
 function postRelease(payload) {
     return __awaiter(this, void 0, void 0, function* () {
-        const workingDir = process.cwd() + '/private-sdk';
-        const action = getPostReleaseAction(payload);
-        yield action(workingDir);
+        const args = validateAndExtractArgsFromPayload(payload);
+        const action = getPostReleaseAction(args.repo);
+        yield cloneRepo(args);
+        yield action(args);
     });
 }
 exports.postRelease = postRelease;
-function getPostReleaseAction(payload) {
-    var _a, _b, _c;
-    switch ((_a = payload.repository) === null || _a === void 0 ? void 0 : _a.name) {
+function getPostReleaseAction(repo) {
+    switch (repo) {
         case 'test-sdk-repo-public':
         case 'js-client':
         case 'node-js-server-sdk':
             return runNpmPublish;
         default:
-            throw new types_1.SkipActionError(`Release not supported for repository: ${(_c = (_b = payload.repository) === null || _b === void 0 ? void 0 : _b.name) !== null && _c !== void 0 ? _c : null}`);
+            throw new types_1.SkipActionError(`Release not supported for repository: ${repo !== null && repo !== void 0 ? repo : null}`);
     }
 }
-function runNpmPublish(dir) {
+function validateAndExtractArgsFromPayload(payload) {
+    var _a, _b;
+    const name = (_a = payload.repository) === null || _a === void 0 ? void 0 : _a.name;
+    const tag = (_b = payload.release) === null || _b === void 0 ? void 0 : _b.tag_name;
+    if (typeof name !== 'string' || typeof tag !== 'string') {
+        throw new Error('Unable to load repository info');
+    }
+    const token = core.getInput('gh-token');
+    return {
+        tag,
+        repo: name,
+        token,
+        workingDir: process.cwd() + '/public-sdk'
+    };
+}
+function cloneRepo(args) {
+    return __awaiter(this, void 0, void 0, function* () {
+        const git = (0, simple_git_1.simpleGit)();
+        yield git.clone((0, helpers_1.createGitRepoUrl)(args.token, args.repo), args.workingDir, {
+            '--depth': 1,
+            '--branch': args.tag
+        });
+    });
+}
+function runNpmPublish(args) {
     var _a;
     return __awaiter(this, void 0, void 0, function* () {
         const NPM_TOKEN = (_a = core.getInput('npm-token')) !== null && _a !== void 0 ? _a : '';
@@ -63,12 +89,9 @@ function runNpmPublish(dir) {
             throw new Error('Call to NPM Publish without settng npm-token');
         }
         const result = (0, child_process_1.execSync)(`npm install && npm config set //registry.npmjs.org/:_authToken ${NPM_TOKEN} && npm publish`, {
-            cwd: dir,
+            cwd: args.workingDir,
             env: Object.assign(Object.assign({}, process.env), { NPM_TOKEN, NPM_AUTH_TOKEN: NPM_TOKEN })
         });
         console.log(`Published: ${JSON.stringify(result.toString())}`);
     });
-}
-function noop() {
-    return __awaiter(this, void 0, void 0, function* () { });
 }
