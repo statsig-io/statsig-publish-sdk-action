@@ -5,9 +5,6 @@ import {SkipActionError} from './types';
 import {prepare} from './prepare';
 
 /**
- *
- *
- *
  * See also: test-sdk-repo-private and test-sdk-repo-public.
  */
 

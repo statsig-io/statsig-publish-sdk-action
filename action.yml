@@ -17,17 +17,11 @@ inputs:
 runs:
   using: "composite"
   steps:
-    - name: Say Hello
-      run: echo Hello!
-      shell: bash
-
-    - name: NPM Publish - Setup
-      uses: actions/setup-node@v3
-      with:
-        node-version: "16.x"
-        registry-url: "https://registry.npmjs.org"
-
     - name: Run Core
+      if: |
+        startsWith(github.head_ref, 'releases/') 
+        && github.event_name == 'pull_request' 
+        && contains(fromJson('["opened", "reopened", "closed"]'), github.event.action)
       uses: statsig-io/statsig-publish-sdk-action/core@main
       with:
         gh-token: ${{ inputs.gh-token }}
