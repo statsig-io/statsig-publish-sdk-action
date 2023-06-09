@@ -18,10 +18,7 @@ runs:
   using: "composite"
   steps:
     - name: Run Core
-      if: |
-        startsWith(github.head_ref, 'releases/') 
-        && github.event_name == 'pull_request' 
-        && contains(fromJson('["opened", "reopened", "closed"]'), github.event.action)
+      if: contains(fromJson('["push", "pull_request", "release"]'), github.event_name)
       uses: statsig-io/statsig-publish-sdk-action/core@main
       with:
         gh-token: ${{ inputs.gh-token }}
