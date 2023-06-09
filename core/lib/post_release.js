@@ -52,6 +52,7 @@ function getPostReleaseAction(repo) {
         case 'test-sdk-repo-public':
         case 'js-client':
         case 'node-js-server-sdk':
+        case 'react-sdk':
             return runNpmPublish;
         default:
             throw new types_1.SkipActionError(`Release not supported for repository: ${repo !== null && repo !== void 0 ? repo : null}`);

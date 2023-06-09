@@ -154,6 +154,7 @@ function getPostReleaseAction(repo) {
         case 'test-sdk-repo-public':
         case 'js-client':
         case 'node-js-server-sdk':
+        case 'react-sdk':
             return runNpmPublish;
         default:
             throw new types_1.SkipActionError(`Release not supported for repository: ${repo !== null && repo !== void 0 ? repo : null}`);
@@ -293,6 +294,7 @@ function prepare(payload) {
             case 'test-sdk-repo-private':
             case 'private-js-client-sdk':
             case 'private-node-js-server-sdk':
+            case 'private-react-sdk':
                 return runNpmInstall(payload);
             default:
                 throw new types_1.SkipActionError(`Prepare not supported for repository: ${(_c = (_b = payload.repository) === null || _b === void 0 ? void 0 : _b.name) !== null && _c !== void 0 ? _c : null}`);
@@ -352,6 +354,7 @@ const PRIV_TO_PUB_REPO_MAP = {
     'private-js-client-sdk': 'js-client',
     'private-rust-sdk': 'rust-sdk',
     'private-node-js-server-sdk': 'node-js-server-sdk',
+    'private-react-sdk': 'react-sdk',
     'ios-client-sdk': 'ios-sdk',
     'test-sdk-repo-private': 'test-sdk-repo-public'
 };
