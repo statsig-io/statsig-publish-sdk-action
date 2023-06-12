@@ -26,6 +26,7 @@ function getPostReleaseAction(repo: string) {
     case 'js-client':
     case 'node-js-server-sdk':
     case 'react-sdk':
+    case 'react-native':
       return runNpmPublish;
 
     default:
