@@ -62,6 +62,7 @@ export async function prepare(payload: WebhookPayload) {
     case 'private-js-client-sdk':
     case 'private-node-js-server-sdk':
     case 'private-react-sdk':
+    case 'private-react-native':
       return runNpmInstall(payload);
 
     default:
