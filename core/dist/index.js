@@ -295,6 +295,7 @@ function prepare(payload) {
             case 'private-js-client-sdk':
             case 'private-node-js-server-sdk':
             case 'private-react-sdk':
+            case 'private-react-native':
                 return runNpmInstall(payload);
             default:
                 throw new types_1.SkipActionError(`Prepare not supported for repository: ${(_c = (_b = payload.repository) === null || _b === void 0 ? void 0 : _b.name) !== null && _c !== void 0 ? _c : null}`);
@@ -351,11 +352,12 @@ const simple_git_1 = __nccwpck_require__(9103);
 const helpers_1 = __nccwpck_require__(5008);
 const types_1 = __nccwpck_require__(8164);
 const PRIV_TO_PUB_REPO_MAP = {
-    'private-js-client-sdk': 'js-client',
-    'private-rust-sdk': 'rust-sdk',
-    'private-node-js-server-sdk': 'node-js-server-sdk',
-    'private-react-sdk': 'react-sdk',
     'ios-client-sdk': 'ios-sdk',
+    'private-js-client-sdk': 'js-client',
+    'private-node-js-server-sdk': 'node-js-server-sdk',
+    'private-react-native': 'react-native',
+    'private-react-sdk': 'react-sdk',
+    'private-rust-sdk': 'rust-sdk',
     'test-sdk-repo-private': 'test-sdk-repo-public'
 };
 function release(payload) {

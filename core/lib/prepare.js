@@ -87,6 +87,7 @@ function prepare(payload) {
             case 'private-js-client-sdk':
             case 'private-node-js-server-sdk':
             case 'private-react-sdk':
+            case 'private-react-native':
                 return runNpmInstall(payload);
             default:
                 throw new types_1.SkipActionError(`Prepare not supported for repository: ${(_c = (_b = payload.repository) === null || _b === void 0 ? void 0 : _b.name) !== null && _c !== void 0 ? _c : null}`);

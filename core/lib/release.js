@@ -39,11 +39,12 @@ const simple_git_1 = require("simple-git");
 const helpers_1 = require("./helpers");
 const types_1 = require("./types");
 const PRIV_TO_PUB_REPO_MAP = {
-    'private-js-client-sdk': 'js-client',
-    'private-rust-sdk': 'rust-sdk',
-    'private-node-js-server-sdk': 'node-js-server-sdk',
-    'private-react-sdk': 'react-sdk',
     'ios-client-sdk': 'ios-sdk',
+    'private-js-client-sdk': 'js-client',
+    'private-node-js-server-sdk': 'node-js-server-sdk',
+    'private-react-native': 'react-native',
+    'private-react-sdk': 'react-sdk',
+    'private-rust-sdk': 'rust-sdk',
     'test-sdk-repo-private': 'test-sdk-repo-public'
 };
 function release(payload) {
