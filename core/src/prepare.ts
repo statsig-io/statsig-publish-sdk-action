@@ -65,6 +65,13 @@ export async function prepare(payload: WebhookPayload) {
     case 'private-react-native':
       return runNpmInstall(payload);
 
+    case 'private-python-sdk':
+      throw new SkipActionError(
+        `Prepare not neccessary for repository: ${
+          payload.repository?.name ?? null
+        }`
+      );
+
     default:
       throw new SkipActionError(
         `Prepare not supported for repository: ${
