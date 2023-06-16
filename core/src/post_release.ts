@@ -1,15 +1,18 @@
 import * as core from '@actions/core';
 
 import {WebhookPayload} from '@actions/github/lib/interfaces';
-import {execSync} from 'child_process';
+import {exec, execSync} from 'child_process';
 import {SkipActionError} from './types';
 import {SimpleGit, simpleGit} from 'simple-git';
 import {createGitRepoUrl} from './helpers';
+import {promisify} from 'util';
+
+const execPromise = promisify(exec);
 
 type ActionArgs = {
   tag: string;
   repo: string;
-  token: string;
+  githubToken: string;
   workingDir: string;
 };
 
@@ -29,6 +32,9 @@ function getPostReleaseAction(repo: string) {
     case 'react-native':
       return runNpmPublish;
 
+    case 'python-sdk':
+      return runPyPackageIndexPublish;
+
     default:
       throw new SkipActionError(
         `Release not supported for repository: ${repo ?? null}`
@@ -46,12 +52,12 @@ function validateAndExtractArgsFromPayload(
     throw new Error('Unable to load repository info');
   }
 
-  const token = core.getInput('gh-token');
+  const githubToken = core.getInput('gh-token');
 
   return {
     tag,
     repo: name,
-    token,
+    githubToken,
     workingDir: process.cwd() + '/public-sdk'
   };
 }
@@ -59,10 +65,14 @@ function validateAndExtractArgsFromPayload(
 async function cloneRepo(args: ActionArgs) {
   const git: SimpleGit = simpleGit();
 
-  await git.clone(createGitRepoUrl(args.token, args.repo), args.workingDir, {
-    '--depth': 1,
-    '--branch': args.tag
-  });
+  await git.clone(
+    createGitRepoUrl(args.githubToken, args.repo),
+    args.workingDir,
+    {
+      '--depth': 1,
+      '--branch': args.tag
+    }
+  );
 }
 
 async function runNpmPublish(args: ActionArgs) {
@@ -80,4 +90,32 @@ async function runNpmPublish(args: ActionArgs) {
   );
 
   console.log(`Published: ${JSON.stringify(result.toString())}`);
+}
+
+async function runPyPackageIndexPublish(args: ActionArgs) {
+  const PYPI_TOKEN = core.getInput('pypi-token') ?? '';
+  if (PYPI_TOKEN === '') {
+    throw new Error('Call to PyPI Publish without settng pypi-token');
+  }
+
+  const version = args.tag.replace('v', '');
+
+  const commands = [
+    'python3 setup.py sdist',
+    'twine check dist/*',
+    `tar tzf dist/statsig-${version}.tar.gz`,
+    `twine upload --skip-existing dist/statsig-${version}.tar.gz --repository-url https://test.pypi.org/legacy/ --verbose -u token -p ${PYPI_TOKEN}`
+  ];
+
+  const opts = {
+    cwd: args.workingDir
+  };
+
+  for await (const command of commands) {
+    console.log(`[${command}] Executing...`);
+    const {stdout, stderr} = await execPromise(command, opts);
+    console.log(`[${command}] Done`, stdout, stderr);
+  }
+
+  console.log('🎉 PyPI Done!');
 }

@@ -31,6 +31,13 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
+var __asyncValues = (this && this.__asyncValues) || function (o) {
+    if (!Symbol.asyncIterator) throw new TypeError("Symbol.asyncIterator is not defined.");
+    var m = o[Symbol.asyncIterator], i;
+    return m ? m.call(o) : (o = typeof __values === "function" ? __values(o) : o[Symbol.iterator](), i = {}, verb("next"), verb("throw"), verb("return"), i[Symbol.asyncIterator] = function () { return this; }, i);
+    function verb(n) { i[n] = o[n] && function (v) { return new Promise(function (resolve, reject) { v = o[n](v), settle(resolve, reject, v.done, v.value); }); }; }
+    function settle(resolve, reject, d, v) { Promise.resolve(v).then(function(v) { resolve({ value: v, done: d }); }, reject); }
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.postRelease = void 0;
 const core = __importStar(require("@actions/core"));
@@ -38,6 +45,8 @@ const child_process_1 = require("child_process");
 const types_1 = require("./types");
 const simple_git_1 = require("simple-git");
 const helpers_1 = require("./helpers");
+const util_1 = require("util");
+const execPromise = (0, util_1.promisify)(child_process_1.exec);
 function postRelease(payload) {
     return __awaiter(this, void 0, void 0, function* () {
         const args = validateAndExtractArgsFromPayload(payload);
@@ -55,6 +64,8 @@ function getPostReleaseAction(repo) {
         case 'react-sdk':
         case 'react-native':
             return runNpmPublish;
+        case 'python-sdk':
+            return runPyPackageIndexPublish;
         default:
             throw new types_1.SkipActionError(`Release not supported for repository: ${repo !== null && repo !== void 0 ? repo : null}`);
     }
@@ -66,18 +77,18 @@ function validateAndExtractArgsFromPayload(payload) {
     if (typeof name !== 'string' || typeof tag !== 'string') {
         throw new Error('Unable to load repository info');
     }
-    const token = core.getInput('gh-token');
+    const githubToken = core.getInput('gh-token');
     return {
         tag,
         repo: name,
-        token,
+        githubToken,
         workingDir: process.cwd() + '/public-sdk'
     };
 }
 function cloneRepo(args) {
     return __awaiter(this, void 0, void 0, function* () {
         const git = (0, simple_git_1.simpleGit)();
-        yield git.clone((0, helpers_1.createGitRepoUrl)(args.token, args.repo), args.workingDir, {
+        yield git.clone((0, helpers_1.createGitRepoUrl)(args.githubToken, args.repo), args.workingDir, {
             '--depth': 1,
             '--branch': args.tag
         });
@@ -95,5 +106,43 @@ function runNpmPublish(args) {
             env: Object.assign(Object.assign({}, process.env), { NPM_TOKEN, NPM_AUTH_TOKEN: NPM_TOKEN })
         });
         console.log(`Published: ${JSON.stringify(result.toString())}`);
+    });
+}
+function runPyPackageIndexPublish(args) {
+    var _a, e_1, _b, _c;
+    var _d;
+    return __awaiter(this, void 0, void 0, function* () {
+        const PYPI_TOKEN = (_d = core.getInput('pypi-token')) !== null && _d !== void 0 ? _d : '';
+        if (PYPI_TOKEN === '') {
+            throw new Error('Call to PyPI Publish without settng pypi-token');
+        }
+        const version = args.tag.replace('v', '');
+        const commands = [
+            'python3 setup.py sdist',
+            'twine check dist/*',
+            `tar tzf dist/statsig-${version}.tar.gz`,
+            `twine upload --skip-existing dist/statsig-${version}.tar.gz --repository-url https://test.pypi.org/legacy/ --verbose -u token -p ${PYPI_TOKEN}`
+        ];
+        const opts = {
+            cwd: args.workingDir
+        };
+        try {
+            for (var _e = true, commands_1 = __asyncValues(commands), commands_1_1; commands_1_1 = yield commands_1.next(), _a = commands_1_1.done, !_a; _e = true) {
+                _c = commands_1_1.value;
+                _e = false;
+                const command = _c;
+                console.log(`[${command}] Executing...`);
+                const { stdout, stderr } = yield execPromise(command, opts);
+                console.log(`[${command}] Done`, stdout, stderr);
+            }
+        }
+        catch (e_1_1) { e_1 = { error: e_1_1 }; }
+        finally {
+            try {
+                if (!_e && !_a && (_b = commands_1.return)) yield _b.call(commands_1);
+            }
+            finally { if (e_1) throw e_1.error; }
+        }
+        console.log('🎉 PyPI Done!');
     });
 }

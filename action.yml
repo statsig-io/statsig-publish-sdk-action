@@ -10,6 +10,9 @@ inputs:
   npm-token:
     description: "The NPM Access Token"
 
+  pypi-token:
+    description: "The PyPI Access Token"
+
   is-draft:
     description: "Draft Release?"
     default: false
@@ -17,10 +20,17 @@ inputs:
 runs:
   using: "composite"
   steps:
+    - name: Setup Python
+      if: ${{ inputs.pypi-token != '' }}
+      uses: actions/setup-python@v4
+      with:
+        python-version: "3.10"
+
     - name: Run Core
       if: contains(fromJson('["push", "pull_request", "release"]'), github.event_name)
       uses: statsig-io/statsig-publish-sdk-action/core@main
       with:
         gh-token: ${{ inputs.gh-token }}
         npm-token: ${{ inputs.npm-token }}
+        pypi-token: ${{ inputs.pypi-token }}
         is-draft: ${{ inputs.is-draft }}
