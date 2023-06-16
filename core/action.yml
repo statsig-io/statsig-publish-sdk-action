@@ -10,6 +10,9 @@ inputs:
   npm-token:
     description: 'The NPM Access Token'
 
+  pypi-token:
+    description: 'The PyPI Access Token'
+
   is-draft:
     description: 'Draft Release?'
     default: false
