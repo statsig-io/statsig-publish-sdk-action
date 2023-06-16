@@ -42,6 +42,7 @@ const PRIV_TO_PUB_REPO_MAP = {
     'ios-client-sdk': 'ios-sdk',
     'private-js-client-sdk': 'js-client',
     'private-node-js-server-sdk': 'node-js-server-sdk',
+    'private-python-sdk': 'python-sdk',
     'private-react-native': 'react-native',
     'private-react-sdk': 'react-sdk',
     'private-rust-sdk': 'rust-sdk',

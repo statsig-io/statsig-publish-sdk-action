@@ -121,7 +121,7 @@ function runPyPackageIndexPublish(args) {
             'python3 setup.py sdist',
             'twine check dist/*',
             `tar tzf dist/statsig-${version}.tar.gz`,
-            `twine upload --skip-existing dist/statsig-${version}.tar.gz --repository-url https://test.pypi.org/legacy/ --verbose -u token -p ${PYPI_TOKEN}`
+            `twine upload --skip-existing dist/statsig-${version}.tar.gz --verbose -u token -p ${PYPI_TOKEN}`
         ];
         const opts = {
             cwd: args.workingDir
