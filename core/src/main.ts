@@ -14,17 +14,27 @@ async function run(): Promise<void> {
     const payload = github.context.payload;
     core.debug(`Payload: ${JSON.stringify(payload)}`);
 
-    switch (payload.action) {
-      case 'opened':
-      case 'reopened':
+    const event = !!payload.pull_request
+      ? 'pull_request'
+      : !!payload.release
+      ? 'release'
+      : 'unknown';
+
+    switch (`${event}:${payload.action}`) {
+      case 'pull_request:opened':
+      case 'pull_request:reopened':
         return await prepare(payload);
 
-      case 'closed':
+      case 'pull_request:closed':
         return await release(payload);
 
-      case 'released':
-      case 'prereleased':
+      case 'release:released':
+      case 'release:prereleased':
         return await postRelease(payload);
+
+      case 'edited':
+        console.log('On Edited');
+        return;
     }
   } catch (error) {
     if (error instanceof SkipActionError) {
