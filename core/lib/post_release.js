@@ -39,7 +39,7 @@ var __asyncValues = (this && this.__asyncValues) || function (o) {
     function settle(resolve, reject, d, v) { Promise.resolve(v).then(function(v) { resolve({ value: v, done: d }); }, reject); }
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.postRelease = void 0;
+exports.pushReleaseToThirdParties = void 0;
 const core = __importStar(require("@actions/core"));
 const child_process_1 = require("child_process");
 const types_1 = require("./types");
@@ -47,16 +47,16 @@ const simple_git_1 = require("simple-git");
 const helpers_1 = require("./helpers");
 const util_1 = require("util");
 const execPromise = (0, util_1.promisify)(child_process_1.exec);
-function postRelease(payload) {
+function pushReleaseToThirdParties(payload) {
     return __awaiter(this, void 0, void 0, function* () {
         const args = validateAndExtractArgsFromPayload(payload);
-        const action = getPostReleaseAction(args.repo);
+        const action = getThirdPartyAction(args.repo);
         yield cloneRepo(args);
         yield action(args);
     });
 }
-exports.postRelease = postRelease;
-function getPostReleaseAction(repo) {
+exports.pushReleaseToThirdParties = pushReleaseToThirdParties;
+function getThirdPartyAction(repo) {
     switch (repo) {
         case 'test-sdk-repo-public':
         case 'js-client':

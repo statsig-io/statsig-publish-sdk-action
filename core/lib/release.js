@@ -32,7 +32,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.release = void 0;
+exports.syncReposAndCreateRelease = void 0;
 const core = __importStar(require("@actions/core"));
 const github = __importStar(require("@actions/github"));
 const simple_git_1 = require("simple-git");
@@ -48,7 +48,7 @@ const PRIV_TO_PUB_REPO_MAP = {
     'private-rust-sdk': 'rust-sdk',
     'test-sdk-repo-private': 'test-sdk-repo-public'
 };
-function release(payload) {
+function syncReposAndCreateRelease(payload) {
     return __awaiter(this, void 0, void 0, function* () {
         const workingDir = process.cwd() + '/private-sdk';
         const args = validateAndExtractArgsFromPayload(payload);
@@ -57,7 +57,7 @@ function release(payload) {
         yield createGithubRelease(args);
     });
 }
-exports.release = release;
+exports.syncReposAndCreateRelease = syncReposAndCreateRelease;
 function validateAndExtractArgsFromPayload(payload) {
     var _a, _b, _c, _d, _e;
     const ref = (_b = (_a = payload.pull_request) === null || _a === void 0 ? void 0 : _a.head) === null || _b === void 0 ? void 0 : _b.ref;

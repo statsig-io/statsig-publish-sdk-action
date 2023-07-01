@@ -68,23 +68,30 @@ function run() {
         try {
             const payload = github.context.payload;
             core.debug(`Payload: ${JSON.stringify(payload)}`);
-            const event = !!payload.pull_request
-                ? 'pull_request'
-                : !!payload.release
-                    ? 'release'
-                    : 'unknown';
-            switch (`${event}:${payload.action}`) {
-                case 'pull_request:opened':
-                case 'pull_request:reopened':
-                    return yield (0, prepare_1.prepare)(payload);
-                case 'pull_request:closed':
-                    return yield (0, release_1.release)(payload);
-                case 'release:released':
-                case 'release:prereleased':
-                    return yield (0, post_release_1.postRelease)(payload);
-                case 'edited':
-                    console.log('On Edited');
-                    return;
+            if (payload.pull_request) {
+                switch (payload.action) {
+                    case 'opened':
+                    case 'reopened':
+                        return yield (0, prepare_1.prepareForRelease)(payload);
+                    case 'closed':
+                        return yield (0, release_1.syncReposAndCreateRelease)(payload);
+                    default:
+                        console.warn(`Action '${payload.action}' not supported for 'pull_request' event`);
+                        return;
+                }
+            }
+            if (payload.release) {
+                switch (payload.action) {
+                    case 'released':
+                    case 'prereleased':
+                        return yield (0, post_release_1.pushReleaseToThirdParties)(payload);
+                    case 'edited':
+                        console.log('On Edited');
+                        return;
+                    default:
+                        console.warn(`Action '${payload.action}' not supported for 'release' event`);
+                        return;
+                }
             }
         }
         catch (error) {
@@ -149,7 +156,7 @@ var __asyncValues = (this && this.__asyncValues) || function (o) {
     function settle(resolve, reject, d, v) { Promise.resolve(v).then(function(v) { resolve({ value: v, done: d }); }, reject); }
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.postRelease = void 0;
+exports.pushReleaseToThirdParties = void 0;
 const core = __importStar(__nccwpck_require__(2186));
 const child_process_1 = __nccwpck_require__(2081);
 const types_1 = __nccwpck_require__(8164);
@@ -157,16 +164,16 @@ const simple_git_1 = __nccwpck_require__(9103);
 const helpers_1 = __nccwpck_require__(5008);
 const util_1 = __nccwpck_require__(3837);
 const execPromise = (0, util_1.promisify)(child_process_1.exec);
-function postRelease(payload) {
+function pushReleaseToThirdParties(payload) {
     return __awaiter(this, void 0, void 0, function* () {
         const args = validateAndExtractArgsFromPayload(payload);
-        const action = getPostReleaseAction(args.repo);
+        const action = getThirdPartyAction(args.repo);
         yield cloneRepo(args);
         yield action(args);
     });
 }
-exports.postRelease = postRelease;
-function getPostReleaseAction(repo) {
+exports.pushReleaseToThirdParties = pushReleaseToThirdParties;
+function getThirdPartyAction(repo) {
     switch (repo) {
         case 'test-sdk-repo-public':
         case 'js-client':
@@ -298,7 +305,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.prepare = void 0;
+exports.prepareForRelease = void 0;
 const core = __importStar(__nccwpck_require__(2186));
 const types_1 = __nccwpck_require__(8164);
 const child_process_1 = __nccwpck_require__(2081);
@@ -339,7 +346,7 @@ function runNpmInstall(payload) {
         });
     });
 }
-function prepare(payload) {
+function prepareForRelease(payload) {
     var _a, _b, _c, _d, _e;
     return __awaiter(this, void 0, void 0, function* () {
         if (!payload.repository) {
@@ -362,7 +369,7 @@ function prepare(payload) {
         }
     });
 }
-exports.prepare = prepare;
+exports.prepareForRelease = prepareForRelease;
 
 
 /***/ }),
@@ -405,7 +412,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.release = void 0;
+exports.syncReposAndCreateRelease = void 0;
 const core = __importStar(__nccwpck_require__(2186));
 const github = __importStar(__nccwpck_require__(5438));
 const simple_git_1 = __nccwpck_require__(9103);
@@ -421,7 +428,7 @@ const PRIV_TO_PUB_REPO_MAP = {
     'private-rust-sdk': 'rust-sdk',
     'test-sdk-repo-private': 'test-sdk-repo-public'
 };
-function release(payload) {
+function syncReposAndCreateRelease(payload) {
     return __awaiter(this, void 0, void 0, function* () {
         const workingDir = process.cwd() + '/private-sdk';
         const args = validateAndExtractArgsFromPayload(payload);
@@ -430,7 +437,7 @@ function release(payload) {
         yield createGithubRelease(args);
     });
 }
-exports.release = release;
+exports.syncReposAndCreateRelease = syncReposAndCreateRelease;
 function validateAndExtractArgsFromPayload(payload) {
     var _a, _b, _c, _d, _e;
     const ref = (_b = (_a = payload.pull_request) === null || _a === void 0 ? void 0 : _a.head) === null || _b === void 0 ? void 0 : _b.ref;

@@ -46,23 +46,30 @@ function run() {
         try {
             const payload = github.context.payload;
             core.debug(`Payload: ${JSON.stringify(payload)}`);
-            const event = !!payload.pull_request
-                ? 'pull_request'
-                : !!payload.release
-                    ? 'release'
-                    : 'unknown';
-            switch (`${event}:${payload.action}`) {
-                case 'pull_request:opened':
-                case 'pull_request:reopened':
-                    return yield (0, prepare_1.prepare)(payload);
-                case 'pull_request:closed':
-                    return yield (0, release_1.release)(payload);
-                case 'release:released':
-                case 'release:prereleased':
-                    return yield (0, post_release_1.postRelease)(payload);
-                case 'edited':
-                    console.log('On Edited');
-                    return;
+            if (payload.pull_request) {
+                switch (payload.action) {
+                    case 'opened':
+                    case 'reopened':
+                        return yield (0, prepare_1.prepareForRelease)(payload);
+                    case 'closed':
+                        return yield (0, release_1.syncReposAndCreateRelease)(payload);
+                    default:
+                        console.warn(`Action '${payload.action}' not supported for 'pull_request' event`);
+                        return;
+                }
+            }
+            if (payload.release) {
+                switch (payload.action) {
+                    case 'released':
+                    case 'prereleased':
+                        return yield (0, post_release_1.pushReleaseToThirdParties)(payload);
+                    case 'edited':
+                        console.log('On Edited');
+                        return;
+                    default:
+                        console.warn(`Action '${payload.action}' not supported for 'release' event`);
+                        return;
+                }
             }
         }
         catch (error) {

@@ -48,7 +48,7 @@ async function runNpmInstall(payload: WebhookPayload) {
   });
 }
 
-export async function prepare(payload: WebhookPayload) {
+export async function prepareForRelease(payload: WebhookPayload) {
   if (!payload.repository) {
     throw new Error('Failed to load repository information');
   }

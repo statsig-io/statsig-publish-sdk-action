@@ -1,9 +1,9 @@
 import * as core from '@actions/core';
 import * as github from '@actions/github';
-import {release} from './release';
+import {syncReposAndCreateRelease} from './release';
 import {SkipActionError} from './types';
-import {prepare} from './prepare';
-import {postRelease} from './post_release';
+import {prepareForRelease} from './prepare';
+import {pushReleaseToThirdParties} from './post_release';
 
 /**
  * See also: test-sdk-repo-private and test-sdk-repo-public.
@@ -14,27 +14,39 @@ async function run(): Promise<void> {
     const payload = github.context.payload;
     core.debug(`Payload: ${JSON.stringify(payload)}`);
 
-    const event = !!payload.pull_request
-      ? 'pull_request'
-      : !!payload.release
-      ? 'release'
-      : 'unknown';
+    if (payload.pull_request) {
+      switch (payload.action) {
+        case 'opened':
+        case 'reopened':
+          return await prepareForRelease(payload);
 
-    switch (`${event}:${payload.action}`) {
-      case 'pull_request:opened':
-      case 'pull_request:reopened':
-        return await prepare(payload);
+        case 'closed':
+          return await syncReposAndCreateRelease(payload);
 
-      case 'pull_request:closed':
-        return await release(payload);
+        default:
+          console.warn(
+            `Action '${payload.action}' not supported for 'pull_request' event`
+          );
+          return;
+      }
+    }
 
-      case 'release:released':
-      case 'release:prereleased':
-        return await postRelease(payload);
+    if (payload.release) {
+      switch (payload.action) {
+        case 'released':
+        case 'prereleased':
+          return await pushReleaseToThirdParties(payload);
 
-      case 'edited':
-        console.log('On Edited');
-        return;
+        case 'edited':
+          console.log('On Edited');
+          return;
+
+        default:
+          console.warn(
+            `Action '${payload.action}' not supported for 'release' event`
+          );
+          return;
+      }
     }
   } catch (error) {
     if (error instanceof SkipActionError) {

@@ -16,14 +16,14 @@ type ActionArgs = {
   workingDir: string;
 };
 
-export async function postRelease(payload: WebhookPayload) {
+export async function pushReleaseToThirdParties(payload: WebhookPayload) {
   const args = validateAndExtractArgsFromPayload(payload);
-  const action = getPostReleaseAction(args.repo);
+  const action = getThirdPartyAction(args.repo);
   await cloneRepo(args);
   await action(args);
 }
 
-function getPostReleaseAction(repo: string) {
+function getThirdPartyAction(repo: string) {
   switch (repo) {
     case 'test-sdk-repo-public':
     case 'js-client':

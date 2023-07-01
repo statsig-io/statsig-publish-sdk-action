@@ -28,7 +28,7 @@ const PRIV_TO_PUB_REPO_MAP: Record<string, string> = {
   'test-sdk-repo-private': 'test-sdk-repo-public'
 };
 
-export async function release(payload: WebhookPayload) {
+export async function syncReposAndCreateRelease(payload: WebhookPayload) {
   const workingDir = process.cwd() + '/private-sdk';
 
   const args = validateAndExtractArgsFromPayload(payload);

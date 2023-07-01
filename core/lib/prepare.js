@@ -32,7 +32,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.prepare = void 0;
+exports.prepareForRelease = void 0;
 const core = __importStar(require("@actions/core"));
 const types_1 = require("./types");
 const child_process_1 = require("child_process");
@@ -73,7 +73,7 @@ function runNpmInstall(payload) {
         });
     });
 }
-function prepare(payload) {
+function prepareForRelease(payload) {
     var _a, _b, _c, _d, _e;
     return __awaiter(this, void 0, void 0, function* () {
         if (!payload.repository) {
@@ -96,4 +96,4 @@ function prepare(payload) {
         }
     });
 }
-exports.prepare = prepare;
+exports.prepareForRelease = prepareForRelease;
