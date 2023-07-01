@@ -16,16 +16,16 @@ inputs:
   pypi-draft-token:
     description: "The PyPI Access Token For Draft Releases"
 
-  is-draft:
-    description: "Draft Release?"
-    default: false
-
 runs:
   using: "composite"
   steps:
     - name: Setup Python
       if: ${{ inputs.pypi-token != '' || inputs.pypi-draft-token != '' }}
       uses: statsig-io/statsig-publish-sdk-action/python@main
+
+    - name: Is Draft
+      shell: bash
+      run: echo ${{ github.event.release.draft }}
 
     - name: Run Core
       if: contains(fromJson('["push", "pull_request", "release"]'), github.event_name)
