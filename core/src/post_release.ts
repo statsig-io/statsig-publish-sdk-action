@@ -93,8 +93,8 @@ async function runNpmPublish(args: ActionArgs) {
 }
 
 async function runPyPackageIndexPublish(args: ActionArgs) {
-  const isDraft = core.getBooleanInput('is-draft');
-  const tokenName = isDraft ? 'pypi-draft-token' : 'pypi-token';
+  const isBeta = core.getBooleanInput('is-beta');
+  const tokenName = isBeta ? 'pypi-beta-token' : 'pypi-token';
 
   const PYPI_TOKEN = core.getInput(tokenName) ?? '';
   if (PYPI_TOKEN === '') {
@@ -104,7 +104,7 @@ async function runPyPackageIndexPublish(args: ActionArgs) {
   const version = args.tag.replace('v', '');
 
   let uploadCommand = `twine upload --skip-existing dist/statsig-${version}.tar.gz --verbose -u __token__ -p ${PYPI_TOKEN}`;
-  if (isDraft) {
+  if (isBeta) {
     uploadCommand += ' --repository-url https://test.pypi.org/legacy/';
   }
 

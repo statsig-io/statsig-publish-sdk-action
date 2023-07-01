@@ -116,7 +116,7 @@ async function createGithubRelease(args: ActionArgs) {
     tag_name: version,
     body,
     name: title,
-    draft: core.getBooleanInput('is-draft'),
+    prerelease: core.getBooleanInput('is-beta'),
     generate_release_notes: true
   });
 

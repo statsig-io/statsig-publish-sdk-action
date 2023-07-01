@@ -13,19 +13,19 @@ inputs:
   pypi-token:
     description: "The PyPI Access Token"
 
-  pypi-draft-token:
-    description: "The PyPI Access Token For Draft Releases"
+  pypi-beta-token:
+    description: "The PyPI Access Token For Beta Releases"
 
 runs:
   using: "composite"
   steps:
     - name: Setup Python
-      if: ${{ inputs.pypi-token != '' || inputs.pypi-draft-token != '' }}
+      if: ${{ inputs.pypi-token != '' || inputs.pypi-beta-token != '' }}
       uses: statsig-io/statsig-publish-sdk-action/python@main
 
-    - name: Is Draft
+    - name: Is Beta
       shell: bash
-      run: echo ${{ github.event.release.draft }}
+      run: echo ${{ github.event.release.prerelease }}
 
     - name: Run Core
       if: contains(fromJson('["push", "pull_request", "release"]'), github.event_name)
@@ -34,5 +34,5 @@ runs:
         gh-token: ${{ inputs.gh-token }}
         npm-token: ${{ inputs.npm-token }}
         pypi-token: ${{ inputs.pypi-token }}
-        pypi-draft-token: ${{ inputs.pypi-draft-token }}
-        is-draft: ${{ inputs.is-draft }}
+        pypi-beta-token: ${{ inputs.pypi-beta-token }}
+        is-beta: ${{ inputs.is-beta }}

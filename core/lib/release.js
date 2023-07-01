@@ -122,7 +122,7 @@ function createGithubRelease(args) {
             tag_name: version,
             body,
             name: title,
-            draft: core.getBooleanInput('is-draft'),
+            prerelease: core.getBooleanInput('is-beta'),
             generate_release_notes: true
         });
         console.log(`Released: ${JSON.stringify(response)}`);

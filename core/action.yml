@@ -13,11 +13,11 @@ inputs:
   pypi-token:
     description: 'The PyPI Access Token'
 
-  pypi-draft-token:
-    description: 'The PyPI Access Token For Draft Releases'
+  pypi-beta-token:
+    description: 'The PyPI Access Token For Beta Releases'
 
-  is-draft:
-    description: 'Draft Release?'
+  is-beta:
+    description: 'Beta Release?'
     default: false
 
 runs:
