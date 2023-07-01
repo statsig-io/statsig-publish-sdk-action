@@ -13,6 +13,9 @@ inputs:
   pypi-token:
     description: 'The PyPI Access Token'
 
+  pypi-draft-token:
+    description: 'The PyPI Access Token For Draft Releases'
+
   is-draft:
     description: 'Draft Release?'
     default: false

@@ -93,18 +93,26 @@ async function runNpmPublish(args: ActionArgs) {
 }
 
 async function runPyPackageIndexPublish(args: ActionArgs) {
-  const PYPI_TOKEN = core.getInput('pypi-token') ?? '';
+  const isDraft = core.getBooleanInput('is-draft');
+  const tokenName = isDraft ? 'pypi-draft-token' : 'pypi-token';
+
+  const PYPI_TOKEN = core.getInput(tokenName) ?? '';
   if (PYPI_TOKEN === '') {
     throw new Error('Call to PyPI Publish without settng pypi-token');
   }
 
   const version = args.tag.replace('v', '');
 
+  let uploadCommand = `twine upload --skip-existing dist/statsig-${version}.tar.gz --verbose -u __token__ -p ${PYPI_TOKEN}`;
+  if (isDraft) {
+    uploadCommand += ' --repository-url https://test.pypi.org/legacy/';
+  }
+
   const commands = [
     'python3 setup.py sdist',
     'twine check dist/*',
     `tar tzf dist/statsig-${version}.tar.gz`,
-    `twine upload --skip-existing --repository-url https://test.pypi.org/legacy/ dist/statsig-${version}.tar.gz --verbose -u __token__ -p ${PYPI_TOKEN}`
+    uploadCommand
   ];
 
   const opts = {
