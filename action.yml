@@ -28,6 +28,7 @@ runs:
 
     - name: Install Python Tools
       if: ${{ inputs.pypi-token != '' }}
+      shell: bash
       run: |
         python -m pip install --upgrade pip
         pip install setuptools wheel twine
