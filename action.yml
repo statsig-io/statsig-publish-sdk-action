@@ -25,7 +25,7 @@ runs:
 
     - name: Is Beta
       shell: bash
-      run: echo ${{ github.event.release.prerelease }}
+      run: echo ${{ !!github.event.release.prerelease }}
 
     - name: Run Core
       if: contains(fromJson('["push", "pull_request", "release"]'), github.event_name)
@@ -35,4 +35,4 @@ runs:
         npm-token: ${{ inputs.npm-token }}
         pypi-token: ${{ inputs.pypi-token }}
         pypi-beta-token: ${{ inputs.pypi-beta-token }}
-        is-beta: ${{ inputs.is-beta }}
+        is-beta: ${{ !!github.event.release.prerelease }}
