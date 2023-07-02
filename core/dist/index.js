@@ -439,19 +439,24 @@ function syncReposAndCreateRelease(payload) {
         const workingDir = process.cwd() + '/private-sdk';
         const args = validateAndExtractArgsFromPayload(payload);
         core.debug(`Extracted args: ${JSON.stringify(args)}`);
+        payload.pull_request;
         yield pushToPublic(workingDir, args);
         yield createGithubRelease(args);
     });
 }
 exports.syncReposAndCreateRelease = syncReposAndCreateRelease;
 function validateAndExtractArgsFromPayload(payload) {
-    var _a, _b, _c, _d, _e;
-    const ref = (_b = (_a = payload.pull_request) === null || _a === void 0 ? void 0 : _a.head) === null || _b === void 0 ? void 0 : _b.ref;
-    const sha = (_d = (_c = payload.pull_request) === null || _c === void 0 ? void 0 : _c.head) === null || _d === void 0 ? void 0 : _d.sha;
-    if (typeof ref !== 'string' || !ref.startsWith('releases/')) {
+    var _a, _b, _c, _d, _e, _f, _g;
+    const headRef = (_b = (_a = payload.pull_request) === null || _a === void 0 ? void 0 : _a.head) === null || _b === void 0 ? void 0 : _b.ref;
+    const baseRef = (_d = (_c = payload.pull_request) === null || _c === void 0 ? void 0 : _c.base) === null || _d === void 0 ? void 0 : _d.ref;
+    const sha = (_f = (_e = payload.pull_request) === null || _e === void 0 ? void 0 : _e.head) === null || _f === void 0 ? void 0 : _f.sha;
+    if (typeof headRef !== 'string' || !headRef.startsWith('releases/')) {
         throw new types_1.SkipActionError('Not a branch on releases/*');
     }
-    if (((_e = payload.pull_request) === null || _e === void 0 ? void 0 : _e.merged) !== true) {
+    if (baseRef !== 'main' && baseRef !== 'stable') {
+        throw new types_1.SkipActionError('Pull request not against a valid branch');
+    }
+    if (((_g = payload.pull_request) === null || _g === void 0 ? void 0 : _g.merged) !== true) {
         throw new types_1.SkipActionError('Not a merged pull request');
     }
     const { title, body } = payload.pull_request;
@@ -479,7 +484,8 @@ function validateAndExtractArgsFromPayload(payload) {
         publicRepo,
         privateRepo,
         sha,
-        token
+        token,
+        isLatest: baseRef === 'main'
     };
 }
 function pushToPublic(dir, args) {
@@ -509,7 +515,8 @@ function createGithubRelease(args) {
             body,
             name: title,
             prerelease: core.getBooleanInput('is-beta'),
-            generate_release_notes: true
+            generate_release_notes: true,
+            make_latest: args.isLatest
         });
         console.log(`Released: ${JSON.stringify(response)}`);
     });

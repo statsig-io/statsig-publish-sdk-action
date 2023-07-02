@@ -15,6 +15,7 @@ type ActionArgs = {
   privateRepo: string;
   sha: string;
   token: string;
+  isLatest: boolean;
 };
 
 const PRIV_TO_PUB_REPO_MAP: Record<string, string> = {
@@ -34,6 +35,8 @@ export async function syncReposAndCreateRelease(payload: WebhookPayload) {
   const args = validateAndExtractArgsFromPayload(payload);
   core.debug(`Extracted args: ${JSON.stringify(args)}`);
 
+  payload.pull_request;
+
   await pushToPublic(workingDir, args);
   await createGithubRelease(args);
 }
@@ -41,11 +44,16 @@ export async function syncReposAndCreateRelease(payload: WebhookPayload) {
 function validateAndExtractArgsFromPayload(
   payload: WebhookPayload
 ): ActionArgs {
-  const ref = payload.pull_request?.head?.ref;
+  const headRef = payload.pull_request?.head?.ref;
+  const baseRef = payload.pull_request?.base?.ref;
   const sha = payload.pull_request?.head?.sha;
 
-  if (typeof ref !== 'string' || !ref.startsWith('releases/')) {
+  if (typeof headRef !== 'string' || !headRef.startsWith('releases/')) {
     throw new SkipActionError('Not a branch on releases/*');
+  }
+
+  if (baseRef !== 'main' && baseRef !== 'stable') {
+    throw new SkipActionError('Pull request not against a valid branch');
   }
 
   if (payload.pull_request?.merged !== true) {
@@ -83,7 +91,8 @@ function validateAndExtractArgsFromPayload(
     publicRepo,
     privateRepo,
     sha,
-    token
+    token,
+    isLatest: baseRef === 'main'
   };
 }
 
@@ -117,7 +126,8 @@ async function createGithubRelease(args: ActionArgs) {
     body,
     name: title,
     prerelease: core.getBooleanInput('is-beta'),
-    generate_release_notes: true
+    generate_release_notes: true,
+    make_latest: args.isLatest
   });
 
   console.log(`Released: ${JSON.stringify(response)}`);
