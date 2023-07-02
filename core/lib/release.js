@@ -99,7 +99,7 @@ function validateAndExtractArgsFromPayload(payload) {
         privateRepo,
         sha,
         token,
-        isLatest: baseRef === 'main'
+        isMain: baseRef === 'main'
     };
 }
 function pushToPublic(dir, args) {
@@ -115,7 +115,7 @@ function pushToPublic(dir, args) {
             .then(() => git.checkout(sha))
             .then(() => git.addAnnotatedTag(version, title))
             .then(() => git.addRemote('public', (0, helpers_1.createGitRepoUrl)(token, publicRepo)))
-            .then(() => git.push('public', 'main', ['--follow-tags']));
+            .then(() => git.push('public', args.isMain ? 'main' : 'stable', ['--follow-tags']));
     });
 }
 function createGithubRelease(args) {
@@ -130,7 +130,7 @@ function createGithubRelease(args) {
             name: title,
             prerelease: core.getBooleanInput('is-beta'),
             generate_release_notes: true,
-            make_latest: args.isLatest
+            make_latest: args.isMain
         });
         console.log(`Released: ${JSON.stringify(response)}`);
     });

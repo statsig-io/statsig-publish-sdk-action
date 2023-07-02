@@ -2,7 +2,6 @@ import * as core from '@actions/core';
 import * as github from '@actions/github';
 
 import {WebhookPayload} from '@actions/github/lib/interfaces';
-import {execSync} from 'child_process';
 import {SimpleGit, simpleGit} from 'simple-git';
 import {createGitRepoUrl} from './helpers';
 import {SkipActionError} from './types';
@@ -15,7 +14,7 @@ type ActionArgs = {
   privateRepo: string;
   sha: string;
   token: string;
-  isLatest: boolean;
+  isMain: boolean;
 };
 
 const PRIV_TO_PUB_REPO_MAP: Record<string, string> = {
@@ -92,7 +91,7 @@ function validateAndExtractArgsFromPayload(
     privateRepo,
     sha,
     token,
-    isLatest: baseRef === 'main'
+    isMain: baseRef === 'main'
   };
 }
 
@@ -112,7 +111,9 @@ async function pushToPublic(dir: string, args: ActionArgs) {
     .then(() => git.checkout(sha))
     .then(() => git.addAnnotatedTag(version, title))
     .then(() => git.addRemote('public', createGitRepoUrl(token, publicRepo)))
-    .then(() => git.push('public', 'main', ['--follow-tags']));
+    .then(() =>
+      git.push('public', args.isMain ? 'main' : 'stable', ['--follow-tags'])
+    );
 }
 
 async function createGithubRelease(args: ActionArgs) {
@@ -127,7 +128,7 @@ async function createGithubRelease(args: ActionArgs) {
     name: title,
     prerelease: core.getBooleanInput('is-beta'),
     generate_release_notes: true,
-    make_latest: args.isLatest
+    make_latest: args.isMain
   });
 
   console.log(`Released: ${JSON.stringify(response)}`);
