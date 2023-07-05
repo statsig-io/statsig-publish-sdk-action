@@ -1,9 +1,9 @@
 import * as core from '@actions/core';
 import * as github from '@actions/github';
-import {syncReposAndCreateRelease} from './release';
-import {SkipActionError} from './types';
-import {prepareForRelease} from './prepare';
-import {pushReleaseToThirdParties} from './post_release';
+import { syncReposAndCreateRelease } from './release';
+import { SkipActionError } from './types';
+import { prepareForRelease } from './prepare';
+import { pushReleaseToThirdParties } from './post_release';
 
 /**
  * See also: test-sdk-repo-private and test-sdk-repo-public.

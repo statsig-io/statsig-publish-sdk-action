@@ -1,10 +1,10 @@
 import * as core from '@actions/core';
-import * as github from '@actions/github';
 
-import {WebhookPayload} from '@actions/github/lib/interfaces';
-import {SimpleGit, simpleGit} from 'simple-git';
-import {createGitRepoUrl} from './helpers';
-import {SkipActionError} from './types';
+import { WebhookPayload } from '@actions/github/lib/interfaces';
+import { SimpleGit, simpleGit } from 'simple-git';
+import { createGitRepoUrl } from './helpers';
+import { SkipActionError } from './types';
+import KongOctokit from './kong_octokit';
 
 type ActionArgs = {
   version: string;
@@ -59,7 +59,7 @@ function validateAndExtractArgsFromPayload(
     throw new SkipActionError('Not a merged pull request');
   }
 
-  const {title, body} = payload.pull_request;
+  const { title, body } = payload.pull_request;
   if (typeof title !== 'string' || !title.startsWith('[release] ')) {
     throw new SkipActionError('[release] not present in title');
   }
@@ -94,9 +94,9 @@ function validateAndExtractArgsFromPayload(
 }
 
 async function pushToPublic(dir: string, args: ActionArgs) {
-  const {title, version, privateRepo, publicRepo, sha} = args;
+  const { title, version, privateRepo, publicRepo, sha } = args;
 
-  const token = core.getInput('gh-sync-token');
+  const token = core.getInput('gh-token');
   const git: SimpleGit = simpleGit();
 
   await git
@@ -116,12 +116,9 @@ async function pushToPublic(dir: string, args: ActionArgs) {
 }
 
 async function createGithubRelease(args: ActionArgs) {
-  const {title, version, body, publicRepo} = args;
+  const { title, version, body, publicRepo } = args;
 
-  const token = core.getInput('gh-workflow-token');
-  const octokit = github.getOctokit(token);
-
-  const response = await octokit.rest.repos.createRelease({
+  const response = await KongOctokit.get().rest.repos.createRelease({
     owner: 'statsig-io',
     repo: publicRepo,
     tag_name: version,
@@ -129,7 +126,7 @@ async function createGithubRelease(args: ActionArgs) {
     name: title,
     prerelease: core.getBooleanInput('is-beta'),
     generate_release_notes: true,
-    make_latest: String(args.isMain)
+    make_latest: args.isMain ? 'true' : 'false'
   });
 
   console.log(`Released: ${JSON.stringify(response)}`);

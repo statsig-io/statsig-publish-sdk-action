@@ -1,9 +1,9 @@
-import {WebhookPayload} from '@actions/github/lib/interfaces';
 import * as core from '@actions/core';
-import {SkipActionError} from './types';
-import {execSync} from 'child_process';
-import {SimpleGit, simpleGit} from 'simple-git';
-import {createGitRepoUrl} from './helpers';
+import { WebhookPayload } from '@actions/github/lib/interfaces';
+import { execSync } from 'child_process';
+import { SimpleGit, simpleGit } from 'simple-git';
+import { createGitRepoUrl } from './helpers';
+import { SkipActionError } from './types';
 
 async function runNpmInstall(payload: WebhookPayload) {
   const repo = payload.repository?.name;
@@ -15,7 +15,7 @@ async function runNpmInstall(payload: WebhookPayload) {
 
   core.debug(`Running NPM Install: ${repo} ${branch}`);
 
-  const token = core.getInput('gh-workflow-token');
+  const token = core.getInput('gh-token');
   const git: SimpleGit = simpleGit();
   const dir = process.cwd() + '/private-sdk';
 
@@ -29,7 +29,7 @@ async function runNpmInstall(payload: WebhookPayload) {
     )
     .then(() => git.checkout(branch));
 
-  execSync('npm install', {cwd: dir});
+  execSync('npm install', { cwd: dir });
 
   await git.status().then(status => {
     if (status.isClean()) {

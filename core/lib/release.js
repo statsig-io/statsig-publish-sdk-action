@@ -31,13 +31,16 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.syncReposAndCreateRelease = void 0;
 const core = __importStar(require("@actions/core"));
-const github = __importStar(require("@actions/github"));
 const simple_git_1 = require("simple-git");
 const helpers_1 = require("./helpers");
 const types_1 = require("./types");
+const kong_octokit_1 = __importDefault(require("./kong_octokit"));
 const PRIV_TO_PUB_REPO_MAP = {
     'ios-client-sdk': 'ios-sdk',
     'private-android-sdk': 'android-sdk',
@@ -104,7 +107,7 @@ function validateAndExtractArgsFromPayload(payload) {
 function pushToPublic(dir, args) {
     return __awaiter(this, void 0, void 0, function* () {
         const { title, version, privateRepo, publicRepo, sha } = args;
-        const token = core.getInput('gh-sync-token');
+        const token = core.getInput('gh-token');
         const git = (0, simple_git_1.simpleGit)();
         yield git
             .clone((0, helpers_1.createGitRepoUrl)(token, privateRepo), dir)
@@ -121,9 +124,7 @@ function pushToPublic(dir, args) {
 function createGithubRelease(args) {
     return __awaiter(this, void 0, void 0, function* () {
         const { title, version, body, publicRepo } = args;
-        const token = core.getInput('gh-workflow-token');
-        const octokit = github.getOctokit(token);
-        const response = yield octokit.rest.repos.createRelease({
+        const response = yield kong_octokit_1.default.get().rest.repos.createRelease({
             owner: 'statsig-io',
             repo: publicRepo,
             tag_name: version,
@@ -131,7 +132,7 @@ function createGithubRelease(args) {
             name: title,
             prerelease: core.getBooleanInput('is-beta'),
             generate_release_notes: true,
-            make_latest: String(args.isMain)
+            make_latest: args.isMain ? 'true' : 'false'
         });
         console.log(`Released: ${JSON.stringify(response)}`);
     });

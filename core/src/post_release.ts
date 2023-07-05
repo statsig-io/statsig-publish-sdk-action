@@ -1,11 +1,11 @@
 import * as core from '@actions/core';
 
-import {WebhookPayload} from '@actions/github/lib/interfaces';
-import {exec, execSync} from 'child_process';
-import {SkipActionError} from './types';
-import {SimpleGit, simpleGit} from 'simple-git';
-import {createGitRepoUrl} from './helpers';
-import {promisify} from 'util';
+import { WebhookPayload } from '@actions/github/lib/interfaces';
+import { exec, execSync } from 'child_process';
+import { SkipActionError } from './types';
+import { SimpleGit, simpleGit } from 'simple-git';
+import { createGitRepoUrl } from './helpers';
+import { promisify } from 'util';
 
 const execPromise = promisify(exec);
 
@@ -52,7 +52,7 @@ function validateAndExtractArgsFromPayload(
     throw new Error('Unable to load repository info');
   }
 
-  const githubToken = core.getInput('gh-workflow-token');
+  const githubToken = core.getInput('gh-token');
 
   return {
     tag,
@@ -85,7 +85,7 @@ async function runNpmPublish(args: ActionArgs) {
     `npm install && npm config set //registry.npmjs.org/:_authToken ${NPM_TOKEN} && npm publish`,
     {
       cwd: args.workingDir,
-      env: {...process.env, NPM_TOKEN, NPM_AUTH_TOKEN: NPM_TOKEN}
+      env: { ...process.env, NPM_TOKEN, NPM_AUTH_TOKEN: NPM_TOKEN }
     }
   );
 
@@ -121,7 +121,7 @@ async function runPyPackageIndexPublish(args: ActionArgs) {
 
   for await (const command of commands) {
     console.log(`[${command}] Executing...`);
-    const {stdout, stderr} = await execPromise(command, opts);
+    const { stdout, stderr } = await execPromise(command, opts);
     console.log(`[${command}] Done`, stdout, stderr);
   }
 

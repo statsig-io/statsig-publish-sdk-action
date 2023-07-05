@@ -34,10 +34,10 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.prepareForRelease = void 0;
 const core = __importStar(require("@actions/core"));
-const types_1 = require("./types");
 const child_process_1 = require("child_process");
 const simple_git_1 = require("simple-git");
 const helpers_1 = require("./helpers");
+const types_1 = require("./types");
 function runNpmInstall(payload) {
     var _a, _b, _c;
     return __awaiter(this, void 0, void 0, function* () {
@@ -47,7 +47,7 @@ function runNpmInstall(payload) {
             throw new Error('Missing required information');
         }
         core.debug(`Running NPM Install: ${repo} ${branch}`);
-        const token = core.getInput('gh-workflow-token');
+        const token = core.getInput('gh-token');
         const git = (0, simple_git_1.simpleGit)();
         const dir = process.cwd() + '/private-sdk';
         yield git

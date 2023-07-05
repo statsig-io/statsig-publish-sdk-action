@@ -77,7 +77,7 @@ function validateAndExtractArgsFromPayload(payload) {
     if (typeof name !== 'string' || typeof tag !== 'string') {
         throw new Error('Unable to load repository info');
     }
-    const githubToken = core.getInput('gh-workflow-token');
+    const githubToken = core.getInput('gh-token');
     return {
         tag,
         repo: name,

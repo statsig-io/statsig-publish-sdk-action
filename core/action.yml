@@ -3,12 +3,12 @@ description: 'Pushes releases from private to public SDK repositories'
 author: 'Statsig'
 
 inputs:
-  gh-sync-token:
-    description: 'The Github Token that has access to both Public and Private repos'
+  gh-token:
+    description: 'The Github PAT with access to Public and Private repos'
     required: true
 
-  gh-workflow-token:
-    description: 'The Github Token for this workflow (See https://docs.github.com/en/actions/security-guides/automatic-token-authentication)'
+  kong-private-key:
+    description: 'The private key required to run the Kong Github App'
     required: true
 
   npm-token:
