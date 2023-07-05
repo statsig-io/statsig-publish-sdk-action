@@ -35,8 +35,8 @@ runs:
       if: contains(fromJson('["push", "pull_request", "release"]'), github.event_name)
       uses: statsig-io/statsig-publish-sdk-action/core@main
       with:
-        gh-token: ${{ secrets.KONG_FINE_GRAINED_REPO_PAT }}
-        kong-app-private-key: ${{ secrets.KONG_GH_APP_PRIVATE_KEY }}
+        gh-token: ${{ inputs.gh-token }}
+        kong-app-private-key: ${{ inputs.kong-app-private-key }}
         npm-token: ${{ inputs.npm-token }}
         pypi-token: ${{ inputs.pypi-token }}
         pypi-beta-token: ${{ inputs.pypi-beta-token }}
