@@ -46,6 +46,7 @@ function runNpmInstall(payload) {
         if (!repo || !branch) {
             throw new Error('Missing required information');
         }
+        console.log('ENV', JSON.stringify(process.env));
         core.debug(`Running NPM Install: ${repo} ${branch}`);
         const token = core.getInput('gh-token');
         const git = (0, simple_git_1.simpleGit)();
