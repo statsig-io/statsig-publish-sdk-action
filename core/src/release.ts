@@ -13,7 +13,6 @@ type ActionArgs = {
   publicRepo: string;
   privateRepo: string;
   sha: string;
-  token: string;
   isMain: boolean;
 };
 
@@ -82,7 +81,6 @@ function validateAndExtractArgsFromPayload(
 
   const parts = title.split(' ').slice(1);
   const version = parts[0];
-  const token = core.getInput('gh-token');
 
   return {
     version,
@@ -91,14 +89,14 @@ function validateAndExtractArgsFromPayload(
     publicRepo,
     privateRepo,
     sha,
-    token,
     isMain: baseRef === 'main'
   };
 }
 
 async function pushToPublic(dir: string, args: ActionArgs) {
-  const {title, version, privateRepo, publicRepo, sha, token} = args;
+  const {title, version, privateRepo, publicRepo, sha} = args;
 
+  const token = core.getInput('gh-sync-token');
   const git: SimpleGit = simpleGit();
 
   await git
@@ -118,7 +116,9 @@ async function pushToPublic(dir: string, args: ActionArgs) {
 }
 
 async function createGithubRelease(args: ActionArgs) {
-  const {title, version, body, publicRepo, token} = args;
+  const {title, version, body, publicRepo} = args;
+
+  const token = core.getInput('gh-workflow-token');
   const octokit = github.getOctokit(token);
 
   const response = await octokit.rest.repos.createRelease({

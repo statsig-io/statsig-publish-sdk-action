@@ -52,7 +52,7 @@ function validateAndExtractArgsFromPayload(
     throw new Error('Unable to load repository info');
   }
 
-  const githubToken = core.getInput('gh-token');
+  const githubToken = core.getInput('gh-workflow-token');
 
   return {
     tag,

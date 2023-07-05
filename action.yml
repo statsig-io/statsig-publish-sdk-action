@@ -3,8 +3,8 @@ description: "Pushes releases from private to public SDK repositories"
 author: "Statsig"
 
 inputs:
-  gh-token:
-    description: "The Github Token"
+  gh-sync-token:
+    description: "The Github Token that has access to both Public and Private repos"
     required: true
 
   npm-token:
@@ -31,7 +31,8 @@ runs:
       if: contains(fromJson('["push", "pull_request", "release"]'), github.event_name)
       uses: statsig-io/statsig-publish-sdk-action/core@main
       with:
-        gh-token: ${{ inputs.gh-token }}
+        gh-sync-token: ${{ inputs.gh-sync-token }}
+        gh-workflow-token: ${{ github.token }}
         npm-token: ${{ inputs.npm-token }}
         pypi-token: ${{ inputs.pypi-token }}
         pypi-beta-token: ${{ inputs.pypi-beta-token }}

@@ -194,7 +194,7 @@ function validateAndExtractArgsFromPayload(payload) {
     if (typeof name !== 'string' || typeof tag !== 'string') {
         throw new Error('Unable to load repository info');
     }
-    const githubToken = core.getInput('gh-token');
+    const githubToken = core.getInput('gh-workflow-token');
     return {
         tag,
         repo: name,
@@ -325,9 +325,8 @@ function runNpmInstall(payload) {
         if (!repo || !branch) {
             throw new Error('Missing required information');
         }
-        console.log('ENV', JSON.stringify(process.env));
         core.debug(`Running NPM Install: ${repo} ${branch}`);
-        const token = core.getInput('gh-token');
+        const token = core.getInput('gh-workflow-token');
         const git = (0, simple_git_1.simpleGit)();
         const dir = process.cwd() + '/private-sdk';
         yield git
@@ -478,7 +477,6 @@ function validateAndExtractArgsFromPayload(payload) {
     }
     const parts = title.split(' ').slice(1);
     const version = parts[0];
-    const token = core.getInput('gh-token');
     return {
         version,
         title: parts.join(' '),
@@ -486,13 +484,13 @@ function validateAndExtractArgsFromPayload(payload) {
         publicRepo,
         privateRepo,
         sha,
-        token,
         isMain: baseRef === 'main'
     };
 }
 function pushToPublic(dir, args) {
     return __awaiter(this, void 0, void 0, function* () {
-        const { title, version, privateRepo, publicRepo, sha, token } = args;
+        const { title, version, privateRepo, publicRepo, sha } = args;
+        const token = core.getInput('gh-sync-token');
         const git = (0, simple_git_1.simpleGit)();
         yield git
             .clone((0, helpers_1.createGitRepoUrl)(token, privateRepo), dir)
@@ -508,7 +506,8 @@ function pushToPublic(dir, args) {
 }
 function createGithubRelease(args) {
     return __awaiter(this, void 0, void 0, function* () {
-        const { title, version, body, publicRepo, token } = args;
+        const { title, version, body, publicRepo } = args;
+        const token = core.getInput('gh-workflow-token');
         const octokit = github.getOctokit(token);
         const response = yield octokit.rest.repos.createRelease({
             owner: 'statsig-io',

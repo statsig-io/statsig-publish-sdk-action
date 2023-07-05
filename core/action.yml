@@ -3,8 +3,12 @@ description: 'Pushes releases from private to public SDK repositories'
 author: 'Statsig'
 
 inputs:
-  gh-token:
-    description: 'The Github Token'
+  gh-sync-token:
+    description: 'The Github Token that has access to both Public and Private repos'
+    required: true
+
+  gh-workflow-token:
+    description: 'The Github Token for this workflow (See https://docs.github.com/en/actions/security-guides/automatic-token-authentication)'
     required: true
 
   npm-token:
