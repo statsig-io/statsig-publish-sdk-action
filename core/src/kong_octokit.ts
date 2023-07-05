@@ -15,4 +15,16 @@ export default abstract class KongOctokit {
       }
     });
   }
+
+  static async token(): Promise<string> {
+    return this.get()
+      .auth({ type: 'installation' })
+      .then(result => {
+        if (typeof result !== 'object') {
+          return '';
+        }
+
+        return String((result as Record<string, unknown>)['token']);
+      });
+  }
 }

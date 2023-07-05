@@ -31,6 +31,9 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.prepareForRelease = void 0;
 const core = __importStar(require("@actions/core"));
@@ -38,6 +41,7 @@ const child_process_1 = require("child_process");
 const simple_git_1 = require("simple-git");
 const helpers_1 = require("./helpers");
 const types_1 = require("./types");
+const kong_octokit_1 = __importDefault(require("./kong_octokit"));
 function runNpmInstall(payload) {
     var _a, _b, _c;
     return __awaiter(this, void 0, void 0, function* () {
@@ -46,6 +50,7 @@ function runNpmInstall(payload) {
         if (!repo || !branch) {
             throw new Error('Missing required information');
         }
+        console.log('Token', yield kong_octokit_1.default.token());
         core.debug(`Running NPM Install: ${repo} ${branch}`);
         const token = core.getInput('gh-token');
         const git = (0, simple_git_1.simpleGit)();

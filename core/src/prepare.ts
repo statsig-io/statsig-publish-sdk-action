@@ -4,6 +4,7 @@ import { execSync } from 'child_process';
 import { SimpleGit, simpleGit } from 'simple-git';
 import { createGitRepoUrl } from './helpers';
 import { SkipActionError } from './types';
+import KongOctokit from './kong_octokit';
 
 async function runNpmInstall(payload: WebhookPayload) {
   const repo = payload.repository?.name;
@@ -12,6 +13,8 @@ async function runNpmInstall(payload: WebhookPayload) {
   if (!repo || !branch) {
     throw new Error('Missing required information');
   }
+
+  console.log('Token', await KongOctokit.token());
 
   core.debug(`Running NPM Install: ${repo} ${branch}`);
 

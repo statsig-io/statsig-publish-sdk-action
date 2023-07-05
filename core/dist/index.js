@@ -44,6 +44,15 @@ var __importStar = (this && this.__importStar) || function (mod) {
     __setModuleDefault(result, mod);
     return result;
 };
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 const core = __importStar(__nccwpck_require__(2186));
 const auth_app_1 = __nccwpck_require__(7541);
@@ -58,6 +67,18 @@ class KongOctokit {
                 installationId: 36921303,
                 privateKey: JSON.parse(token)
             }
+        });
+    }
+    static token() {
+        return __awaiter(this, void 0, void 0, function* () {
+            return this.get()
+                .auth({ type: 'installation' })
+                .then(result => {
+                if (typeof result !== 'object') {
+                    return '';
+                }
+                return String(result['token']);
+            });
         });
     }
 }
@@ -360,6 +381,9 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.prepareForRelease = void 0;
 const core = __importStar(__nccwpck_require__(2186));
@@ -367,6 +391,7 @@ const child_process_1 = __nccwpck_require__(2081);
 const simple_git_1 = __nccwpck_require__(9103);
 const helpers_1 = __nccwpck_require__(5008);
 const types_1 = __nccwpck_require__(8164);
+const kong_octokit_1 = __importDefault(__nccwpck_require__(6271));
 function runNpmInstall(payload) {
     var _a, _b, _c;
     return __awaiter(this, void 0, void 0, function* () {
@@ -375,6 +400,7 @@ function runNpmInstall(payload) {
         if (!repo || !branch) {
             throw new Error('Missing required information');
         }
+        console.log('Token', yield kong_octokit_1.default.token());
         core.debug(`Running NPM Install: ${repo} ${branch}`);
         const token = core.getInput('gh-token');
         const git = (0, simple_git_1.simpleGit)();
