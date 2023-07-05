@@ -14,11 +14,9 @@ async function runNpmInstall(payload: WebhookPayload) {
     throw new Error('Missing required information');
   }
 
-  console.log('Token', await KongOctokit.token());
-
   core.debug(`Running NPM Install: ${repo} ${branch}`);
 
-  const token = core.getInput('gh-token');
+  const token = await KongOctokit.token();
   const git: SimpleGit = simpleGit();
   const dir = process.cwd() + '/private-sdk';
 

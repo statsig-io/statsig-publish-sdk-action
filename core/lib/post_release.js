@@ -38,6 +38,9 @@ var __asyncValues = (this && this.__asyncValues) || function (o) {
     function verb(n) { i[n] = o[n] && function (v) { return new Promise(function (resolve, reject) { v = o[n](v), settle(resolve, reject, v.done, v.value); }); }; }
     function settle(resolve, reject, d, v) { Promise.resolve(v).then(function(v) { resolve({ value: v, done: d }); }, reject); }
 };
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.pushReleaseToThirdParties = void 0;
 const core = __importStar(require("@actions/core"));
@@ -46,10 +49,11 @@ const types_1 = require("./types");
 const simple_git_1 = require("simple-git");
 const helpers_1 = require("./helpers");
 const util_1 = require("util");
+const kong_octokit_1 = __importDefault(require("./kong_octokit"));
 const execPromise = (0, util_1.promisify)(child_process_1.exec);
 function pushReleaseToThirdParties(payload) {
     return __awaiter(this, void 0, void 0, function* () {
-        const args = validateAndExtractArgsFromPayload(payload);
+        const args = yield validateAndExtractArgsFromPayload(payload);
         const action = getThirdPartyAction(args.repo);
         yield cloneRepo(args);
         yield action(args);
@@ -72,18 +76,20 @@ function getThirdPartyAction(repo) {
 }
 function validateAndExtractArgsFromPayload(payload) {
     var _a, _b;
-    const name = (_a = payload.repository) === null || _a === void 0 ? void 0 : _a.name;
-    const tag = (_b = payload.release) === null || _b === void 0 ? void 0 : _b.tag_name;
-    if (typeof name !== 'string' || typeof tag !== 'string') {
-        throw new Error('Unable to load repository info');
-    }
-    const githubToken = core.getInput('gh-token');
-    return {
-        tag,
-        repo: name,
-        githubToken,
-        workingDir: process.cwd() + '/public-sdk'
-    };
+    return __awaiter(this, void 0, void 0, function* () {
+        const name = (_a = payload.repository) === null || _a === void 0 ? void 0 : _a.name;
+        const tag = (_b = payload.release) === null || _b === void 0 ? void 0 : _b.tag_name;
+        if (typeof name !== 'string' || typeof tag !== 'string') {
+            throw new Error('Unable to load repository info');
+        }
+        const githubToken = yield kong_octokit_1.default.token();
+        return {
+            tag,
+            repo: name,
+            githubToken,
+            workingDir: process.cwd() + '/public-sdk'
+        };
+    });
 }
 function cloneRepo(args) {
     return __awaiter(this, void 0, void 0, function* () {

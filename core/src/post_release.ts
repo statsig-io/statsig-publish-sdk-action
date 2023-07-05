@@ -6,6 +6,7 @@ import { SkipActionError } from './types';
 import { SimpleGit, simpleGit } from 'simple-git';
 import { createGitRepoUrl } from './helpers';
 import { promisify } from 'util';
+import KongOctokit from './kong_octokit';
 
 const execPromise = promisify(exec);
 
@@ -17,7 +18,7 @@ type ActionArgs = {
 };
 
 export async function pushReleaseToThirdParties(payload: WebhookPayload) {
-  const args = validateAndExtractArgsFromPayload(payload);
+  const args = await validateAndExtractArgsFromPayload(payload);
   const action = getThirdPartyAction(args.repo);
   await cloneRepo(args);
   await action(args);
@@ -42,9 +43,9 @@ function getThirdPartyAction(repo: string) {
   }
 }
 
-function validateAndExtractArgsFromPayload(
+async function validateAndExtractArgsFromPayload(
   payload: WebhookPayload
-): ActionArgs {
+): Promise<ActionArgs> {
   const name = payload.repository?.name;
   const tag = payload.release?.tag_name;
 
@@ -52,7 +53,7 @@ function validateAndExtractArgsFromPayload(
     throw new Error('Unable to load repository info');
   }
 
-  const githubToken = core.getInput('gh-token');
+  const githubToken = await KongOctokit.token();
 
   return {
     tag,

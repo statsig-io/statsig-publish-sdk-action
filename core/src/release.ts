@@ -96,7 +96,7 @@ function validateAndExtractArgsFromPayload(
 async function pushToPublic(dir: string, args: ActionArgs) {
   const { title, version, privateRepo, publicRepo, sha } = args;
 
-  const token = core.getInput('gh-token');
+  const token = await KongOctokit.token();
   const git: SimpleGit = simpleGit();
 
   await git

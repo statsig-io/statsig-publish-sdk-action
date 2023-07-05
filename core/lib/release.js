@@ -107,7 +107,7 @@ function validateAndExtractArgsFromPayload(payload) {
 function pushToPublic(dir, args) {
     return __awaiter(this, void 0, void 0, function* () {
         const { title, version, privateRepo, publicRepo, sha } = args;
-        const token = core.getInput('gh-token');
+        const token = yield kong_octokit_1.default.token();
         const git = (0, simple_git_1.simpleGit)();
         yield git
             .clone((0, helpers_1.createGitRepoUrl)(token, privateRepo), dir)
