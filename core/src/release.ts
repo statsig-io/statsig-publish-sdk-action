@@ -19,6 +19,7 @@ type ActionArgs = {
 
 const PRIV_TO_PUB_REPO_MAP: Record<string, string> = {
   'ios-client-sdk': 'ios-sdk',
+  'private-android-sdk': 'android-sdk',
   'private-js-client-sdk': 'js-client',
   'private-node-js-server-sdk': 'node-js-server-sdk',
   'private-python-sdk': 'python-sdk',

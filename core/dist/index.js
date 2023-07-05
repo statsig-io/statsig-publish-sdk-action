@@ -426,6 +426,7 @@ const helpers_1 = __nccwpck_require__(5008);
 const types_1 = __nccwpck_require__(8164);
 const PRIV_TO_PUB_REPO_MAP = {
     'ios-client-sdk': 'ios-sdk',
+    'private-android-sdk': 'android-sdk',
     'private-js-client-sdk': 'js-client',
     'private-node-js-server-sdk': 'node-js-server-sdk',
     'private-python-sdk': 'python-sdk',

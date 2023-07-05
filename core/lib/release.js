@@ -40,6 +40,7 @@ const helpers_1 = require("./helpers");
 const types_1 = require("./types");
 const PRIV_TO_PUB_REPO_MAP = {
     'ios-client-sdk': 'ios-sdk',
+    'private-android-sdk': 'android-sdk',
     'private-js-client-sdk': 'js-client',
     'private-node-js-server-sdk': 'node-js-server-sdk',
     'private-python-sdk': 'python-sdk',
