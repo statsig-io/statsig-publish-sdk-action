@@ -129,7 +129,7 @@ async function createGithubRelease(args: ActionArgs) {
     name: title,
     prerelease: core.getBooleanInput('is-beta'),
     generate_release_notes: true,
-    make_latest: args.isMain
+    make_latest: String(args.isMain)
   });
 
   console.log(`Released: ${JSON.stringify(response)}`);
