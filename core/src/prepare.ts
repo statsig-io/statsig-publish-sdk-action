@@ -67,6 +67,7 @@ export async function prepareForRelease(payload: WebhookPayload) {
       return runNpmInstall(payload);
 
     case 'private-python-sdk':
+    case 'private-go-sdk':
       throw new SkipActionError(
         `Prepare not neccessary for repository: ${
           payload.repository?.name ?? null

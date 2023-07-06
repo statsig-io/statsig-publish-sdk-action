@@ -450,6 +450,7 @@ function prepareForRelease(payload) {
             case 'private-react-native':
                 return runNpmInstall(payload);
             case 'private-python-sdk':
+            case 'private-go-sdk':
                 throw new types_1.SkipActionError(`Prepare not neccessary for repository: ${(_c = (_b = payload.repository) === null || _b === void 0 ? void 0 : _b.name) !== null && _c !== void 0 ? _c : null}`);
             default:
                 throw new types_1.SkipActionError(`Prepare not supported for repository: ${(_e = (_d = payload.repository) === null || _d === void 0 ? void 0 : _d.name) !== null && _e !== void 0 ? _e : null}`);
@@ -511,6 +512,7 @@ const kong_octokit_1 = __importDefault(__nccwpck_require__(6271));
 const PRIV_TO_PUB_REPO_MAP = {
     'ios-client-sdk': 'ios-sdk',
     'private-android-sdk': 'android-sdk',
+    'private-go-sdk': 'go-sdk',
     'private-js-client-sdk': 'js-client',
     'private-node-js-server-sdk': 'node-js-server-sdk',
     'private-python-sdk': 'python-sdk',

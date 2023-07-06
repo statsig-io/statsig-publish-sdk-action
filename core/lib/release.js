@@ -44,6 +44,7 @@ const kong_octokit_1 = __importDefault(require("./kong_octokit"));
 const PRIV_TO_PUB_REPO_MAP = {
     'ios-client-sdk': 'ios-sdk',
     'private-android-sdk': 'android-sdk',
+    'private-go-sdk': 'go-sdk',
     'private-js-client-sdk': 'js-client',
     'private-node-js-server-sdk': 'node-js-server-sdk',
     'private-python-sdk': 'python-sdk',
