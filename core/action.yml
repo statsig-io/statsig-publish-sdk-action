@@ -3,10 +3,6 @@ description: 'Pushes releases from private to public SDK repositories'
 author: 'Statsig'
 
 inputs:
-  gh-token:
-    description: 'The Github PAT with access to Public and Private repos'
-    required: true
-
   kong-private-key:
     description: 'The private key required to run the Kong Github App'
     required: true

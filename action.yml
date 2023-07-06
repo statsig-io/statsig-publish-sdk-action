@@ -3,10 +3,6 @@ description: 'Pushes releases from private to public SDK repositories'
 author: 'Statsig'
 
 inputs:
-  gh-token:
-    description: 'The Github PAT with access to Public and Private repos'
-    required: true
-
   kong-private-key:
     description: 'The private key required to run the Kong Github App'
     required: true
@@ -35,7 +31,6 @@ runs:
       if: contains(fromJson('["push", "pull_request", "release"]'), github.event_name)
       uses: statsig-io/statsig-publish-sdk-action/core@main
       with:
-        gh-token: ${{ inputs.gh-token }}
         kong-private-key: ${{ inputs.kong-private-key }}
         npm-token: ${{ inputs.npm-token }}
         pypi-token: ${{ inputs.pypi-token }}
