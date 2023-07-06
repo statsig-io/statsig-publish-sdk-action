@@ -27,7 +27,7 @@ runs:
       uses: statsig-io/statsig-publish-sdk-action/python@main
 
     - name: Setup Ruby
-      if: ${{ inputs.rubygems-key != '' }}
+      # if: ${{ inputs.rubygems-key != '' }}
       uses: statsig-io/statsig-publish-sdk-action/ruby@main
 
     - name: Is Beta
