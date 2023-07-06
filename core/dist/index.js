@@ -678,6 +678,7 @@ const PRIV_TO_PUB_REPO_MAP = {
     'private-react-native': 'react-native',
     'private-react-sdk': 'react-sdk',
     'private-rust-sdk': 'rust-sdk',
+    'private-ruby-sdk': 'ruby-sdk',
     'test-sdk-repo-private': 'test-sdk-repo-public'
 };
 function syncReposAndCreateRelease(payload) {
