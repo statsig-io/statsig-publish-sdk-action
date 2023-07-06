@@ -1,14 +1,11 @@
-import * as core from '@actions/core';
-
 import { WebhookPayload } from '@actions/github/lib/interfaces';
-import { exec, execSync } from 'child_process';
-import { SkipActionError } from './types';
 import { SimpleGit, simpleGit } from 'simple-git';
 import { createGitRepoUrl } from './helpers';
-import { promisify } from 'util';
 import KongOctokit from './kong_octokit';
-
-const execPromise = promisify(exec);
+import publishToNPM from './publishers/publish_npm';
+import publishToPyPI from './publishers/publish_pypi';
+import publishToRubyGems from './publishers/publish_rubygems';
+import { SkipActionError } from './types';
 
 type ActionArgs = {
   tag: string;
@@ -31,10 +28,13 @@ function getThirdPartyAction(repo: string) {
     case 'node-js-server-sdk':
     case 'react-sdk':
     case 'react-native':
-      return runNpmPublish;
+      return publishToNPM;
 
     case 'python-sdk':
-      return runPyPackageIndexPublish;
+      return publishToPyPI;
+
+    case 'ruby-sdk':
+      return publishToRubyGems;
 
     default:
       throw new SkipActionError(
@@ -74,57 +74,4 @@ async function cloneRepo(args: ActionArgs) {
       '--branch': args.tag
     }
   );
-}
-
-async function runNpmPublish(args: ActionArgs) {
-  const NPM_TOKEN = core.getInput('npm-token') ?? '';
-  if (NPM_TOKEN === '') {
-    throw new Error('Call to NPM Publish without settng npm-token');
-  }
-
-  const result = execSync(
-    `npm install && npm config set //registry.npmjs.org/:_authToken ${NPM_TOKEN} && npm publish`,
-    {
-      cwd: args.workingDir,
-      env: { ...process.env, NPM_TOKEN, NPM_AUTH_TOKEN: NPM_TOKEN }
-    }
-  );
-
-  console.log(`Published: ${JSON.stringify(result.toString())}`);
-}
-
-async function runPyPackageIndexPublish(args: ActionArgs) {
-  const isBeta = core.getBooleanInput('is-beta');
-  const tokenName = isBeta ? 'pypi-beta-token' : 'pypi-token';
-
-  const PYPI_TOKEN = core.getInput(tokenName) ?? '';
-  if (PYPI_TOKEN === '') {
-    throw new Error('Call to PyPI Publish without settng pypi-token');
-  }
-
-  const version = args.tag.replace('v', '');
-
-  let uploadCommand = `twine upload --skip-existing dist/statsig-${version}.tar.gz --verbose -u __token__ -p ${PYPI_TOKEN}`;
-  if (isBeta) {
-    uploadCommand += ' --repository-url https://test.pypi.org/legacy/';
-  }
-
-  const commands = [
-    'python3 setup.py sdist',
-    'twine check dist/*',
-    `tar tzf dist/statsig-${version}.tar.gz`,
-    uploadCommand
-  ];
-
-  const opts = {
-    cwd: args.workingDir
-  };
-
-  for await (const command of commands) {
-    console.log(`[${command}] Executing...`);
-    const { stdout, stderr } = await execPromise(command, opts);
-    console.log(`[${command}] Done`, stdout, stderr);
-  }
-
-  console.log('🎉 PyPI Done!');
 }

@@ -1,0 +1,11 @@
+name: 'Statsig Publish SDK Action'
+description: 'Pushes releases from private to public SDK repositories'
+author: 'Statsig'
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Setup Ruby
+      uses: ruby/setup-ruby@v1
+      with:
+        ruby-version: '3.0'

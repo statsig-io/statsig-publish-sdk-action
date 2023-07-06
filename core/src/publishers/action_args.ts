@@ -1,0 +1,6 @@
+export type PublishActionArgs = {
+  tag: string;
+  repo: string;
+  githubToken: string;
+  workingDir: string;
+};

@@ -13,6 +13,9 @@ inputs:
   pypi-token:
     description: 'The PyPI Access Token'
 
+  rubygems-key:
+    description: 'The RubyGems API Key'
+
   pypi-beta-token:
     description: 'The PyPI Access Token For Beta Releases'
 
@@ -23,9 +26,13 @@ runs:
       if: ${{ inputs.pypi-token != '' || inputs.pypi-beta-token != '' }}
       uses: statsig-io/statsig-publish-sdk-action/python@main
 
+    - name: Setup Ruby
+      if: ${{ inputs.rubygems-key != '' }}
+      uses: statsig-io/statsig-publish-sdk-action/ruby@main
+
     - name: Is Beta
       shell: bash
-      run: echo ${{ !!github.event.release.prerelease }}
+      run: echo "Is Beta - ${{ !!github.event.release.prerelease }}"
 
     - name: Run Core
       if: contains(fromJson('["push", "pull_request", "release"]'), github.event_name)
@@ -35,4 +42,5 @@ runs:
         npm-token: ${{ inputs.npm-token }}
         pypi-token: ${{ inputs.pypi-token }}
         pypi-beta-token: ${{ inputs.pypi-beta-token }}
+        rubygems-key: ${{ inputs.rubygems-key }}
         is-beta: ${{ !!github.event.release.prerelease }}

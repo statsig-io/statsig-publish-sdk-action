@@ -16,6 +16,9 @@ inputs:
   pypi-beta-token:
     description: 'The PyPI Access Token For Beta Releases'
 
+  rubygems-key:
+    description: 'The RubyGems API Key'
+
   is-beta:
     description: 'Beta Release?'
     default: false
