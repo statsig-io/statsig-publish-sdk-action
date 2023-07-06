@@ -15,13 +15,14 @@ export default async function publishToRubyGems(args: PublishActionArgs) {
   const version = args.tag.replace('v', '');
   const commands = [
     'gem build'
-    // `gem push statsig-${version}.gem`
+    // `gem push statsig-${version}.gem` // uncomment to when ready to test a push
   ];
 
   for await (const command of commands) {
     console.log(`[${command}] Executing...`);
     const { stdout, stderr } = await execPromise(command, {
-      cwd: args.workingDir
+      cwd: args.workingDir,
+      env: { ...process.env, GEM_HOST_API_KEY: RUBYGEMS_KEY }
     });
     console.log(`[${command}] Done`, stdout, stderr);
   }

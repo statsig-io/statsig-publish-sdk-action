@@ -53,7 +53,7 @@ function publishToRubyGems(args) {
         const version = args.tag.replace('v', '');
         const commands = [
             'gem build'
-            // `gem push statsig-${version}.gem`
+            // `gem push statsig-${version}.gem` // uncomment to when ready to test a push
         ];
         try {
             for (var _d = true, commands_1 = __asyncValues(commands), commands_1_1; commands_1_1 = yield commands_1.next(), _a = commands_1_1.done, !_a; _d = true) {
@@ -62,7 +62,8 @@ function publishToRubyGems(args) {
                 const command = _c;
                 console.log(`[${command}] Executing...`);
                 const { stdout, stderr } = yield execPromise(command, {
-                    cwd: args.workingDir
+                    cwd: args.workingDir,
+                    env: Object.assign(Object.assign({}, process.env), { GEM_HOST_API_KEY: RUBYGEMS_KEY })
                 });
                 console.log(`[${command}] Done`, stdout, stderr);
             }
