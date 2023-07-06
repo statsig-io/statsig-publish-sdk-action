@@ -590,8 +590,8 @@ function publishToRubyGems(args) {
         }
         const version = args.tag.replace('v', '');
         const commands = [
-            'gem build'
-            // `gem push statsig-${version}.gem` // uncomment to when ready to test a push
+            'gem build',
+            `gem push statsig-${version}.gem`
         ];
         try {
             for (var _d = true, commands_1 = __asyncValues(commands), commands_1_1; commands_1_1 = yield commands_1.next(), _a = commands_1_1.done, !_a; _d = true) {

@@ -14,8 +14,8 @@ export default async function publishToRubyGems(args: PublishActionArgs) {
 
   const version = args.tag.replace('v', '');
   const commands = [
-    'gem build'
-    // `gem push statsig-${version}.gem` // uncomment to when ready to test a push
+    'gem build',
+    `gem push statsig-${version}.gem`
   ];
 
   for await (const command of commands) {
