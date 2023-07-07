@@ -693,17 +693,17 @@ function syncReposAndCreateRelease(payload) {
 }
 exports.syncReposAndCreateRelease = syncReposAndCreateRelease;
 function validateAndExtractArgsFromPayload(payload) {
-    var _a, _b, _c, _d, _e, _f, _g;
+    var _a, _b, _c, _d, _e, _f, _g, _h, _j;
     const headRef = (_b = (_a = payload.pull_request) === null || _a === void 0 ? void 0 : _a.head) === null || _b === void 0 ? void 0 : _b.ref;
     const baseRef = (_d = (_c = payload.pull_request) === null || _c === void 0 ? void 0 : _c.base) === null || _d === void 0 ? void 0 : _d.ref;
-    const sha = (_f = (_e = payload.pull_request) === null || _e === void 0 ? void 0 : _e.head) === null || _f === void 0 ? void 0 : _f.sha;
+    const sha = (_f = (_e = payload.pull_request) === null || _e === void 0 ? void 0 : _e.merge_commit_sha) !== null && _f !== void 0 ? _f : (_h = (_g = payload.pull_request) === null || _g === void 0 ? void 0 : _g.head) === null || _h === void 0 ? void 0 : _h.sha;
     if (typeof headRef !== 'string' || !headRef.startsWith('releases/')) {
         throw new types_1.SkipActionError('Not a branch on releases/*');
     }
     if (baseRef !== 'main' && baseRef !== 'stable') {
         throw new types_1.SkipActionError('Pull request not against a valid branch');
     }
-    if (((_g = payload.pull_request) === null || _g === void 0 ? void 0 : _g.merged) !== true) {
+    if (((_j = payload.pull_request) === null || _j === void 0 ? void 0 : _j.merged) !== true) {
         throw new types_1.SkipActionError('Not a merged pull request');
     }
     const { title, body } = payload.pull_request;
@@ -738,16 +738,17 @@ function pushToPublic(dir, args) {
         const { title, version, privateRepo, publicRepo, sha } = args;
         const token = yield kong_octokit_1.default.token();
         const git = (0, simple_git_1.simpleGit)();
+        const base = args.isMain ? 'main' : 'stable';
         yield git
             .clone((0, helpers_1.createGitRepoUrl)(token, privateRepo), dir)
             .then(() => git
             .cwd(dir)
             .addConfig('user.name', 'statsig-kong[bot]')
             .addConfig('user.email', 'statsig-kong[bot]@users.noreply.github.com'))
-            .then(() => git.checkout(sha))
+            .then(() => git.checkout(base))
             .then(() => git.addAnnotatedTag(version, title))
             .then(() => git.addRemote('public', (0, helpers_1.createGitRepoUrl)(token, publicRepo)))
-            .then(() => git.push('public', args.isMain ? 'main' : 'stable', ['--follow-tags']));
+            .then(() => git.push('public', `${sha}:${base}`, ['--follow-tags']));
     });
 }
 function createGithubRelease(args) {

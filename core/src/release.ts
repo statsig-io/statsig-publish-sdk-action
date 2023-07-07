@@ -47,7 +47,8 @@ function validateAndExtractArgsFromPayload(
 ): ActionArgs {
   const headRef = payload.pull_request?.head?.ref;
   const baseRef = payload.pull_request?.base?.ref;
-  const sha = payload.pull_request?.head?.sha;
+  const sha =
+    payload.pull_request?.merge_commit_sha ?? payload.pull_request?.head?.sha;
 
   if (typeof headRef !== 'string' || !headRef.startsWith('releases/')) {
     throw new SkipActionError('Not a branch on releases/*');
@@ -101,6 +102,8 @@ async function pushToPublic(dir: string, args: ActionArgs) {
   const token = await KongOctokit.token();
   const git: SimpleGit = simpleGit();
 
+  const base = args.isMain ? 'main' : 'stable';
+
   await git
     .clone(createGitRepoUrl(token, privateRepo), dir)
     .then(() =>
@@ -109,12 +112,10 @@ async function pushToPublic(dir: string, args: ActionArgs) {
         .addConfig('user.name', 'statsig-kong[bot]')
         .addConfig('user.email', 'statsig-kong[bot]@users.noreply.github.com')
     )
-    .then(() => git.checkout(sha))
+    .then(() => git.checkout(base))
     .then(() => git.addAnnotatedTag(version, title))
     .then(() => git.addRemote('public', createGitRepoUrl(token, publicRepo)))
-    .then(() =>
-      git.push('public', args.isMain ? 'main' : 'stable', ['--follow-tags'])
-    );
+    .then(() => git.push('public', `${sha}:${base}`, ['--follow-tags']));
 }
 
 async function createGithubRelease(args: ActionArgs) {
