@@ -8,14 +8,6 @@ export default async function publishToNPM(args: PublishActionArgs) {
     throw new Error('Call to NPM Publish without settng npm-token');
   }
 
-  const result = execSync(
-    `npm install && npm config set //registry.npmjs.org/:_authToken ${NPM_TOKEN} && npm publish`,
-    {
-      cwd: args.workingDir,
-      env: { ...process.env, NPM_TOKEN, NPM_AUTH_TOKEN: NPM_TOKEN }
-    }
-  );
-
   const commands = [
     'npm install',
     `npm config set //registry.npmjs.org/:_authToken ${NPM_TOKEN}`,
@@ -32,5 +24,5 @@ export default async function publishToNPM(args: PublishActionArgs) {
     console.log(`[${command}] Done`, result);
   }
 
-  console.log(`Published: ${JSON.stringify(result.toString())}`);
+  console.log('🎉 NPM Done!');
 }
