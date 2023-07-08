@@ -1,4 +1,5 @@
 import * as core from '@actions/core';
+import * as gh from '@actions/github';
 import { WebhookPayload } from '@actions/github/lib/interfaces';
 import { execSync } from 'child_process';
 import { SimpleGit, simpleGit } from 'simple-git';
@@ -56,6 +57,19 @@ export async function prepareForRelease(payload: WebhookPayload) {
 
   if (!payload.pull_request) {
     throw new Error('Failed to load pull_request information');
+  }
+
+  const baseRef = payload.pull_request.base?.ref;
+  if (
+    baseRef === 'stable' &&
+    !payload.pull_request.title?.toLowerCase()?.endsWith('[stable]')
+  ) {
+    KongOctokit.get().pulls.update({
+      owner: 'statsig-io',
+      repo: payload.repository.name,
+      title: `${payload.pull_request.title} [Stable]`,
+      pull_number: payload.pull_request.number
+    });
   }
 
   switch (payload.repository?.name) {

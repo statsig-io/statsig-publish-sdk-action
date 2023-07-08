@@ -3,4 +3,5 @@ export type PublishActionArgs = {
   repo: string;
   githubToken: string;
   workingDir: string;
+  isStable: boolean;
 };

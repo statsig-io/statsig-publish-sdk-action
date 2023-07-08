@@ -78,7 +78,7 @@ function runNpmInstall(payload) {
     });
 }
 function prepareForRelease(payload) {
-    var _a, _b, _c, _d, _e;
+    var _a, _b, _c, _d, _e, _f, _g, _h;
     return __awaiter(this, void 0, void 0, function* () {
         if (!payload.repository) {
             throw new Error('Failed to load repository information');
@@ -86,7 +86,17 @@ function prepareForRelease(payload) {
         if (!payload.pull_request) {
             throw new Error('Failed to load pull_request information');
         }
-        switch ((_a = payload.repository) === null || _a === void 0 ? void 0 : _a.name) {
+        const baseRef = (_a = payload.pull_request.base) === null || _a === void 0 ? void 0 : _a.ref;
+        if (baseRef === 'stable' &&
+            !((_c = (_b = payload.pull_request.title) === null || _b === void 0 ? void 0 : _b.toLowerCase()) === null || _c === void 0 ? void 0 : _c.endsWith('[stable]'))) {
+            kong_octokit_1.default.get().pulls.update({
+                owner: 'statsig-io',
+                repo: payload.repository.name,
+                title: `${payload.pull_request.title} [Stable]`,
+                pull_number: payload.pull_request.number
+            });
+        }
+        switch ((_d = payload.repository) === null || _d === void 0 ? void 0 : _d.name) {
             case 'test-sdk-repo-private':
             case 'private-js-client-sdk':
             case 'private-node-js-server-sdk':
@@ -95,9 +105,9 @@ function prepareForRelease(payload) {
                 return runNpmInstall(payload);
             case 'private-python-sdk':
             case 'private-go-sdk':
-                throw new types_1.SkipActionError(`Prepare not neccessary for repository: ${(_c = (_b = payload.repository) === null || _b === void 0 ? void 0 : _b.name) !== null && _c !== void 0 ? _c : null}`);
+                throw new types_1.SkipActionError(`Prepare not neccessary for repository: ${(_f = (_e = payload.repository) === null || _e === void 0 ? void 0 : _e.name) !== null && _f !== void 0 ? _f : null}`);
             default:
-                throw new types_1.SkipActionError(`Prepare not supported for repository: ${(_e = (_d = payload.repository) === null || _d === void 0 ? void 0 : _d.name) !== null && _e !== void 0 ? _e : null}`);
+                throw new types_1.SkipActionError(`Prepare not supported for repository: ${(_h = (_g = payload.repository) === null || _g === void 0 ? void 0 : _g.name) !== null && _h !== void 0 ? _h : null}`);
         }
     });
 }

@@ -6,13 +6,7 @@ import publishToNPM from './publishers/publish_npm';
 import publishToPyPI from './publishers/publish_pypi';
 import publishToRubyGems from './publishers/publish_rubygems';
 import { SkipActionError } from './types';
-
-type ActionArgs = {
-  tag: string;
-  repo: string;
-  githubToken: string;
-  workingDir: string;
-};
+import { PublishActionArgs } from './publishers/action_args';
 
 export async function pushReleaseToThirdParties(payload: WebhookPayload) {
   const args = await validateAndExtractArgsFromPayload(payload);
@@ -45,9 +39,11 @@ function getThirdPartyAction(repo: string) {
 
 async function validateAndExtractArgsFromPayload(
   payload: WebhookPayload
-): Promise<ActionArgs> {
+): Promise<PublishActionArgs> {
   const name = payload.repository?.name;
   const tag = payload.release?.tag_name;
+  const isStable =
+    payload.release?.name?.toLowerCase().includes('[stable]') === true;
 
   if (typeof name !== 'string' || typeof tag !== 'string') {
     throw new Error('Unable to load repository info');
@@ -59,11 +55,12 @@ async function validateAndExtractArgsFromPayload(
     tag,
     repo: name,
     githubToken,
-    workingDir: process.cwd() + '/public-sdk'
+    workingDir: process.cwd() + '/public-sdk',
+    isStable
   };
 }
 
-async function cloneRepo(args: ActionArgs) {
+async function cloneRepo(args: PublishActionArgs) {
   const git: SimpleGit = simpleGit();
 
   await git.clone(

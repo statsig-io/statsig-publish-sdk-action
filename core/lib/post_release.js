@@ -46,10 +46,11 @@ function getThirdPartyAction(repo) {
     }
 }
 function validateAndExtractArgsFromPayload(payload) {
-    var _a, _b;
+    var _a, _b, _c, _d;
     return __awaiter(this, void 0, void 0, function* () {
         const name = (_a = payload.repository) === null || _a === void 0 ? void 0 : _a.name;
         const tag = (_b = payload.release) === null || _b === void 0 ? void 0 : _b.tag_name;
+        const isStable = ((_d = (_c = payload.release) === null || _c === void 0 ? void 0 : _c.name) === null || _d === void 0 ? void 0 : _d.toLowerCase().includes('[stable]')) === true;
         if (typeof name !== 'string' || typeof tag !== 'string') {
             throw new Error('Unable to load repository info');
         }
@@ -58,7 +59,8 @@ function validateAndExtractArgsFromPayload(payload) {
             tag,
             repo: name,
             githubToken,
-            workingDir: process.cwd() + '/public-sdk'
+            workingDir: process.cwd() + '/public-sdk',
+            isStable
         };
     });
 }
