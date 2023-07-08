@@ -31,13 +31,21 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
+var __asyncValues = (this && this.__asyncValues) || function (o) {
+    if (!Symbol.asyncIterator) throw new TypeError("Symbol.asyncIterator is not defined.");
+    var m = o[Symbol.asyncIterator], i;
+    return m ? m.call(o) : (o = typeof __values === "function" ? __values(o) : o[Symbol.iterator](), i = {}, verb("next"), verb("throw"), verb("return"), i[Symbol.asyncIterator] = function () { return this; }, i);
+    function verb(n) { i[n] = o[n] && function (v) { return new Promise(function (resolve, reject) { v = o[n](v), settle(resolve, reject, v.done, v.value); }); }; }
+    function settle(resolve, reject, d, v) { Promise.resolve(v).then(function(v) { resolve({ value: v, done: d }); }, reject); }
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 const core = __importStar(require("@actions/core"));
 const child_process_1 = require("child_process");
 function publishToNPM(args) {
-    var _a;
+    var _a, e_1, _b, _c;
+    var _d;
     return __awaiter(this, void 0, void 0, function* () {
-        const NPM_TOKEN = (_a = core.getInput('npm-token')) !== null && _a !== void 0 ? _a : '';
+        const NPM_TOKEN = (_d = core.getInput('npm-token')) !== null && _d !== void 0 ? _d : '';
         if (NPM_TOKEN === '') {
             throw new Error('Call to NPM Publish without settng npm-token');
         }
@@ -45,6 +53,31 @@ function publishToNPM(args) {
             cwd: args.workingDir,
             env: Object.assign(Object.assign({}, process.env), { NPM_TOKEN, NPM_AUTH_TOKEN: NPM_TOKEN })
         });
+        const commands = [
+            'npm install',
+            `npm config set //registry.npmjs.org/:_authToken ${NPM_TOKEN}`,
+            args.isStable ? `npm publish --tag stable` : 'npm publish'
+        ];
+        const opts = {
+            cwd: args.workingDir
+        };
+        try {
+            for (var _e = true, commands_1 = __asyncValues(commands), commands_1_1; commands_1_1 = yield commands_1.next(), _a = commands_1_1.done, !_a; _e = true) {
+                _c = commands_1_1.value;
+                _e = false;
+                const command = _c;
+                console.log(`[${command}] Executing...`);
+                const result = (0, child_process_1.execSync)(command, opts);
+                console.log(`[${command}] Done`, result);
+            }
+        }
+        catch (e_1_1) { e_1 = { error: e_1_1 }; }
+        finally {
+            try {
+                if (!_e && !_a && (_b = commands_1.return)) yield _b.call(commands_1);
+            }
+            finally { if (e_1) throw e_1.error; }
+        }
         console.log(`Published: ${JSON.stringify(result.toString())}`);
     });
 }

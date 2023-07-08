@@ -16,5 +16,21 @@ export default async function publishToNPM(args: PublishActionArgs) {
     }
   );
 
+  const commands = [
+    'npm install',
+    `npm config set //registry.npmjs.org/:_authToken ${NPM_TOKEN}`,
+    args.isStable ? `npm publish --tag stable` : 'npm publish'
+  ];
+
+  const opts = {
+    cwd: args.workingDir
+  };
+
+  for await (const command of commands) {
+    console.log(`[${command}] Executing...`);
+    const result = execSync(command, opts);
+    console.log(`[${command}] Done`, result);
+  }
+
   console.log(`Published: ${JSON.stringify(result.toString())}`);
 }
