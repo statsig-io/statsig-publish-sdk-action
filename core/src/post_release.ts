@@ -19,6 +19,7 @@ function getThirdPartyAction(repo: string) {
   switch (repo) {
     case 'test-sdk-repo-public':
     case 'js-client':
+    case 'js-lite':
     case 'node-js-server-sdk':
     case 'react-sdk':
     case 'react-native':

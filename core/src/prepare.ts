@@ -75,6 +75,7 @@ export async function prepareForRelease(payload: WebhookPayload) {
   switch (payload.repository?.name) {
     case 'test-sdk-repo-private':
     case 'private-js-client-sdk':
+    case 'private-js-lite':
     case 'private-node-js-server-sdk':
     case 'private-react-sdk':
     case 'private-react-native':
