@@ -20,6 +20,7 @@ const publish_npm_1 = __importDefault(require("./publishers/publish_npm"));
 const publish_pypi_1 = __importDefault(require("./publishers/publish_pypi"));
 const publish_rubygems_1 = __importDefault(require("./publishers/publish_rubygems"));
 const types_1 = require("./types");
+const publish_crates_io_1 = __importDefault(require("./publishers/publish_crates_io"));
 function pushReleaseToThirdParties(payload) {
     return __awaiter(this, void 0, void 0, function* () {
         const args = yield validateAndExtractArgsFromPayload(payload);
@@ -33,6 +34,7 @@ function getThirdPartyAction(repo) {
     switch (repo) {
         case 'test-sdk-repo-public':
         case 'js-client':
+        case 'js-lite':
         case 'node-js-server-sdk':
         case 'react-sdk':
         case 'react-native':
@@ -41,6 +43,8 @@ function getThirdPartyAction(repo) {
             return publish_pypi_1.default;
         case 'ruby-sdk':
             return publish_rubygems_1.default;
+        case 'rust-sdk':
+            return publish_crates_io_1.default;
         default:
             throw new types_1.SkipActionError(`Release not supported for repository: ${repo !== null && repo !== void 0 ? repo : null}`);
     }

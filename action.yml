@@ -13,11 +13,14 @@ inputs:
   pypi-token:
     description: 'The PyPI Access Token'
 
+  pypi-beta-token:
+    description: 'The PyPI Access Token For Beta Releases'
+
   rubygems-key:
     description: 'The RubyGems API Key'
 
-  pypi-beta-token:
-    description: 'The PyPI Access Token For Beta Releases'
+  cargo-token:
+    description: 'The Crates.io Registry Token'
 
 runs:
   using: 'composite'
@@ -30,9 +33,9 @@ runs:
       if: ${{ inputs.rubygems-key != '' }}
       uses: statsig-io/statsig-publish-sdk-action/ruby@main
 
-    - name: Is Beta
+    - name: Print Action Info
       shell: bash
-      run: echo "Is Beta - ${{ !!github.event.release.prerelease }}"
+      run: echo "${{ toJson(github) }}"
 
     - name: Run Core
       if: contains(fromJson('["push", "pull_request", "release"]'), github.event_name)
@@ -43,4 +46,5 @@ runs:
         pypi-token: ${{ inputs.pypi-token }}
         pypi-beta-token: ${{ inputs.pypi-beta-token }}
         rubygems-key: ${{ inputs.rubygems-key }}
+        cargo-token: ${{ inputs.cargo-token }}
         is-beta: ${{ !!github.event.release.prerelease }}

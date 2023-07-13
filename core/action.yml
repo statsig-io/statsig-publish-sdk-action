@@ -19,6 +19,9 @@ inputs:
   rubygems-key:
     description: 'The RubyGems API Key'
 
+  cargo-token:
+    description: 'The Crates.io Registry Token'
+
   is-beta:
     description: 'Beta Release?'
     default: false

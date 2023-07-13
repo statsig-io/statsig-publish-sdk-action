@@ -7,6 +7,7 @@ import publishToPyPI from './publishers/publish_pypi';
 import publishToRubyGems from './publishers/publish_rubygems';
 import { SkipActionError } from './types';
 import { PublishActionArgs } from './publishers/action_args';
+import publishToCratesIo from './publishers/publish_crates_io';
 
 export async function pushReleaseToThirdParties(payload: WebhookPayload) {
   const args = await validateAndExtractArgsFromPayload(payload);
@@ -30,6 +31,9 @@ function getThirdPartyAction(repo: string) {
 
     case 'ruby-sdk':
       return publishToRubyGems;
+
+    case 'rust-sdk':
+      return publishToCratesIo;
 
     default:
       throw new SkipActionError(

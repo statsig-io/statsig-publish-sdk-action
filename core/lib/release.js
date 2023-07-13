@@ -46,6 +46,7 @@ const PRIV_TO_PUB_REPO_MAP = {
     'private-android-sdk': 'android-sdk',
     'private-go-sdk': 'go-sdk',
     'private-js-client-sdk': 'js-client',
+    'private-js-lite': 'js-lite',
     'private-node-js-server-sdk': 'node-js-server-sdk',
     'private-python-sdk': 'python-sdk',
     'private-react-native': 'react-native',
