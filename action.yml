@@ -33,9 +33,9 @@ runs:
       if: ${{ inputs.rubygems-key != '' }}
       uses: statsig-io/statsig-publish-sdk-action/ruby@main
 
-    - name: Print Action Info
-      shell: bash
-      run: echo "${{ toJson(github) }}"
+    # - name: Print Action Info
+    #   shell: bash
+    #   run: echo "${{ toJson(github) }}"
 
     - name: Run Core
       if: contains(fromJson('["push", "pull_request", "release"]'), github.event_name)
