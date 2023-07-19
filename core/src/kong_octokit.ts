@@ -5,6 +5,9 @@ import { Octokit } from '@octokit/rest';
 export default abstract class KongOctokit {
   static get(): Octokit {
     const token = core.getInput('kong-private-key');
+    if (!token || token === '') {
+      throw new Error('No Kong Private Key Provided. (kong-private-key)');
+    }
 
     return new Octokit({
       authStrategy: createAppAuth,

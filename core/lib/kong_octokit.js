@@ -38,6 +38,9 @@ const rest_1 = require("@octokit/rest");
 class KongOctokit {
     static get() {
         const token = core.getInput('kong-private-key');
+        if (!token || token === '') {
+            throw new Error('No Kong Private Key Provided. (kong-private-key)');
+        }
         return new rest_1.Octokit({
             authStrategy: auth_app_1.createAppAuth,
             auth: {
