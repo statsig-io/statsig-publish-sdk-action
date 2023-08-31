@@ -226,6 +226,7 @@ function getThirdPartyAction(repo) {
         case 'test-sdk-repo-public':
         case 'js-client':
         case 'js-lite':
+        case 'js-local-eval':
         case 'node-js-server-sdk':
         case 'react-sdk':
         case 'react-native':
@@ -236,6 +237,11 @@ function getThirdPartyAction(repo) {
             return publish_rubygems_1.default;
         case 'rust-sdk':
             return publish_crates_io_1.default;
+        case 'go-sdk':
+        case 'android-sdk':
+            return () => {
+                // noop
+            };
         default:
             throw new types_1.SkipActionError(`Release not supported for repository: ${repo !== null && repo !== void 0 ? repo : null}`);
     }
@@ -883,7 +889,8 @@ function pushToPublic(dir, args) {
             .then(() => git.checkout(base))
             .then(() => git.addAnnotatedTag(version, title))
             .then(() => git.addRemote('public', (0, helpers_1.createGitRepoUrl)(token, publicRepo)))
-            .then(() => git.push('public', `${sha}:${base}`, ['--follow-tags']));
+            .then(() => git.push('public', `${sha}:releases/${version}`, ['--follow-tags']))
+            .then(() => git.push('public', `${sha}:${base}`));
     });
 }
 function createGithubRelease(args) {

@@ -116,7 +116,10 @@ async function pushToPublic(dir: string, args: ActionArgs) {
     .then(() => git.checkout(base))
     .then(() => git.addAnnotatedTag(version, title))
     .then(() => git.addRemote('public', createGitRepoUrl(token, publicRepo)))
-    .then(() => git.push('public', `${sha}:${base}`, ['--follow-tags']));
+    .then(() =>
+      git.push('public', `${sha}:releases/${version}`, ['--follow-tags'])
+    )
+    .then(() => git.push('public', `${sha}:${base}`));
 }
 
 async function createGithubRelease(args: ActionArgs) {

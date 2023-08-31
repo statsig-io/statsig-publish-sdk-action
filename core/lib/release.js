@@ -122,7 +122,8 @@ function pushToPublic(dir, args) {
             .then(() => git.checkout(base))
             .then(() => git.addAnnotatedTag(version, title))
             .then(() => git.addRemote('public', (0, helpers_1.createGitRepoUrl)(token, publicRepo)))
-            .then(() => git.push('public', `${sha}:${base}`, ['--follow-tags']));
+            .then(() => git.push('public', `${sha}:releases/${version}`, ['--follow-tags']))
+            .then(() => git.push('public', `${sha}:${base}`));
     });
 }
 function createGithubRelease(args) {

@@ -8,7 +8,6 @@ import publishToRubyGems from './publishers/publish_rubygems';
 import { SkipActionError } from './types';
 import { PublishActionArgs } from './publishers/action_args';
 import publishToCratesIo from './publishers/publish_crates_io';
-import noop from './publishers/noop';
 
 export async function pushReleaseToThirdParties(payload: WebhookPayload) {
   const args = await validateAndExtractArgsFromPayload(payload);
@@ -22,6 +21,7 @@ function getThirdPartyAction(repo: string) {
     case 'test-sdk-repo-public':
     case 'js-client':
     case 'js-lite':
+    case 'js-local-eval':
     case 'node-js-server-sdk':
     case 'react-sdk':
     case 'react-native':
@@ -38,7 +38,9 @@ function getThirdPartyAction(repo: string) {
 
     case 'go-sdk':
     case 'android-sdk':
-      return noop;
+      return () => {
+        // noop
+      };
 
     default:
       throw new SkipActionError(
