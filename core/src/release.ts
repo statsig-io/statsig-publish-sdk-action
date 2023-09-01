@@ -113,13 +113,12 @@ async function pushToPublic(dir: string, args: ActionArgs) {
         .addConfig('user.name', 'statsig-kong[bot]')
         .addConfig('user.email', 'statsig-kong[bot]@users.noreply.github.com')
     )
-    .then(() => git.checkout(base))
-    .then(() => git.addAnnotatedTag(version, title))
+    .then(() => git.checkout(sha))
     .then(() => git.addRemote('public', createGitRepoUrl(token, publicRepo)))
-    .then(() =>
-      git.push('public', `${sha}:releases/${version}`, ['--follow-tags'])
-    )
-    .then(() => git.push('public', `${sha}:${base}`));
+    .then(() => git.push('public', `${sha}:${base}`))
+    .then(() => git.checkoutLocalBranch(`releases/${version}`))
+    .then(() => git.addAnnotatedTag(version, title))
+    .then(() => git.push('public', `releases/${version}`, ['--follow-tags']));
 }
 
 async function createGithubRelease(args: ActionArgs) {
