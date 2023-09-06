@@ -23,6 +23,7 @@ const PRIV_TO_PUB_REPO_MAP: Record<string, string> = {
   'private-js-client-sdk': 'js-client',
   'private-js-lite': 'js-lite',
   'private-node-js-server-sdk': 'node-js-server-sdk',
+  'private-php-sdk': 'php-sdk',
   'private-python-sdk': 'python-sdk',
   'private-react-native': 'react-native',
   'private-react-sdk': 'react-sdk',
