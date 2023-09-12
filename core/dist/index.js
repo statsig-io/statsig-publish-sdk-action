@@ -811,6 +811,7 @@ const kong_octokit_1 = __importDefault(__nccwpck_require__(6271));
 const PRIV_TO_PUB_REPO_MAP = {
     'ios-client-sdk': 'ios-sdk',
     'private-android-sdk': 'android-sdk',
+    'private-dotnet-sdk': 'dotnet-sdk',
     'private-go-sdk': 'go-sdk',
     'private-js-client-sdk': 'js-client',
     'private-js-lite': 'js-lite',
