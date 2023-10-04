@@ -23,6 +23,7 @@ function getThirdPartyAction(repo: string) {
     case 'js-lite':
     case 'js-local-eval':
     case 'node-js-server-sdk':
+    case 'node-js-lite-server-sdk':
     case 'react-sdk':
     case 'react-native':
       return publishToNPM;
@@ -44,7 +45,7 @@ function getThirdPartyAction(repo: string) {
 
     default:
       throw new SkipActionError(
-        `Release not supported for repository: ${repo ?? null}`
+        `Post Release not supported for repository: ${repo ?? null}`
       );
   }
 }

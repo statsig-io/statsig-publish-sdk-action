@@ -228,6 +228,7 @@ function getThirdPartyAction(repo) {
         case 'js-lite':
         case 'js-local-eval':
         case 'node-js-server-sdk':
+        case 'node-js-lite-server-sdk':
         case 'react-sdk':
         case 'react-native':
             return publish_npm_1.default;
@@ -243,7 +244,7 @@ function getThirdPartyAction(repo) {
                 // noop
             };
         default:
-            throw new types_1.SkipActionError(`Release not supported for repository: ${repo !== null && repo !== void 0 ? repo : null}`);
+            throw new types_1.SkipActionError(`Post Release not supported for repository: ${repo !== null && repo !== void 0 ? repo : null}`);
     }
 }
 function validateAndExtractArgsFromPayload(payload) {
