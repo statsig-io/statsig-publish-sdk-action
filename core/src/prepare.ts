@@ -1,11 +1,10 @@
 import * as core from '@actions/core';
-import * as gh from '@actions/github';
 import { WebhookPayload } from '@actions/github/lib/interfaces';
 import { execSync } from 'child_process';
 import { SimpleGit, simpleGit } from 'simple-git';
 import { createGitRepoUrl } from './helpers';
-import { SkipActionError } from './types';
 import KongOctokit from './kong_octokit';
+import { SkipActionError } from './types';
 
 async function runNpmInstall(payload: WebhookPayload) {
   const repo = payload.repository?.name;

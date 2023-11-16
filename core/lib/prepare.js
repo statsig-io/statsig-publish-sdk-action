@@ -40,8 +40,8 @@ const core = __importStar(require("@actions/core"));
 const child_process_1 = require("child_process");
 const simple_git_1 = require("simple-git");
 const helpers_1 = require("./helpers");
-const types_1 = require("./types");
 const kong_octokit_1 = __importDefault(require("./kong_octokit"));
+const types_1 = require("./types");
 function runNpmInstall(payload) {
     var _a, _b, _c;
     return __awaiter(this, void 0, void 0, function* () {

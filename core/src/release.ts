@@ -21,6 +21,7 @@ const PRIV_TO_PUB_REPO_MAP: Record<string, string> = {
   'private-android-sdk': 'android-sdk',
   'private-dotnet-sdk': 'dotnet-sdk',
   'private-go-sdk': 'go-sdk',
+  'private-java-server-sdk': 'java-server-sdk',
   'private-js-client-sdk': 'js-client',
   'private-js-lite': 'js-lite',
   'private-js-local-eval-sdk': 'js-local-eval',

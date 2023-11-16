@@ -325,8 +325,8 @@ const core = __importStar(__nccwpck_require__(2186));
 const child_process_1 = __nccwpck_require__(2081);
 const simple_git_1 = __nccwpck_require__(9103);
 const helpers_1 = __nccwpck_require__(5008);
-const types_1 = __nccwpck_require__(8164);
 const kong_octokit_1 = __importDefault(__nccwpck_require__(6271));
+const types_1 = __nccwpck_require__(8164);
 function runNpmInstall(payload) {
     var _a, _b, _c;
     return __awaiter(this, void 0, void 0, function* () {
@@ -814,6 +814,7 @@ const PRIV_TO_PUB_REPO_MAP = {
     'private-android-sdk': 'android-sdk',
     'private-dotnet-sdk': 'dotnet-sdk',
     'private-go-sdk': 'go-sdk',
+    'private-java-server-sdk': 'java-server-sdk',
     'private-js-client-sdk': 'js-client',
     'private-js-lite': 'js-lite',
     'private-js-local-eval-sdk': 'js-local-eval',
