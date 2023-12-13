@@ -34,6 +34,7 @@ const PRIV_TO_PUB_REPO_MAP: Record<string, string> = {
   'private-ruby-sdk': 'ruby-sdk',
   'private-rust-sdk': 'rust-sdk',
   'private-unity-sdk': 'unity-sdk',
+  'private-swift-on-device-evaluations-sdk': 'swift-on-device-evaluations-sdk',
   'test-sdk-repo-private': 'test-sdk-repo-public'
 };
 
