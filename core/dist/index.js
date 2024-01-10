@@ -386,6 +386,7 @@ function prepareForRelease(payload) {
             case 'private-js-client-sdk':
             case 'private-js-lite':
             case 'private-node-js-server-sdk':
+            case 'private-node-js-lite-server-sdk':
             case 'private-react-sdk':
             case 'private-react-native':
                 return runNpmInstall(payload);
