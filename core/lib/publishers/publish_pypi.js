@@ -54,14 +54,16 @@ function publishToPyPI(args) {
             throw new Error('Call to PyPI Publish without settng pypi-token');
         }
         const version = args.tag.replace('v', '');
-        let uploadCommand = `twine upload --skip-existing dist/statsig-${version}.tar.gz --verbose -u __token__ -p ${PYPI_TOKEN}`;
+        let uploadCommand = `twine upload --skip-existing dist/statsig-${version}.tar.gz dist/statsig-${version}-py3-none-any.whl --verbose -u __token__ -p ${PYPI_TOKEN}`;
+        ;
         if (isBeta) {
             uploadCommand += ' --repository-url https://test.pypi.org/legacy/';
         }
         const commands = [
-            'python3 setup.py sdist',
+            'python3 setup.py sdist bdist_wheel',
             'twine check dist/*',
             `tar tzf dist/statsig-${version}.tar.gz`,
+            `tar tzf dist/statsig-${version}-py3-none-any.whl`,
             uploadCommand
         ];
         const opts = {
