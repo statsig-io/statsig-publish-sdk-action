@@ -683,7 +683,7 @@ function publishToPyPI(args) {
             'python3 setup.py sdist bdist_wheel',
             'twine check dist/*',
             `tar tzf dist/statsig-${version}.tar.gz`,
-            `tar tzf dist/statsig-${version}-py3-none-any.whl`,
+            `unzip -l dist/statsig-${version}-py3-none-any.whl`,
             uploadCommand
         ];
         const opts = {
