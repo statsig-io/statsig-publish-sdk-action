@@ -18,24 +18,25 @@ type ActionArgs = {
 
 const PRIV_TO_PUB_REPO_MAP: Record<string, string> = {
   'ios-client-sdk': 'ios-sdk',
-  'private-android-sdk': 'android-sdk',
   'private-android-local-eval': 'android-local-eval',
+  'private-android-sdk': 'android-sdk',
   'private-dotnet-sdk': 'dotnet-sdk',
   'private-go-sdk': 'go-sdk',
   'private-java-server-sdk': 'java-server-sdk',
   'private-js-client-sdk': 'js-client',
   'private-js-lite': 'js-lite',
   'private-js-local-eval-sdk': 'js-local-eval',
-  'private-node-js-server-sdk': 'node-js-server-sdk',
   'private-node-js-lite-server-sdk': 'node-js-lite-server-sdk',
+  'private-node-js-server-sdk': 'node-js-server-sdk',
   'private-php-sdk': 'php-sdk',
   'private-python-sdk': 'python-sdk',
   'private-react-native': 'react-native',
   'private-react-sdk': 'react-sdk',
   'private-ruby-sdk': 'ruby-sdk',
   'private-rust-sdk': 'rust-sdk',
-  'private-unity-sdk': 'unity-sdk',
+  'private-statsig-server-core': 'statsig-server-core',
   'private-swift-on-device-evaluations-sdk': 'swift-on-device-evaluations-sdk',
+  'private-unity-sdk': 'unity-sdk',
   'test-sdk-repo-private': 'test-sdk-repo-public'
 };
 

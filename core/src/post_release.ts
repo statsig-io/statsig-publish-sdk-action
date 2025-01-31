@@ -37,6 +37,7 @@ function getThirdPartyAction(repo: string) {
     case 'rust-sdk':
       return publishToCratesIo;
 
+    case 'statsig-server-core' /* server-core use its own gh action */:
     case 'go-sdk':
     case 'android-sdk':
       return () => {

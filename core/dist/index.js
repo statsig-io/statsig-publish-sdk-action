@@ -238,6 +238,7 @@ function getThirdPartyAction(repo) {
             return publish_rubygems_1.default;
         case 'rust-sdk':
             return publish_crates_io_1.default;
+        case 'statsig-server-core' /* server-core use its own gh action */:
         case 'go-sdk':
         case 'android-sdk':
             return () => {
@@ -430,6 +431,7 @@ function prepareForRelease(payload) {
                 return runJsMonorepoVersionSync(payload);
             case 'private-python-sdk':
             case 'private-go-sdk':
+            case 'private-statsig-server-core':
                 throw new types_1.SkipActionError(`Prepare not neccessary for repository: ${(_f = (_e = payload.repository) === null || _e === void 0 ? void 0 : _e.name) !== null && _f !== void 0 ? _f : null}`);
             default:
                 throw new types_1.SkipActionError(`Prepare not supported for repository: ${(_h = (_g = payload.repository) === null || _g === void 0 ? void 0 : _g.name) !== null && _h !== void 0 ? _h : null}`);
@@ -852,24 +854,25 @@ const types_1 = __nccwpck_require__(8164);
 const kong_octokit_1 = __importDefault(__nccwpck_require__(6271));
 const PRIV_TO_PUB_REPO_MAP = {
     'ios-client-sdk': 'ios-sdk',
-    'private-android-sdk': 'android-sdk',
     'private-android-local-eval': 'android-local-eval',
+    'private-android-sdk': 'android-sdk',
     'private-dotnet-sdk': 'dotnet-sdk',
     'private-go-sdk': 'go-sdk',
     'private-java-server-sdk': 'java-server-sdk',
     'private-js-client-sdk': 'js-client',
     'private-js-lite': 'js-lite',
     'private-js-local-eval-sdk': 'js-local-eval',
-    'private-node-js-server-sdk': 'node-js-server-sdk',
     'private-node-js-lite-server-sdk': 'node-js-lite-server-sdk',
+    'private-node-js-server-sdk': 'node-js-server-sdk',
     'private-php-sdk': 'php-sdk',
     'private-python-sdk': 'python-sdk',
     'private-react-native': 'react-native',
     'private-react-sdk': 'react-sdk',
     'private-ruby-sdk': 'ruby-sdk',
     'private-rust-sdk': 'rust-sdk',
-    'private-unity-sdk': 'unity-sdk',
+    'private-statsig-server-core': 'statsig-server-core',
     'private-swift-on-device-evaluations-sdk': 'swift-on-device-evaluations-sdk',
+    'private-unity-sdk': 'unity-sdk',
     'test-sdk-repo-private': 'test-sdk-repo-public'
 };
 function syncReposAndCreateRelease(payload) {

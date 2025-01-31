@@ -47,6 +47,7 @@ function getThirdPartyAction(repo) {
             return publish_rubygems_1.default;
         case 'rust-sdk':
             return publish_crates_io_1.default;
+        case 'statsig-server-core' /* server-core use its own gh action */:
         case 'go-sdk':
         case 'android-sdk':
             return () => {
