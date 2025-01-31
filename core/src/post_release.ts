@@ -62,7 +62,9 @@ async function validateAndExtractArgsFromPayload(
   if (typeof name !== 'string' || typeof tag !== 'string') {
     throw new Error('Unable to load repository info');
   }
-
+  const isBeta =
+    payload.pull_request?.head?.ref?.includes('betas/') ||
+    payload.release?.prerelease;
   const githubToken = await KongOctokit.token();
 
   return {
@@ -70,7 +72,8 @@ async function validateAndExtractArgsFromPayload(
     repo: name,
     githubToken,
     workingDir: process.cwd() + '/public-sdk',
-    isStable
+    isStable,
+    isBeta: isBeta === true
   };
 }
 

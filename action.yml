@@ -47,4 +47,3 @@ runs:
         pypi-beta-token: ${{ inputs.pypi-beta-token }}
         rubygems-key: ${{ inputs.rubygems-key }}
         cargo-token: ${{ inputs.cargo-token }}
-        is-beta: ${{ !!github.event.release.prerelease }}

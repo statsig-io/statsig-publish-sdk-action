@@ -47,7 +47,7 @@ function publishToPyPI(args) {
     var _a, e_1, _b, _c;
     var _d;
     return __awaiter(this, void 0, void 0, function* () {
-        const isBeta = core.getBooleanInput('is-beta');
+        const isBeta = args.isBeta;
         const tokenName = isBeta ? 'pypi-beta-token' : 'pypi-token';
         const PYPI_TOKEN = (_d = core.getInput(tokenName)) !== null && _d !== void 0 ? _d : '';
         if (PYPI_TOKEN === '') {
@@ -55,7 +55,6 @@ function publishToPyPI(args) {
         }
         const version = args.tag.replace('v', '');
         let uploadCommand = `twine upload --skip-existing dist/statsig-${version}.tar.gz dist/statsig-${version}-py3-none-any.whl --verbose -u __token__ -p ${PYPI_TOKEN}`;
-        ;
         if (isBeta) {
             uploadCommand += ' --repository-url https://test.pypi.org/legacy/';
         }
