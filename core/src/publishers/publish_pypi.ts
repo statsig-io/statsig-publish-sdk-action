@@ -7,7 +7,7 @@ import { promisify } from 'util';
 const execPromise = promisify(exec);
 
 export default async function publishToPyPI(args: PublishActionArgs) {
-  const isBeta = core.getBooleanInput('is-beta');
+  const isBeta = args.isBeta;
   const tokenName = isBeta ? 'pypi-beta-token' : 'pypi-token';
 
   const PYPI_TOKEN = core.getInput(tokenName) ?? '';
@@ -18,7 +18,6 @@ export default async function publishToPyPI(args: PublishActionArgs) {
   const version = args.tag.replace('v', '');
 
   let uploadCommand = `twine upload --skip-existing dist/statsig-${version}.tar.gz dist/statsig-${version}-py3-none-any.whl --verbose -u __token__ -p ${PYPI_TOKEN}`;
-  ;
   if (isBeta) {
     uploadCommand += ' --repository-url https://test.pypi.org/legacy/';
   }

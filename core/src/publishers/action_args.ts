@@ -4,4 +4,5 @@ export type PublishActionArgs = {
   githubToken: string;
   workingDir: string;
   isStable: boolean;
+  isBeta: boolean;
 };

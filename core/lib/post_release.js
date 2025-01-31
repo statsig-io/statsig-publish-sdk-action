@@ -58,7 +58,7 @@ function getThirdPartyAction(repo) {
     }
 }
 function validateAndExtractArgsFromPayload(payload) {
-    var _a, _b, _c, _d;
+    var _a, _b, _c, _d, _e, _f, _g, _h;
     return __awaiter(this, void 0, void 0, function* () {
         const name = (_a = payload.repository) === null || _a === void 0 ? void 0 : _a.name;
         const tag = (_b = payload.release) === null || _b === void 0 ? void 0 : _b.tag_name;
@@ -66,13 +66,16 @@ function validateAndExtractArgsFromPayload(payload) {
         if (typeof name !== 'string' || typeof tag !== 'string') {
             throw new Error('Unable to load repository info');
         }
+        const isBeta = ((_g = (_f = (_e = payload.pull_request) === null || _e === void 0 ? void 0 : _e.head) === null || _f === void 0 ? void 0 : _f.ref) === null || _g === void 0 ? void 0 : _g.includes('betas/')) ||
+            ((_h = payload.release) === null || _h === void 0 ? void 0 : _h.prerelease);
         const githubToken = yield kong_octokit_1.default.token();
         return {
             tag,
             repo: name,
             githubToken,
             workingDir: process.cwd() + '/public-sdk',
-            isStable
+            isStable,
+            isBeta: isBeta === true
         };
     });
 }

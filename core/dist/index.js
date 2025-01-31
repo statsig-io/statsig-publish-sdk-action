@@ -249,7 +249,7 @@ function getThirdPartyAction(repo) {
     }
 }
 function validateAndExtractArgsFromPayload(payload) {
-    var _a, _b, _c, _d;
+    var _a, _b, _c, _d, _e, _f, _g, _h;
     return __awaiter(this, void 0, void 0, function* () {
         const name = (_a = payload.repository) === null || _a === void 0 ? void 0 : _a.name;
         const tag = (_b = payload.release) === null || _b === void 0 ? void 0 : _b.tag_name;
@@ -257,13 +257,16 @@ function validateAndExtractArgsFromPayload(payload) {
         if (typeof name !== 'string' || typeof tag !== 'string') {
             throw new Error('Unable to load repository info');
         }
+        const isBeta = ((_g = (_f = (_e = payload.pull_request) === null || _e === void 0 ? void 0 : _e.head) === null || _f === void 0 ? void 0 : _f.ref) === null || _g === void 0 ? void 0 : _g.includes('betas/')) ||
+            ((_h = payload.release) === null || _h === void 0 ? void 0 : _h.prerelease);
         const githubToken = yield kong_octokit_1.default.token();
         return {
             tag,
             repo: name,
             githubToken,
             workingDir: process.cwd() + '/public-sdk',
-            isStable
+            isStable,
+            isBeta: isBeta === true
         };
     });
 }
@@ -669,7 +672,7 @@ function publishToPyPI(args) {
     var _a, e_1, _b, _c;
     var _d;
     return __awaiter(this, void 0, void 0, function* () {
-        const isBeta = core.getBooleanInput('is-beta');
+        const isBeta = args.isBeta;
         const tokenName = isBeta ? 'pypi-beta-token' : 'pypi-token';
         const PYPI_TOKEN = (_d = core.getInput(tokenName)) !== null && _d !== void 0 ? _d : '';
         if (PYPI_TOKEN === '') {
@@ -677,7 +680,6 @@ function publishToPyPI(args) {
         }
         const version = args.tag.replace('v', '');
         let uploadCommand = `twine upload --skip-existing dist/statsig-${version}.tar.gz dist/statsig-${version}-py3-none-any.whl --verbose -u __token__ -p ${PYPI_TOKEN}`;
-        ;
         if (isBeta) {
             uploadCommand += ' --repository-url https://test.pypi.org/legacy/';
         }
@@ -924,7 +926,8 @@ function validateAndExtractArgsFromPayload(payload) {
         publicRepo,
         privateRepo,
         sha,
-        isMain: baseRef === 'main'
+        isMain: baseRef === 'main',
+        isBeta: headRef.includes('betas/')
     };
 }
 function pushToPublic(dir, args) {
@@ -956,7 +959,7 @@ function createGithubRelease(args) {
             tag_name: version,
             body,
             name: title,
-            prerelease: core.getBooleanInput('is-beta'),
+            prerelease: args.isBeta,
             generate_release_notes: true,
             make_latest: args.isMain ? 'true' : 'false'
         });

@@ -113,7 +113,8 @@ function validateAndExtractArgsFromPayload(payload) {
         publicRepo,
         privateRepo,
         sha,
-        isMain: baseRef === 'main'
+        isMain: baseRef === 'main',
+        isBeta: headRef.includes('betas/')
     };
 }
 function pushToPublic(dir, args) {
@@ -145,7 +146,7 @@ function createGithubRelease(args) {
             tag_name: version,
             body,
             name: title,
-            prerelease: core.getBooleanInput('is-beta'),
+            prerelease: args.isBeta,
             generate_release_notes: true,
             make_latest: args.isMain ? 'true' : 'false'
         });
