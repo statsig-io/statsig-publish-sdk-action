@@ -93,6 +93,77 @@ async function runJsMonorepoVersionSync(payload: WebhookPayload) {
   });
 }
 
+async function runServerCoreSyncVersion(payload: WebhookPayload) {
+  const repo = payload.repository?.name;
+  const branch = payload.pull_request?.head?.ref;
+
+  if (!repo || !branch) {
+    throw new Error('Missing required information');
+  }
+
+  core.debug(`Running pnpm sync-version: ${repo} ${branch}`);
+
+  const token = await KongOctokit.token();
+  const git: SimpleGit = simpleGit();
+  const dir = process.cwd() + '/private-sdk';
+
+  await git
+    .clone(createGitRepoUrl(token, repo), dir)
+    .then(() =>
+      git
+        .cwd(dir)
+        .addConfig('user.name', 'statsig-kong[bot]')
+        .addConfig('user.email', 'statsig-kong[bot]@users.noreply.github.com')
+    )
+    .then(() => git.checkout(branch));
+
+  try {
+    execSync('pnpm install --dir cli', { cwd: dir, stdio: 'inherit' });
+    execSync('./run sync-version', { cwd: dir, stdio: 'inherit' });
+  } catch (error) {
+    console.error('Failed to run sync-version', error);
+  }
+
+  await git.status().then(status => {
+    if (status.isClean()) {
+      return;
+    }
+
+    const supported = [
+      'package.json',
+      'gradle.properties',
+      'Cargo.lock',
+      'Cargo.toml',
+      'statsig_metadata.rs',
+      'post-install.php'
+    ];
+
+    const originalCount = status.files.length;
+    const files = status.files
+      .filter(file => supported.some(s => file.path.includes(s)))
+      .map(file => file.path);
+
+    if (files.length !== originalCount) {
+      console.error(
+        'More files changed than expected',
+        status.files.map(f => f.path),
+        files
+      );
+
+      const err = new Error('More files changed than expected');
+      err.name = 'MissingChangesError';
+      throw err;
+    }
+
+    return git
+      .add(files)
+      .then(() =>
+        git.commit(`Bot: Version synchronized in ${files.length} files`)
+      )
+      .then(() => git.push('origin', branch));
+  });
+}
+
 export async function prepareForRelease(payload: WebhookPayload) {
   if (!payload.repository) {
     throw new Error('Failed to load repository information');
@@ -128,9 +199,11 @@ export async function prepareForRelease(payload: WebhookPayload) {
     case 'private-js-client-monorepo':
       return runJsMonorepoVersionSync(payload);
 
+    case 'private-statsig-server-core':
+      return runServerCoreSyncVersion(payload);
+
     case 'private-python-sdk':
     case 'private-go-sdk':
-    case 'private-statsig-server-core':
       throw new SkipActionError(
         `Prepare not neccessary for repository: ${
           payload.repository?.name ?? null
