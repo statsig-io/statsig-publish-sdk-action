@@ -113,6 +113,55 @@ function runJsMonorepoVersionSync(payload) {
         });
     });
 }
+function runServerCoreSyncVersion(payload) {
+    var _a, _b, _c;
+    return __awaiter(this, void 0, void 0, function* () {
+        const repo = (_a = payload.repository) === null || _a === void 0 ? void 0 : _a.name;
+        const branch = (_c = (_b = payload.pull_request) === null || _b === void 0 ? void 0 : _b.head) === null || _c === void 0 ? void 0 : _c.ref;
+        if (!repo || !branch) {
+            throw new Error('Missing required information');
+        }
+        core.debug(`Running pnpm sync-version: ${repo} ${branch}`);
+        const token = yield kong_octokit_1.default.token();
+        const git = (0, simple_git_1.simpleGit)();
+        const dir = process.cwd() + '/private-sdk';
+        yield git
+            .clone((0, helpers_1.createGitRepoUrl)(token, repo), dir)
+            .then(() => git
+            .cwd(dir)
+            .addConfig('user.name', 'statsig-kong[bot]')
+            .addConfig('user.email', 'statsig-kong[bot]@users.noreply.github.com'))
+            .then(() => git.checkout(branch));
+        (0, child_process_1.execSync)('./run sync-version', { cwd: dir });
+        yield git.status().then(status => {
+            if (status.isClean()) {
+                return;
+            }
+            const supported = [
+                'package.json',
+                'gradle.properties',
+                'Cargo.lock',
+                'Cargo.toml',
+                'statsig_metadata.rs',
+                'post-install.php'
+            ];
+            const originalCount = status.files.length;
+            const files = status.files
+                .filter(file => supported.includes(file.path))
+                .map(file => file.path);
+            if (files.length !== originalCount) {
+                console.error('More files changed than expected', status.files.map(f => f.path), files);
+                const err = new Error('More files changed than expected');
+                err.name = 'MissingChangesError';
+                throw err;
+            }
+            return git
+                .add(files)
+                .then(() => git.commit(`bot: version numbers synced`))
+                .then(() => git.push('origin', branch));
+        });
+    });
+}
 function prepareForRelease(payload) {
     var _a, _b, _c, _d, _e, _f, _g, _h;
     return __awaiter(this, void 0, void 0, function* () {
@@ -143,9 +192,10 @@ function prepareForRelease(payload) {
                 return runNpmInstall(payload);
             case 'private-js-client-monorepo':
                 return runJsMonorepoVersionSync(payload);
+            case 'private-statsig-server-core':
+                return runServerCoreSyncVersion(payload);
             case 'private-python-sdk':
             case 'private-go-sdk':
-            case 'private-statsig-server-core':
                 throw new types_1.SkipActionError(`Prepare not neccessary for repository: ${(_f = (_e = payload.repository) === null || _e === void 0 ? void 0 : _e.name) !== null && _f !== void 0 ? _f : null}`);
             default:
                 throw new types_1.SkipActionError(`Prepare not supported for repository: ${(_h = (_g = payload.repository) === null || _g === void 0 ? void 0 : _g.name) !== null && _h !== void 0 ? _h : null}`);
