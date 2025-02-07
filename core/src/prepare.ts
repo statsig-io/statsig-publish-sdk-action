@@ -117,12 +117,8 @@ async function runServerCoreSyncVersion(payload: WebhookPayload) {
     )
     .then(() => git.checkout(branch));
 
-  try {
-    execSync('pnpm install --dir cli', { cwd: dir, stdio: 'inherit' });
-    execSync('./run sync-version', { cwd: dir, stdio: 'inherit' });
-  } catch (error) {
-    console.error('Failed to run sync-version', error);
-  }
+  execSync('pnpm install --dir cli', { cwd: dir, stdio: 'inherit' });
+  execSync('./tore sync-version', { cwd: dir, stdio: 'inherit' });
 
   await git.status().then(status => {
     if (status.isClean()) {

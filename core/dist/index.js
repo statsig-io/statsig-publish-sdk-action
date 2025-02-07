@@ -421,13 +421,8 @@ function runServerCoreSyncVersion(payload) {
             .addConfig('user.name', 'statsig-kong[bot]')
             .addConfig('user.email', 'statsig-kong[bot]@users.noreply.github.com'))
             .then(() => git.checkout(branch));
-        try {
-            (0, child_process_1.execSync)('pnpm install --dir cli', { cwd: dir, stdio: 'inherit' });
-            (0, child_process_1.execSync)('./run sync-version', { cwd: dir, stdio: 'inherit' });
-        }
-        catch (error) {
-            console.error('Failed to run sync-version', error);
-        }
+        (0, child_process_1.execSync)('pnpm install --dir cli', { cwd: dir, stdio: 'inherit' });
+        (0, child_process_1.execSync)('./tore sync-version', { cwd: dir, stdio: 'inherit' });
         yield git.status().then(status => {
             if (status.isClean()) {
                 return;
