@@ -97,7 +97,7 @@ function runJsMonorepoVersionSync(payload) {
             .addConfig('user.email', 'statsig-kong[bot]@users.noreply.github.com'))
             .then(() => git.checkout(branch));
         (0, child_process_1.execSync)('pnpm install', { cwd: dir });
-        (0, child_process_1.execSync)('pnpm sync-version', { cwd: dir, stdio: 'inherit' });
+        (0, child_process_1.execSync)('pnpm exec nx run statsig:sync-version', { cwd: dir, stdio: 'inherit' });
         yield git.status().then(status => {
             if (status.isClean()) {
                 return;
