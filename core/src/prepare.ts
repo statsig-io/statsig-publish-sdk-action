@@ -74,7 +74,7 @@ async function runJsMonorepoVersionSync(payload: WebhookPayload) {
     .then(() => git.checkout(branch));
 
   execSync('pnpm install', { cwd: dir });
-  execSync('pnpm sync-version', { cwd: dir, stdio: 'inherit' });
+  execSync('pnpm exec nx run statsig:sync-version', { cwd: dir, stdio: 'inherit' });
 
   await git.status().then(status => {
     if (status.isClean()) {
