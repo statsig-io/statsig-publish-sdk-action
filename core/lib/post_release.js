@@ -21,6 +21,7 @@ const publish_pypi_1 = __importDefault(require("./publishers/publish_pypi"));
 const publish_rubygems_1 = __importDefault(require("./publishers/publish_rubygems"));
 const types_1 = require("./types");
 const publish_crates_io_1 = __importDefault(require("./publishers/publish_crates_io"));
+const publish_js_mono_1 = __importDefault(require("./publishers/publish_js_mono"));
 function pushReleaseToThirdParties(payload) {
     return __awaiter(this, void 0, void 0, function* () {
         const args = yield validateAndExtractArgsFromPayload(payload);
@@ -47,6 +48,8 @@ function getThirdPartyAction(repo) {
             return publish_rubygems_1.default;
         case 'rust-sdk':
             return publish_crates_io_1.default;
+        case 'js-client-monorepo':
+            return publish_js_mono_1.default;
         case 'statsig-server-core' /* server-core use its own gh action */:
         case 'go-sdk':
         case 'android-sdk':

@@ -212,6 +212,7 @@ const publish_pypi_1 = __importDefault(__nccwpck_require__(879));
 const publish_rubygems_1 = __importDefault(__nccwpck_require__(564));
 const types_1 = __nccwpck_require__(8164);
 const publish_crates_io_1 = __importDefault(__nccwpck_require__(805));
+const publish_js_mono_1 = __importDefault(__nccwpck_require__(4893));
 function pushReleaseToThirdParties(payload) {
     return __awaiter(this, void 0, void 0, function* () {
         const args = yield validateAndExtractArgsFromPayload(payload);
@@ -238,6 +239,8 @@ function getThirdPartyAction(repo) {
             return publish_rubygems_1.default;
         case 'rust-sdk':
             return publish_crates_io_1.default;
+        case 'js-client-monorepo':
+            return publish_js_mono_1.default;
         case 'statsig-server-core' /* server-core use its own gh action */:
         case 'go-sdk':
         case 'android-sdk':
@@ -369,16 +372,15 @@ function runNpmInstall(payload) {
 function runJsMonorepoVersionSync(payload) {
     var _a, _b, _c;
     return __awaiter(this, void 0, void 0, function* () {
-        core.info('Running JS Monorepo Version Sync');
         const repo = (_a = payload.repository) === null || _a === void 0 ? void 0 : _a.name;
         const branch = (_c = (_b = payload.pull_request) === null || _b === void 0 ? void 0 : _b.head) === null || _c === void 0 ? void 0 : _c.ref;
         if (!repo || !branch) {
             throw new Error('Missing required information');
         }
+        core.debug('Running JS Monorepo Version Sync');
         const token = yield kong_octokit_1.default.token();
         const git = (0, simple_git_1.simpleGit)();
         const dir = process.cwd() + '/private-sdk';
-        core.info(`Cloning ${(0, helpers_1.createGitRepoUrl)(token, repo)} to ${dir}`);
         yield git
             .clone((0, helpers_1.createGitRepoUrl)(token, repo), dir)
             .then(() => git
@@ -387,7 +389,6 @@ function runJsMonorepoVersionSync(payload) {
             .addConfig('user.email', 'statsig-kong[bot]@users.noreply.github.com'))
             .then(() => git.checkout(branch));
         (0, child_process_1.execSync)('pnpm install', { cwd: dir });
-        core.info(`Running exec nx run statsig:sync-version: ${repo} ${branch}`);
         (0, child_process_1.execSync)('pnpm exec nx run statsig:sync-version', { cwd: dir, stdio: 'inherit' });
         yield git.status().then(status => {
             if (status.isClean()) {
@@ -586,6 +587,94 @@ function publishToCratesIo(args) {
     });
 }
 exports["default"] = publishToCratesIo;
+
+
+/***/ }),
+
+/***/ 4893:
+/***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
+
+"use strict";
+
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
+    return result;
+};
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+var __asyncValues = (this && this.__asyncValues) || function (o) {
+    if (!Symbol.asyncIterator) throw new TypeError("Symbol.asyncIterator is not defined.");
+    var m = o[Symbol.asyncIterator], i;
+    return m ? m.call(o) : (o = typeof __values === "function" ? __values(o) : o[Symbol.iterator](), i = {}, verb("next"), verb("throw"), verb("return"), i[Symbol.asyncIterator] = function () { return this; }, i);
+    function verb(n) { i[n] = o[n] && function (v) { return new Promise(function (resolve, reject) { v = o[n](v), settle(resolve, reject, v.done, v.value); }); }; }
+    function settle(resolve, reject, d, v) { Promise.resolve(v).then(function(v) { resolve({ value: v, done: d }); }, reject); }
+};
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+const core = __importStar(__nccwpck_require__(2186));
+const child_process_1 = __nccwpck_require__(2081);
+function publishJSMono(args) {
+    var _a, e_1, _b, _c;
+    var _d;
+    return __awaiter(this, void 0, void 0, function* () {
+        const NPM_TOKEN = (_d = core.getInput('npm-token')) !== null && _d !== void 0 ? _d : '';
+        if (NPM_TOKEN === '') {
+            throw new Error('Call to NPM Publish without settng npm-token');
+        }
+        const commands = [
+            'pnpm install',
+            `echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" > .npmrc`,
+            `pnpm exec nx run statsig:publish-all`,
+        ];
+        const opts = {
+            cwd: args.workingDir
+        };
+        try {
+            for (var _e = true, commands_1 = __asyncValues(commands), commands_1_1; commands_1_1 = yield commands_1.next(), _a = commands_1_1.done, !_a; _e = true) {
+                _c = commands_1_1.value;
+                _e = false;
+                const command = _c;
+                console.log(`[${command}] Executing...`);
+                const result = (0, child_process_1.execSync)(command, opts);
+                console.log(`[${command}] Done`, result);
+            }
+        }
+        catch (e_1_1) { e_1 = { error: e_1_1 }; }
+        finally {
+            try {
+                if (!_e && !_a && (_b = commands_1.return)) yield _b.call(commands_1);
+            }
+            finally { if (e_1) throw e_1.error; }
+        }
+        console.log('🎉 JS Mono Done!');
+    });
+}
+exports["default"] = publishJSMono;
 
 
 /***/ }),

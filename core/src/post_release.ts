@@ -8,6 +8,7 @@ import publishToRubyGems from './publishers/publish_rubygems';
 import { SkipActionError } from './types';
 import { PublishActionArgs } from './publishers/action_args';
 import publishToCratesIo from './publishers/publish_crates_io';
+import publishJSMono from './publishers/publish_js_mono';
 
 export async function pushReleaseToThirdParties(payload: WebhookPayload) {
   const args = await validateAndExtractArgsFromPayload(payload);
@@ -36,6 +37,9 @@ function getThirdPartyAction(repo: string) {
 
     case 'rust-sdk':
       return publishToCratesIo;
+    
+    case 'js-client-monorepo':
+      return publishJSMono;
 
     case 'statsig-server-core' /* server-core use its own gh action */:
     case 'go-sdk':
