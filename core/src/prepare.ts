@@ -90,10 +90,14 @@ async function runJsMonorepoVersionSync(payload: WebhookPayload) {
       })
       .map(file => file.path);
 
+    core.info(`Files to commit: ${files.join(', ')}`);
+
     return git
       .add(files)
       .then(() => git.commit(`Bot: Updated File/s [${files.join(', ')}]`))
       .then(() => git.push('origin', branch));
+  }).catch(err => {
+    core.error(err);
   });
 }
 
