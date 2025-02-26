@@ -50,7 +50,7 @@ async function runNpmInstall(payload: WebhookPayload) {
 }
 
 async function runJsMonorepoVersionSync(payload: WebhookPayload) {
-  core.debug('Running JS Monorepo Version Sync');
+  core.info('Running JS Monorepo Version Sync');
   const repo = payload.repository?.name;
   const branch = payload.pull_request?.head?.ref;
 
@@ -58,11 +58,10 @@ async function runJsMonorepoVersionSync(payload: WebhookPayload) {
     throw new Error('Missing required information');
   }
 
-  core.debug(`Running exec nx run statsig:sync-version: ${repo} ${branch}`);
-
   const token = await KongOctokit.token();
   const git: SimpleGit = simpleGit();
   const dir = process.cwd() + '/private-sdk';
+  core.info(`Cloning ${createGitRepoUrl(token, repo)} to ${dir}`);
 
   await git
     .clone(createGitRepoUrl(token, repo), dir)
@@ -75,6 +74,7 @@ async function runJsMonorepoVersionSync(payload: WebhookPayload) {
     .then(() => git.checkout(branch));
 
   execSync('pnpm install', { cwd: dir });
+  core.info(`Running exec nx run statsig:sync-version: ${repo} ${branch}`);
   execSync('pnpm exec nx run statsig:sync-version', { cwd: dir, stdio: 'inherit' });
 
   await git.status().then(status => {
