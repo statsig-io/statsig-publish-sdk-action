@@ -391,19 +391,23 @@ function runJsMonorepoVersionSync(payload) {
         (0, child_process_1.execSync)('pnpm exec nx run statsig:sync-version', { cwd: dir, stdio: 'inherit' });
         yield git.status().then(status => {
             if (status.isClean()) {
+                core.info('No changes detected');
                 return;
             }
             const supported = ['package-lock.json', 'src/SDKVersion.ts'];
             const files = status.files
                 .filter(file => {
-                core.info(`Checking file: ${file.path}`);
                 return supported.some(s => file.path.includes(s));
             })
                 .map(file => file.path);
+            core.info(`Files changed: ${files.join(', ')}`);
             return git
                 .add(files)
                 .then(() => git.commit(`Bot: Updated File/s [${files.join(', ')}]`))
-                .then(() => git.push('origin', branch));
+                .then(() => git.push('origin', branch))
+                .catch((err) => {
+                core.error(err);
+            });
         });
     });
 }
