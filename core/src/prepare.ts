@@ -94,7 +94,7 @@ async function runJsMonorepoVersionSync(payload: WebhookPayload) {
 
     return git
       .add(files)
-      .then(() => git.commit(`Bot: Updated File/s [${files.join(', ')}]`))
+      .then(() => git.commit(`Bot: Version synchronized in ${files.length} files`))
       .then(() => git.push('origin', branch));
   }).catch(err => {
     core.error(err);
