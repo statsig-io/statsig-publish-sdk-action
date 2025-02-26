@@ -393,7 +393,7 @@ function runJsMonorepoVersionSync(payload) {
             if (status.isClean()) {
                 return;
             }
-            const supported = ['package-lock.json', 'src/SDKVersion.ts'];
+            const supported = ['package.json', 'packages/client-core/src/StatsigMetadata.ts', 'pnpm-lock.yaml'];
             const files = status.files
                 .filter(file => {
                 core.info(`Checking file: ${file.path}`);
