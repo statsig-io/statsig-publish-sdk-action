@@ -106,7 +106,10 @@ function runJsMonorepoVersionSync(payload) {
             }
             const supported = ['package-lock.json', 'src/SDKVersion.ts'];
             const files = status.files
-                .filter(file => supported.includes(file.path))
+                .filter(file => {
+                core.info(`Checking file: ${file.path}`);
+                return supported.includes(file.path);
+            })
                 .map(file => file.path);
             return git
                 .add(files)
