@@ -369,16 +369,16 @@ function runNpmInstall(payload) {
 function runJsMonorepoVersionSync(payload) {
     var _a, _b, _c;
     return __awaiter(this, void 0, void 0, function* () {
-        core.debug('Running JS Monorepo Version Sync');
+        core.info('Running JS Monorepo Version Sync');
         const repo = (_a = payload.repository) === null || _a === void 0 ? void 0 : _a.name;
         const branch = (_c = (_b = payload.pull_request) === null || _b === void 0 ? void 0 : _b.head) === null || _c === void 0 ? void 0 : _c.ref;
         if (!repo || !branch) {
             throw new Error('Missing required information');
         }
-        core.debug(`Running exec nx run statsig:sync-version: ${repo} ${branch}`);
         const token = yield kong_octokit_1.default.token();
         const git = (0, simple_git_1.simpleGit)();
         const dir = process.cwd() + '/private-sdk';
+        core.info(`Cloning ${(0, helpers_1.createGitRepoUrl)(token, repo)} to ${dir}`);
         yield git
             .clone((0, helpers_1.createGitRepoUrl)(token, repo), dir)
             .then(() => git
@@ -387,6 +387,7 @@ function runJsMonorepoVersionSync(payload) {
             .addConfig('user.email', 'statsig-kong[bot]@users.noreply.github.com'))
             .then(() => git.checkout(branch));
         (0, child_process_1.execSync)('pnpm install', { cwd: dir });
+        core.info(`Running exec nx run statsig:sync-version: ${repo} ${branch}`);
         (0, child_process_1.execSync)('pnpm exec nx run statsig:sync-version', { cwd: dir, stdio: 'inherit' });
         yield git.status().then(status => {
             if (status.isClean()) {
