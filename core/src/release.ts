@@ -38,6 +38,7 @@ const PRIV_TO_PUB_REPO_MAP: Record<string, string> = {
   'private-statsig-server-core': 'statsig-server-core',
   'private-swift-on-device-evaluations-sdk': 'swift-on-device-evaluations-sdk',
   'private-unity-sdk': 'unity-sdk',
+  'private-js-client-monorepo': 'js-client-monorepo',
   'test-sdk-repo-private': 'test-sdk-repo-public'
 };
 
