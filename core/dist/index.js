@@ -1003,7 +1003,7 @@ const helpers_1 = __nccwpck_require__(5008);
 const types_1 = __nccwpck_require__(8164);
 const kong_octokit_1 = __importDefault(__nccwpck_require__(6271));
 const PRIV_TO_PUB_REPO_MAP = {
-    'ios-client-sdk': 'ios-sdk',
+    'ios-client-sdk': 'statsig-kit',
     'private-android-local-eval': 'android-local-eval',
     'private-android-sdk': 'android-sdk',
     'private-dotnet-sdk': 'dotnet-sdk',
