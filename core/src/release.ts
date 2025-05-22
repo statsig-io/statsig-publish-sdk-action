@@ -18,7 +18,7 @@ type ActionArgs = {
 };
 
 const PRIV_TO_PUB_REPO_MAP: Record<string, string> = {
-  'ios-client-sdk': 'ios-sdk',
+  'ios-client-sdk': 'statsig-kit',
   'private-android-local-eval': 'android-local-eval',
   'private-android-sdk': 'android-sdk',
   'private-dotnet-sdk': 'dotnet-sdk',
