@@ -389,12 +389,21 @@ function runJsMonorepoVersionSync(payload) {
             .addConfig('user.email', 'statsig-kong[bot]@users.noreply.github.com'))
             .then(() => git.checkout(branch));
         (0, child_process_1.execSync)('pnpm install', { cwd: dir });
-        (0, child_process_1.execSync)('pnpm exec nx run statsig:sync-version', { cwd: dir, stdio: 'inherit' });
-        yield git.status().then(status => {
+        (0, child_process_1.execSync)('pnpm exec nx run statsig:sync-version', {
+            cwd: dir,
+            stdio: 'inherit'
+        });
+        yield git
+            .status()
+            .then(status => {
             if (status.isClean()) {
                 return;
             }
-            const supported = ['package.json', 'packages/client-core/src/StatsigMetadata.ts', 'pnpm-lock.yaml'];
+            const supported = [
+                'package.json',
+                'packages/client-core/src/StatsigMetadata.ts',
+                'pnpm-lock.yaml'
+            ];
             const files = status.files
                 .filter(file => {
                 core.info(`Checking file: ${file.path}`);
@@ -406,7 +415,8 @@ function runJsMonorepoVersionSync(payload) {
                 .add(files)
                 .then(() => git.commit(`chore: version synchronized in ${files.length} files by bot`))
                 .then(() => git.push('origin', branch));
-        }).catch(err => {
+        })
+            .catch(err => {
             core.error(err);
         });
     });
@@ -442,7 +452,8 @@ function runServerCoreSyncVersion(payload) {
                 'Cargo.lock',
                 'Cargo.toml',
                 'statsig_metadata.rs',
-                'post-install.php'
+                'post-install.php',
+                'Directory.Build.props'
             ];
             const originalCount = status.files.length;
             const files = status.files

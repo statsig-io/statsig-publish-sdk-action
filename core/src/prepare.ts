@@ -74,32 +74,44 @@ async function runJsMonorepoVersionSync(payload: WebhookPayload) {
     .then(() => git.checkout(branch));
 
   execSync('pnpm install', { cwd: dir });
-  execSync('pnpm exec nx run statsig:sync-version', { cwd: dir, stdio: 'inherit' });
-
-  await git.status().then(status => {
-    if (status.isClean()) {
-      return;
-    }
-
-    const supported = ['package.json', 'packages/client-core/src/StatsigMetadata.ts', 'pnpm-lock.yaml'];
-    const files = status.files
-      .filter(file => {
-        core.info(`Checking file: ${file.path}`);
-        return supported.some(s => file.path.includes(s));
-      })
-      .map(file => file.path);
-
-    core.info(`Files to commit: ${files.join(', ')}`);
-
-    return git
-      .add(files)
-      .then(() =>
-        git.commit(`chore: version synchronized in ${files.length} files by bot`)
-      )
-      .then(() => git.push('origin', branch));
-  }).catch(err => {
-    core.error(err);
+  execSync('pnpm exec nx run statsig:sync-version', {
+    cwd: dir,
+    stdio: 'inherit'
   });
+
+  await git
+    .status()
+    .then(status => {
+      if (status.isClean()) {
+        return;
+      }
+
+      const supported = [
+        'package.json',
+        'packages/client-core/src/StatsigMetadata.ts',
+        'pnpm-lock.yaml'
+      ];
+      const files = status.files
+        .filter(file => {
+          core.info(`Checking file: ${file.path}`);
+          return supported.some(s => file.path.includes(s));
+        })
+        .map(file => file.path);
+
+      core.info(`Files to commit: ${files.join(', ')}`);
+
+      return git
+        .add(files)
+        .then(() =>
+          git.commit(
+            `chore: version synchronized in ${files.length} files by bot`
+          )
+        )
+        .then(() => git.push('origin', branch));
+    })
+    .catch(err => {
+      core.error(err);
+    });
 }
 
 async function runServerCoreSyncVersion(payload: WebhookPayload) {
@@ -140,7 +152,8 @@ async function runServerCoreSyncVersion(payload: WebhookPayload) {
       'Cargo.lock',
       'Cargo.toml',
       'statsig_metadata.rs',
-      'post-install.php'
+      'post-install.php',
+      'Directory.Build.props'
     ];
 
     const originalCount = status.files.length;
