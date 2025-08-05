@@ -153,7 +153,8 @@ async function runServerCoreSyncVersion(payload: WebhookPayload) {
       'Cargo.toml',
       'statsig_metadata.rs',
       'post-install.php',
-      'Directory.Build.props'
+      'Directory.Build.props',
+      'main.go'
     ];
 
     const originalCount = status.files.length;
