@@ -162,7 +162,8 @@ function runServerCoreSyncVersion(payload) {
                 'statsig_metadata.rs',
                 'post-install.php',
                 'Directory.Build.props',
-                'main.go'
+                'main.go',
+                'mix.exs'
             ];
             const originalCount = status.files.length;
             const files = status.files
