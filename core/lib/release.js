@@ -107,6 +107,7 @@ function validateAndExtractArgsFromPayload(payload) {
     }
     const parts = title.split(' ').slice(1);
     const version = parts[0];
+    const isRC = /releases\/\d+\.\d+\.\d+-rc\.\d+/.test(headRef);
     return {
         version,
         title: parts.join(' '),
@@ -115,7 +116,8 @@ function validateAndExtractArgsFromPayload(payload) {
         privateRepo,
         sha,
         isMain: baseRef === 'main',
-        isBeta: headRef.includes('betas/')
+        isBeta: headRef.includes('betas/'),
+        isRC
     };
 }
 function pushToPublic(dir, args) {
@@ -147,7 +149,7 @@ function createGithubRelease(args) {
             tag_name: version,
             body,
             name: title,
-            prerelease: args.isBeta,
+            prerelease: args.isBeta || args.isRC,
             generate_release_notes: true,
             make_latest: args.isMain ? 'true' : 'false'
         });

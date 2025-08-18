@@ -15,6 +15,7 @@ type ActionArgs = {
   sha: string;
   isMain: boolean;
   isBeta: boolean;
+  isRC: boolean; // only used for server core for now
 };
 
 const PRIV_TO_PUB_REPO_MAP: Record<string, string> = {
@@ -96,6 +97,7 @@ function validateAndExtractArgsFromPayload(
 
   const parts = title.split(' ').slice(1);
   const version = parts[0];
+  const isRC = /releases\/\d+\.\d+\.\d+-rc\.\d+/.test(headRef);
 
   return {
     version,
@@ -105,7 +107,8 @@ function validateAndExtractArgsFromPayload(
     privateRepo,
     sha,
     isMain: baseRef === 'main',
-    isBeta: headRef.includes('betas/')
+    isBeta: headRef.includes('betas/'),
+    isRC
   };
 }
 
@@ -142,7 +145,7 @@ async function createGithubRelease(args: ActionArgs) {
     tag_name: version,
     body,
     name: title,
-    prerelease: args.isBeta,
+    prerelease: args.isBeta || args.isRC,
     generate_release_notes: true,
     make_latest: args.isMain ? 'true' : 'false'
   });
