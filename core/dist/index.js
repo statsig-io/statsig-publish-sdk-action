@@ -1058,7 +1058,7 @@ function validateAndExtractArgsFromPayload(payload) {
     if (typeof headRef !== 'string' || !headRef.startsWith('releases/')) {
         throw new types_1.SkipActionError('Not a branch on releases/*');
     }
-    if (baseRef !== 'main' && baseRef !== 'stable') {
+    if (baseRef !== 'main' && baseRef !== 'stable' && !baseRef.startsWith("releases/")) {
         throw new types_1.SkipActionError('Pull request not against a valid branch');
     }
     if (((_j = payload.pull_request) === null || _j === void 0 ? void 0 : _j.merged) !== true) {
@@ -1089,7 +1089,7 @@ function validateAndExtractArgsFromPayload(payload) {
         publicRepo,
         privateRepo,
         sha,
-        isMain: baseRef === 'main',
+        isMain: baseRef != 'stable',
         isBeta: headRef.includes('betas/'),
         isRC
     };

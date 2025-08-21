@@ -67,7 +67,7 @@ function validateAndExtractArgsFromPayload(
     throw new SkipActionError('Not a branch on releases/*');
   }
 
-  if (baseRef !== 'main' && baseRef !== 'stable') {
+  if (baseRef !== 'main' && baseRef !== 'stable' && !baseRef.startsWith("releases/")) {
     throw new SkipActionError('Pull request not against a valid branch');
   }
 
@@ -106,7 +106,7 @@ function validateAndExtractArgsFromPayload(
     publicRepo,
     privateRepo,
     sha,
-    isMain: baseRef === 'main',
+    isMain: baseRef != 'stable',
     isBeta: headRef.includes('betas/'),
     isRC
   };
