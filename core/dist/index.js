@@ -213,6 +213,7 @@ const publish_rubygems_1 = __importDefault(__nccwpck_require__(564));
 const types_1 = __nccwpck_require__(8164);
 const publish_crates_io_1 = __importDefault(__nccwpck_require__(805));
 const publish_js_mono_1 = __importDefault(__nccwpck_require__(4893));
+const back_merge_to_main_1 = __importDefault(__nccwpck_require__(6979));
 function pushReleaseToThirdParties(payload) {
     return __awaiter(this, void 0, void 0, function* () {
         const args = yield validateAndExtractArgsFromPayload(payload);
@@ -242,6 +243,7 @@ function getThirdPartyAction(repo) {
         case 'js-client-monorepo':
             return publish_js_mono_1.default;
         case 'statsig-server-core' /* server-core use its own gh action */:
+            return back_merge_to_main_1.default;
         case 'go-sdk':
         case 'android-sdk':
             return () => {
@@ -515,6 +517,59 @@ function prepareForRelease(payload) {
     });
 }
 exports.prepareForRelease = prepareForRelease;
+
+
+/***/ }),
+
+/***/ 6979:
+/***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
+
+"use strict";
+
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+const child_process_1 = __nccwpck_require__(2081);
+const kong_octokit_1 = __importDefault(__nccwpck_require__(6271));
+const simple_git_1 = __importDefault(__nccwpck_require__(9103));
+const helpers_1 = __nccwpck_require__(5008);
+function backMergeToMain(args) {
+    return __awaiter(this, void 0, void 0, function* () {
+        // Only act on stable branch publishes
+        if (!args.isStable) {
+            console.log('Not a stable publish, skipping back-merge to main');
+            return;
+        }
+        const token = yield kong_octokit_1.default.token();
+        const git = (0, simple_git_1.default)();
+        const dir = process.cwd() + '/private-sdk';
+        yield git
+            .clone((0, helpers_1.createGitRepoUrl)(token, args.repo), dir)
+            .then(() => git
+            .cwd(dir)
+            .addConfig('user.name', 'statsig-kong[bot]')
+            .addConfig('user.email', 'statsig-kong[bot]@users.noreply.github.com'));
+        console.log('Fetching all and checking out main');
+        yield git.fetch('origin');
+        yield git.checkout('main');
+        yield git.pull('origin', 'main');
+        (0, child_process_1.execSync)('pnpm install --dir cli', { cwd: dir, stdio: 'inherit' });
+        (0, child_process_1.execSync)(`./tore bump-version ${args.tag} --create-branch`, { cwd: dir, stdio: 'inherit' });
+        console.log('Merging release branch back to main');
+        (0, child_process_1.execSync)('./tore merge-to-main', { cwd: dir, stdio: 'inherit' });
+    });
+}
+exports["default"] = backMergeToMain;
 
 
 /***/ }),

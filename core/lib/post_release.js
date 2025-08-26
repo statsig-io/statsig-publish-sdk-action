@@ -22,6 +22,7 @@ const publish_rubygems_1 = __importDefault(require("./publishers/publish_rubygem
 const types_1 = require("./types");
 const publish_crates_io_1 = __importDefault(require("./publishers/publish_crates_io"));
 const publish_js_mono_1 = __importDefault(require("./publishers/publish_js_mono"));
+const back_merge_to_main_1 = __importDefault(require("./publishers/back_merge_to_main"));
 function pushReleaseToThirdParties(payload) {
     return __awaiter(this, void 0, void 0, function* () {
         const args = yield validateAndExtractArgsFromPayload(payload);
@@ -51,6 +52,7 @@ function getThirdPartyAction(repo) {
         case 'js-client-monorepo':
             return publish_js_mono_1.default;
         case 'statsig-server-core' /* server-core use its own gh action */:
+            return back_merge_to_main_1.default;
         case 'go-sdk':
         case 'android-sdk':
             return () => {
