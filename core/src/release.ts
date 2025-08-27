@@ -16,6 +16,7 @@ type ActionArgs = {
   isMain: boolean;
   isBeta: boolean;
   isRC: boolean; // only used for server core for now
+  isStable: boolean;
 };
 
 const PRIV_TO_PUB_REPO_MAP: Record<string, string> = {
@@ -51,8 +52,15 @@ export async function syncReposAndCreateRelease(payload: WebhookPayload) {
 
   payload.pull_request;
 
+  const isServerCore = args.privateRepo === 'private-statsig-server-core';
+
+  if (isServerCore && args.isRC) { 
+    await createPrivateGithubRelease(args);
+    return;
+  }
+
   await pushToPublic(workingDir, args);
-  await createGithubRelease(args);
+  await createPublicGithubRelease(args);
 }
 
 function validateAndExtractArgsFromPayload(
@@ -98,6 +106,7 @@ function validateAndExtractArgsFromPayload(
   const parts = title.split(' ').slice(1);
   const version = parts[0];
   const isRC = /releases\/\d+\.\d+\.\d+-rc\.\d+/.test(headRef);
+  const isStable = baseRef === 'stable';
 
   return {
     version,
@@ -108,7 +117,8 @@ function validateAndExtractArgsFromPayload(
     sha,
     isMain: baseRef === 'main',
     isBeta: headRef.includes('betas/'),
-    isRC
+    isRC,
+    isStable
   };
 }
 
@@ -136,7 +146,7 @@ async function pushToPublic(dir: string, args: ActionArgs) {
     .then(() => git.push('public', `releases/${version}`, ['--follow-tags']));
 }
 
-async function createGithubRelease(args: ActionArgs) {
+async function createPublicGithubRelease(args: ActionArgs) {
   const { title, version, body, publicRepo } = args;
 
   const response = await KongOctokit.get().rest.repos.createRelease({
@@ -147,7 +157,24 @@ async function createGithubRelease(args: ActionArgs) {
     name: title,
     prerelease: args.isBeta || args.isRC,
     generate_release_notes: true,
-    make_latest: args.isMain ? 'true' : 'false'
+    make_latest: (args.isMain || args.isStable) ? 'true' : 'false'
+  });
+
+  console.log(`Released: ${JSON.stringify(response)}`);
+}
+
+async function createPrivateGithubRelease(args: ActionArgs) {
+  const { title, version, body, privateRepo } = args;
+
+  const response = await KongOctokit.get().rest.repos.createRelease({
+    owner: 'statsig-io',
+    repo: privateRepo,
+    tag_name: version,
+    body,
+    name: title,
+    prerelease: args.isBeta || args.isRC,
+    generate_release_notes: true,
+    make_latest: (args.isMain || args.isStable) ? 'true' : 'false'
   });
 
   console.log(`Released: ${JSON.stringify(response)}`);
