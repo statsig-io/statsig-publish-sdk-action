@@ -133,7 +133,8 @@ async function pushToPublic(dir: string, args: ActionArgs) {
   const token = await KongOctokit.token();
   const git: SimpleGit = simpleGit();
 
-  const base = args.isMain ? 'main' : 'stable';
+  // We always push to main
+  const base = 'main';
 
   await git
     .clone(createGitRepoUrl(token, privateRepo), dir)
