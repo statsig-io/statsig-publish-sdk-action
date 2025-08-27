@@ -41,6 +41,7 @@ const simple_git_1 = require("simple-git");
 const helpers_1 = require("./helpers");
 const types_1 = require("./types");
 const kong_octokit_1 = __importDefault(require("./kong_octokit"));
+const back_merge_to_main_1 = __importDefault(require("./back_merge_to_main"));
 const PRIV_TO_PUB_REPO_MAP = {
     'ios-client-sdk': 'statsig-kit',
     'private-android-local-eval': 'android-local-eval',
@@ -72,6 +73,9 @@ function syncReposAndCreateRelease(payload) {
         core.debug(`Extracted args: ${JSON.stringify(args)}`);
         payload.pull_request;
         const isServerCore = args.privateRepo === 'private-statsig-server-core';
+        if (isServerCore) {
+            yield (0, back_merge_to_main_1.default)(args);
+        }
         if (isServerCore && args.isRC) {
             yield createPrivateGithubRelease(args);
             return;

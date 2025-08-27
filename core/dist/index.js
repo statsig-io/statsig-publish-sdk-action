@@ -1,6 +1,76 @@
 require('./sourcemap-register.js');/******/ (() => { // webpackBootstrap
 /******/ 	var __webpack_modules__ = ({
 
+/***/ 1996:
+/***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
+
+"use strict";
+
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+const child_process_1 = __nccwpck_require__(2081);
+const kong_octokit_1 = __importDefault(__nccwpck_require__(6271));
+const simple_git_1 = __importDefault(__nccwpck_require__(9103));
+const helpers_1 = __nccwpck_require__(5008);
+function backMergeToMain(args) {
+    return __awaiter(this, void 0, void 0, function* () {
+        // Only act on stable branch publishes
+        if (!args.isStable) {
+            console.log('Not a stable publish, skipping back-merge to main');
+            return;
+        }
+        const token = yield kong_octokit_1.default.token();
+        const git = (0, simple_git_1.default)();
+        const dir = process.cwd() + '/private-sdk';
+        yield git
+            .clone((0, helpers_1.createGitRepoUrl)(token, args.privateRepo), dir)
+            .then(() => git
+            .cwd(dir)
+            .addConfig('user.name', 'statsig-kong[bot]')
+            .addConfig('user.email', 'statsig-kong[bot]@users.noreply.github.com'));
+        console.log('Fetching all and checking out main');
+        yield git.fetch('origin');
+        yield git.checkout('main');
+        yield git.pull('origin', 'main');
+        (0, child_process_1.execSync)('pnpm install --dir cli', { cwd: dir, stdio: 'inherit' });
+        const tagToBump = generateTagToBump(args.version);
+        (0, child_process_1.execSync)(`./tore bump-version ${tagToBump} --create-branch`, { cwd: dir, stdio: 'inherit' });
+        console.log('Merging release branch back to main');
+        (0, child_process_1.execSync)('./tore merge-to-main', { cwd: dir, stdio: 'inherit' });
+    });
+}
+exports["default"] = backMergeToMain;
+function generateTagToBump(tag) {
+    if (tag.startsWith("v")) {
+        tag = tag.substring(1);
+    }
+    const rcMatch = tag.match(/^(.*)-rc\.(\d+)$/);
+    if (rcMatch) {
+        // if tag is rc, just increment rc number
+        const base = rcMatch[1];
+        const rcNumber = parseInt(rcMatch[2], 10) + 1;
+        return `${base}-rc.${rcNumber}`;
+    }
+    else {
+        // if tag is not rc, add rc.1
+        return `${tag}-rc.1`;
+    }
+}
+
+
+/***/ }),
+
 /***/ 5008:
 /***/ ((__unused_webpack_module, exports) => {
 
@@ -213,7 +283,6 @@ const publish_rubygems_1 = __importDefault(__nccwpck_require__(564));
 const types_1 = __nccwpck_require__(8164);
 const publish_crates_io_1 = __importDefault(__nccwpck_require__(805));
 const publish_js_mono_1 = __importDefault(__nccwpck_require__(4893));
-const back_merge_to_main_1 = __importDefault(__nccwpck_require__(6979));
 function pushReleaseToThirdParties(payload) {
     return __awaiter(this, void 0, void 0, function* () {
         const args = yield validateAndExtractArgsFromPayload(payload);
@@ -243,7 +312,6 @@ function getThirdPartyAction(repo) {
         case 'js-client-monorepo':
             return publish_js_mono_1.default;
         case 'statsig-server-core' /* server-core use its own gh action */:
-            return back_merge_to_main_1.default;
         case 'go-sdk':
         case 'android-sdk':
             return () => {
@@ -518,76 +586,6 @@ function prepareForRelease(payload) {
     });
 }
 exports.prepareForRelease = prepareForRelease;
-
-
-/***/ }),
-
-/***/ 6979:
-/***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
-
-"use strict";
-
-var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
-Object.defineProperty(exports, "__esModule", ({ value: true }));
-const child_process_1 = __nccwpck_require__(2081);
-const kong_octokit_1 = __importDefault(__nccwpck_require__(6271));
-const simple_git_1 = __importDefault(__nccwpck_require__(9103));
-const helpers_1 = __nccwpck_require__(5008);
-function backMergeToMain(args) {
-    return __awaiter(this, void 0, void 0, function* () {
-        // Only act on stable branch publishes
-        if (!args.isStable) {
-            console.log('Not a stable publish, skipping back-merge to main');
-            return;
-        }
-        const token = yield kong_octokit_1.default.token();
-        const git = (0, simple_git_1.default)();
-        const dir = process.cwd() + '/private-sdk';
-        yield git
-            .clone((0, helpers_1.createGitRepoUrl)(token, args.repo), dir)
-            .then(() => git
-            .cwd(dir)
-            .addConfig('user.name', 'statsig-kong[bot]')
-            .addConfig('user.email', 'statsig-kong[bot]@users.noreply.github.com'));
-        console.log('Fetching all and checking out main');
-        yield git.fetch('origin');
-        yield git.checkout('main');
-        yield git.pull('origin', 'main');
-        (0, child_process_1.execSync)('pnpm install --dir cli', { cwd: dir, stdio: 'inherit' });
-        const tagToBump = generateTagToBump(args.tag);
-        (0, child_process_1.execSync)(`./tore bump-version ${tagToBump} --create-branch`, { cwd: dir, stdio: 'inherit' });
-        console.log('Merging release branch back to main');
-        (0, child_process_1.execSync)('./tore merge-to-main', { cwd: dir, stdio: 'inherit' });
-    });
-}
-exports["default"] = backMergeToMain;
-function generateTagToBump(tag) {
-    if (tag.startsWith("v")) {
-        tag = tag.substring(1);
-    }
-    const rcMatch = tag.match(/^(.*)-rc\.(\d+)$/);
-    if (rcMatch) {
-        // if tag is rc, just increment rc number
-        const base = rcMatch[1];
-        const rcNumber = parseInt(rcMatch[2], 10) + 1;
-        return `${base}-rc.${rcNumber}`;
-    }
-    else {
-        // if tag is not rc, add rc.1
-        return `${tag}-rc.1`;
-    }
-}
 
 
 /***/ }),
@@ -1088,6 +1086,7 @@ const simple_git_1 = __nccwpck_require__(9103);
 const helpers_1 = __nccwpck_require__(5008);
 const types_1 = __nccwpck_require__(8164);
 const kong_octokit_1 = __importDefault(__nccwpck_require__(6271));
+const back_merge_to_main_1 = __importDefault(__nccwpck_require__(1996));
 const PRIV_TO_PUB_REPO_MAP = {
     'ios-client-sdk': 'statsig-kit',
     'private-android-local-eval': 'android-local-eval',
@@ -1119,6 +1118,9 @@ function syncReposAndCreateRelease(payload) {
         core.debug(`Extracted args: ${JSON.stringify(args)}`);
         payload.pull_request;
         const isServerCore = args.privateRepo === 'private-statsig-server-core';
+        if (isServerCore) {
+            yield (0, back_merge_to_main_1.default)(args);
+        }
         if (isServerCore && args.isRC) {
             yield createPrivateGithubRelease(args);
             return;

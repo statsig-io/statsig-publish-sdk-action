@@ -1,10 +1,11 @@
-import { PublishActionArgs } from './action_args';
+import { PublishActionArgs } from './publishers/action_args';
 import { execSync } from 'child_process';
-import KongOctokit from '../kong_octokit';
+import KongOctokit from './kong_octokit';
 import simpleGit, { SimpleGit } from 'simple-git';
-import { createGitRepoUrl } from '../helpers';
+import { createGitRepoUrl } from './helpers';
+import { ActionArgs } from './release';
 
-export default async function backMergeToMain(args: PublishActionArgs) {
+export default async function backMergeToMain(args: ActionArgs) {
   // Only act on stable branch publishes
   if (!args.isStable) {
     console.log('Not a stable publish, skipping back-merge to main');
@@ -16,7 +17,7 @@ export default async function backMergeToMain(args: PublishActionArgs) {
   const dir = process.cwd() + '/private-sdk';
 
   await git
-    .clone(createGitRepoUrl(token, args.repo), dir)
+    .clone(createGitRepoUrl(token, args.privateRepo), dir)
     .then(() =>
       git
         .cwd(dir)
@@ -31,7 +32,7 @@ export default async function backMergeToMain(args: PublishActionArgs) {
 
   execSync('pnpm install --dir cli', { cwd: dir, stdio: 'inherit' });
 
-  const tagToBump = generateTagToBump(args.tag);
+  const tagToBump = generateTagToBump(args.version);
   execSync(`./tore bump-version ${tagToBump} --create-branch`, { cwd: dir, stdio: 'inherit' });
 
   console.log('Merging release branch back to main');

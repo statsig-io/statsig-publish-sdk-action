@@ -5,8 +5,9 @@ import { SimpleGit, simpleGit } from 'simple-git';
 import { createGitRepoUrl } from './helpers';
 import { SkipActionError } from './types';
 import KongOctokit from './kong_octokit';
+import backMergeToMain from './back_merge_to_main';
 
-type ActionArgs = {
+export type ActionArgs = {
   version: string;
   title: string;
   body: string;
@@ -53,6 +54,10 @@ export async function syncReposAndCreateRelease(payload: WebhookPayload) {
   payload.pull_request;
 
   const isServerCore = args.privateRepo === 'private-statsig-server-core';
+
+  if (isServerCore) {
+    await backMergeToMain(args);
+  }
 
   if (isServerCore && args.isRC) { 
     await createPrivateGithubRelease(args);
