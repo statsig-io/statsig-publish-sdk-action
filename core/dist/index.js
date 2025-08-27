@@ -254,16 +254,17 @@ function getThirdPartyAction(repo) {
     }
 }
 function validateAndExtractArgsFromPayload(payload) {
-    var _a, _b, _c, _d, _e, _f, _g, _h;
+    var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k;
     return __awaiter(this, void 0, void 0, function* () {
         const name = (_a = payload.repository) === null || _a === void 0 ? void 0 : _a.name;
         const tag = (_b = payload.release) === null || _b === void 0 ? void 0 : _b.tag_name;
-        const isStable = ((_d = (_c = payload.release) === null || _c === void 0 ? void 0 : _c.name) === null || _d === void 0 ? void 0 : _d.toLowerCase().includes('[stable]')) === true;
+        const isStable = ((_d = (_c = payload.release) === null || _c === void 0 ? void 0 : _c.name) === null || _d === void 0 ? void 0 : _d.toLowerCase().includes('[stable]')) === true
+            || ((_f = (_e = payload.pull_request) === null || _e === void 0 ? void 0 : _e.base) === null || _f === void 0 ? void 0 : _f.ref) === 'stable';
         if (typeof name !== 'string' || typeof tag !== 'string') {
             throw new Error('Unable to load repository info');
         }
-        const isBeta = ((_g = (_f = (_e = payload.pull_request) === null || _e === void 0 ? void 0 : _e.head) === null || _f === void 0 ? void 0 : _f.ref) === null || _g === void 0 ? void 0 : _g.includes('betas/')) ||
-            ((_h = payload.release) === null || _h === void 0 ? void 0 : _h.prerelease);
+        const isBeta = ((_j = (_h = (_g = payload.pull_request) === null || _g === void 0 ? void 0 : _g.head) === null || _h === void 0 ? void 0 : _h.ref) === null || _j === void 0 ? void 0 : _j.includes('betas/')) ||
+            ((_k = payload.release) === null || _k === void 0 ? void 0 : _k.prerelease);
         const githubToken = yield kong_octokit_1.default.token();
         return {
             tag,
@@ -564,12 +565,29 @@ function backMergeToMain(args) {
         yield git.checkout('main');
         yield git.pull('origin', 'main');
         (0, child_process_1.execSync)('pnpm install --dir cli', { cwd: dir, stdio: 'inherit' });
-        (0, child_process_1.execSync)(`./tore bump-version ${args.tag} --create-branch`, { cwd: dir, stdio: 'inherit' });
+        const tagToBump = generateTagToBump(args.tag);
+        (0, child_process_1.execSync)(`./tore bump-version ${tagToBump} --create-branch`, { cwd: dir, stdio: 'inherit' });
         console.log('Merging release branch back to main');
         (0, child_process_1.execSync)('./tore merge-to-main', { cwd: dir, stdio: 'inherit' });
     });
 }
 exports["default"] = backMergeToMain;
+function generateTagToBump(tag) {
+    if (tag.startsWith("v")) {
+        tag = tag.substring(1);
+    }
+    const rcMatch = tag.match(/^(.*)-rc\.(\d+)$/);
+    if (rcMatch) {
+        // if tag is rc, just increment rc number
+        const base = rcMatch[1];
+        const rcNumber = parseInt(rcMatch[2], 10) + 1;
+        return `${base}-rc.${rcNumber}`;
+    }
+    else {
+        // if tag is not rc, add rc.1
+        return `${tag}-rc.1`;
+    }
+}
 
 
 /***/ }),

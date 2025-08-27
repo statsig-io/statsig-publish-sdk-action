@@ -37,9 +37,26 @@ function backMergeToMain(args) {
         yield git.checkout('main');
         yield git.pull('origin', 'main');
         (0, child_process_1.execSync)('pnpm install --dir cli', { cwd: dir, stdio: 'inherit' });
-        (0, child_process_1.execSync)(`./tore bump-version ${args.tag} --create-branch`, { cwd: dir, stdio: 'inherit' });
+        const tagToBump = generateTagToBump(args.tag);
+        (0, child_process_1.execSync)(`./tore bump-version ${tagToBump} --create-branch`, { cwd: dir, stdio: 'inherit' });
         console.log('Merging release branch back to main');
         (0, child_process_1.execSync)('./tore merge-to-main', { cwd: dir, stdio: 'inherit' });
     });
 }
 exports.default = backMergeToMain;
+function generateTagToBump(tag) {
+    if (tag.startsWith("v")) {
+        tag = tag.substring(1);
+    }
+    const rcMatch = tag.match(/^(.*)-rc\.(\d+)$/);
+    if (rcMatch) {
+        // if tag is rc, just increment rc number
+        const base = rcMatch[1];
+        const rcNumber = parseInt(rcMatch[2], 10) + 1;
+        return `${base}-rc.${rcNumber}`;
+    }
+    else {
+        // if tag is not rc, add rc.1
+        return `${tag}-rc.1`;
+    }
+}

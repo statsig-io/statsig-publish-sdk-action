@@ -30,8 +30,27 @@ export default async function backMergeToMain(args: PublishActionArgs) {
   await git.pull('origin', 'main');
 
   execSync('pnpm install --dir cli', { cwd: dir, stdio: 'inherit' });
-  execSync(`./tore bump-version ${args.tag} --create-branch`, { cwd: dir, stdio: 'inherit' });
+
+  const tagToBump = generateTagToBump(args.tag);
+  execSync(`./tore bump-version ${tagToBump} --create-branch`, { cwd: dir, stdio: 'inherit' });
 
   console.log('Merging release branch back to main');
   execSync('./tore merge-to-main', { cwd: dir, stdio: 'inherit' });
+}
+
+function generateTagToBump(tag: string) {
+    if (tag.startsWith("v")) {
+      tag = tag.substring(1);
+    }
+  
+    const rcMatch = tag.match(/^(.*)-rc\.(\d+)$/);
+    if (rcMatch) {
+      // if tag is rc, just increment rc number
+      const base = rcMatch[1];
+      const rcNumber = parseInt(rcMatch[2], 10) + 1;
+      return `${base}-rc.${rcNumber}`;
+    } else {
+      // if tag is not rc, add rc.1
+      return `${tag}-rc.1`;
+    }
 }
