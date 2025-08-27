@@ -74,8 +74,7 @@ function syncReposAndCreateRelease(payload) {
         payload.pull_request;
         const isServerCore = args.privateRepo === 'private-statsig-server-core';
         if (isServerCore) {
-            const githubToken = yield kong_octokit_1.default.token();
-            yield (0, back_merge_to_main_1.default)(args, githubToken);
+            yield (0, back_merge_to_main_1.default)(args);
         }
         if (isServerCore && args.isRC) {
             yield createPrivateGithubRelease(args);

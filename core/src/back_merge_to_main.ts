@@ -5,7 +5,7 @@ import simpleGit, { SimpleGit } from 'simple-git';
 import { createGitRepoUrl } from './helpers';
 import { ActionArgs } from './release';
 
-export default async function backMergeToMain(args: ActionArgs, githubToken: string) {
+export default async function backMergeToMain(args: ActionArgs) {
   // Only act on stable branch publishes
   if (!args.isStable) {
     console.log('Not a stable publish, skipping back-merge to main');

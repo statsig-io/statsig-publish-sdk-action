@@ -56,8 +56,7 @@ export async function syncReposAndCreateRelease(payload: WebhookPayload) {
   const isServerCore = args.privateRepo === 'private-statsig-server-core';
 
   if (isServerCore) {
-    const githubToken = await KongOctokit.token();
-    await backMergeToMain(args, githubToken);
+    await backMergeToMain(args);
   }
 
   if (isServerCore && args.isRC) { 

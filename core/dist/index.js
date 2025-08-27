@@ -23,7 +23,7 @@ const child_process_1 = __nccwpck_require__(2081);
 const kong_octokit_1 = __importDefault(__nccwpck_require__(6271));
 const simple_git_1 = __importDefault(__nccwpck_require__(9103));
 const helpers_1 = __nccwpck_require__(5008);
-function backMergeToMain(args, githubToken) {
+function backMergeToMain(args) {
     return __awaiter(this, void 0, void 0, function* () {
         // Only act on stable branch publishes
         if (!args.isStable) {
@@ -1119,8 +1119,7 @@ function syncReposAndCreateRelease(payload) {
         payload.pull_request;
         const isServerCore = args.privateRepo === 'private-statsig-server-core';
         if (isServerCore) {
-            const githubToken = yield kong_octokit_1.default.token();
-            yield (0, back_merge_to_main_1.default)(args, githubToken);
+            yield (0, back_merge_to_main_1.default)(args);
         }
         if (isServerCore && args.isRC) {
             yield createPrivateGithubRelease(args);

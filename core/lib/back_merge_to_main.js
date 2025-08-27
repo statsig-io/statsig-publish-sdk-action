@@ -16,7 +16,7 @@ const child_process_1 = require("child_process");
 const kong_octokit_1 = __importDefault(require("./kong_octokit"));
 const simple_git_1 = __importDefault(require("simple-git"));
 const helpers_1 = require("./helpers");
-function backMergeToMain(args, githubToken) {
+function backMergeToMain(args) {
     return __awaiter(this, void 0, void 0, function* () {
         // Only act on stable branch publishes
         if (!args.isStable) {
