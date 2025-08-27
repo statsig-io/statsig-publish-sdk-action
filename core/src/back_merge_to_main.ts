@@ -14,7 +14,7 @@ export default async function backMergeToMain(args: ActionArgs) {
 
   const token = await KongOctokit.token();
   const git: SimpleGit = simpleGit();
-  const dir = process.cwd() + '/private-sdk';
+  const dir = process.cwd() + '/private-sdk-back-merge';
 
   await git
     .clone(createGitRepoUrl(token, args.privateRepo), dir)
