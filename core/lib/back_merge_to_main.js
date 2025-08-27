@@ -25,7 +25,7 @@ function backMergeToMain(args) {
         }
         const token = yield kong_octokit_1.default.token();
         const git = (0, simple_git_1.default)();
-        const dir = process.cwd() + '/private-sdk';
+        const dir = process.cwd() + '/private-sdk-back-merge';
         yield git
             .clone((0, helpers_1.createGitRepoUrl)(token, args.privateRepo), dir)
             .then(() => git
