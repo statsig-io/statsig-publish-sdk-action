@@ -1181,7 +1181,8 @@ function pushToPublic(dir, args) {
         const { title, version, privateRepo, publicRepo, sha } = args;
         const token = yield kong_octokit_1.default.token();
         const git = (0, simple_git_1.simpleGit)();
-        const base = args.isMain ? 'main' : 'stable';
+        // We always push to main
+        const base = 'main';
         yield git
             .clone((0, helpers_1.createGitRepoUrl)(token, privateRepo), dir)
             .then(() => git
