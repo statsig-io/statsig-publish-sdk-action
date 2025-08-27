@@ -1118,8 +1118,13 @@ function syncReposAndCreateRelease(payload) {
         const args = validateAndExtractArgsFromPayload(payload);
         core.debug(`Extracted args: ${JSON.stringify(args)}`);
         payload.pull_request;
+        const isServerCore = args.privateRepo === 'private-statsig-server-core';
+        if (isServerCore && args.isRC) {
+            yield createPrivateGithubRelease(args);
+            return;
+        }
         yield pushToPublic(workingDir, args);
-        yield createGithubRelease(args);
+        yield createPublicGithubRelease(args);
     });
 }
 exports.syncReposAndCreateRelease = syncReposAndCreateRelease;
@@ -1155,6 +1160,7 @@ function validateAndExtractArgsFromPayload(payload) {
     const parts = title.split(' ').slice(1);
     const version = parts[0];
     const isRC = /releases\/\d+\.\d+\.\d+-rc\.\d+/.test(headRef);
+    const isStable = baseRef === 'stable';
     return {
         version,
         title: parts.join(' '),
@@ -1164,7 +1170,8 @@ function validateAndExtractArgsFromPayload(payload) {
         sha,
         isMain: baseRef === 'main',
         isBeta: headRef.includes('betas/'),
-        isRC
+        isRC,
+        isStable
     };
 }
 function pushToPublic(dir, args) {
@@ -1187,7 +1194,7 @@ function pushToPublic(dir, args) {
             .then(() => git.push('public', `releases/${version}`, ['--follow-tags']));
     });
 }
-function createGithubRelease(args) {
+function createPublicGithubRelease(args) {
     return __awaiter(this, void 0, void 0, function* () {
         const { title, version, body, publicRepo } = args;
         const response = yield kong_octokit_1.default.get().rest.repos.createRelease({
@@ -1198,7 +1205,23 @@ function createGithubRelease(args) {
             name: title,
             prerelease: args.isBeta || args.isRC,
             generate_release_notes: true,
-            make_latest: args.isMain ? 'true' : 'false'
+            make_latest: (args.isMain || args.isStable) ? 'true' : 'false'
+        });
+        console.log(`Released: ${JSON.stringify(response)}`);
+    });
+}
+function createPrivateGithubRelease(args) {
+    return __awaiter(this, void 0, void 0, function* () {
+        const { title, version, body, privateRepo } = args;
+        const response = yield kong_octokit_1.default.get().rest.repos.createRelease({
+            owner: 'statsig-io',
+            repo: privateRepo,
+            tag_name: version,
+            body,
+            name: title,
+            prerelease: args.isBeta || args.isRC,
+            generate_release_notes: true,
+            make_latest: (args.isMain || args.isStable) ? 'true' : 'false'
         });
         console.log(`Released: ${JSON.stringify(response)}`);
     });
