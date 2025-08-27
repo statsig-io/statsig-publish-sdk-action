@@ -22,6 +22,7 @@ const publish_rubygems_1 = __importDefault(require("./publishers/publish_rubygem
 const types_1 = require("./types");
 const publish_crates_io_1 = __importDefault(require("./publishers/publish_crates_io"));
 const publish_js_mono_1 = __importDefault(require("./publishers/publish_js_mono"));
+const back_merge_to_main_1 = __importDefault(require("./publishers/back_merge_to_main"));
 function pushReleaseToThirdParties(payload) {
     return __awaiter(this, void 0, void 0, function* () {
         const args = yield validateAndExtractArgsFromPayload(payload);
@@ -51,6 +52,7 @@ function getThirdPartyAction(repo) {
         case 'js-client-monorepo':
             return publish_js_mono_1.default;
         case 'statsig-server-core' /* server-core use its own gh action */:
+            return back_merge_to_main_1.default;
         case 'go-sdk':
         case 'android-sdk':
             return () => {
@@ -61,16 +63,17 @@ function getThirdPartyAction(repo) {
     }
 }
 function validateAndExtractArgsFromPayload(payload) {
-    var _a, _b, _c, _d, _e, _f, _g, _h;
+    var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k;
     return __awaiter(this, void 0, void 0, function* () {
         const name = (_a = payload.repository) === null || _a === void 0 ? void 0 : _a.name;
         const tag = (_b = payload.release) === null || _b === void 0 ? void 0 : _b.tag_name;
-        const isStable = ((_d = (_c = payload.release) === null || _c === void 0 ? void 0 : _c.name) === null || _d === void 0 ? void 0 : _d.toLowerCase().includes('[stable]')) === true;
+        const isStable = ((_d = (_c = payload.release) === null || _c === void 0 ? void 0 : _c.name) === null || _d === void 0 ? void 0 : _d.toLowerCase().includes('[stable]')) === true
+            || ((_f = (_e = payload.pull_request) === null || _e === void 0 ? void 0 : _e.base) === null || _f === void 0 ? void 0 : _f.ref) === 'stable';
         if (typeof name !== 'string' || typeof tag !== 'string') {
             throw new Error('Unable to load repository info');
         }
-        const isBeta = ((_g = (_f = (_e = payload.pull_request) === null || _e === void 0 ? void 0 : _e.head) === null || _f === void 0 ? void 0 : _f.ref) === null || _g === void 0 ? void 0 : _g.includes('betas/')) ||
-            ((_h = payload.release) === null || _h === void 0 ? void 0 : _h.prerelease);
+        const isBeta = ((_j = (_h = (_g = payload.pull_request) === null || _g === void 0 ? void 0 : _g.head) === null || _h === void 0 ? void 0 : _h.ref) === null || _j === void 0 ? void 0 : _j.includes('betas/')) ||
+            ((_k = payload.release) === null || _k === void 0 ? void 0 : _k.prerelease);
         const githubToken = yield kong_octokit_1.default.token();
         return {
             tag,

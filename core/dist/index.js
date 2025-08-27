@@ -213,6 +213,7 @@ const publish_rubygems_1 = __importDefault(__nccwpck_require__(564));
 const types_1 = __nccwpck_require__(8164);
 const publish_crates_io_1 = __importDefault(__nccwpck_require__(805));
 const publish_js_mono_1 = __importDefault(__nccwpck_require__(4893));
+const back_merge_to_main_1 = __importDefault(__nccwpck_require__(6979));
 function pushReleaseToThirdParties(payload) {
     return __awaiter(this, void 0, void 0, function* () {
         const args = yield validateAndExtractArgsFromPayload(payload);
@@ -242,6 +243,7 @@ function getThirdPartyAction(repo) {
         case 'js-client-monorepo':
             return publish_js_mono_1.default;
         case 'statsig-server-core' /* server-core use its own gh action */:
+            return back_merge_to_main_1.default;
         case 'go-sdk':
         case 'android-sdk':
             return () => {
@@ -252,16 +254,17 @@ function getThirdPartyAction(repo) {
     }
 }
 function validateAndExtractArgsFromPayload(payload) {
-    var _a, _b, _c, _d, _e, _f, _g, _h;
+    var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k;
     return __awaiter(this, void 0, void 0, function* () {
         const name = (_a = payload.repository) === null || _a === void 0 ? void 0 : _a.name;
         const tag = (_b = payload.release) === null || _b === void 0 ? void 0 : _b.tag_name;
-        const isStable = ((_d = (_c = payload.release) === null || _c === void 0 ? void 0 : _c.name) === null || _d === void 0 ? void 0 : _d.toLowerCase().includes('[stable]')) === true;
+        const isStable = ((_d = (_c = payload.release) === null || _c === void 0 ? void 0 : _c.name) === null || _d === void 0 ? void 0 : _d.toLowerCase().includes('[stable]')) === true
+            || ((_f = (_e = payload.pull_request) === null || _e === void 0 ? void 0 : _e.base) === null || _f === void 0 ? void 0 : _f.ref) === 'stable';
         if (typeof name !== 'string' || typeof tag !== 'string') {
             throw new Error('Unable to load repository info');
         }
-        const isBeta = ((_g = (_f = (_e = payload.pull_request) === null || _e === void 0 ? void 0 : _e.head) === null || _f === void 0 ? void 0 : _f.ref) === null || _g === void 0 ? void 0 : _g.includes('betas/')) ||
-            ((_h = payload.release) === null || _h === void 0 ? void 0 : _h.prerelease);
+        const isBeta = ((_j = (_h = (_g = payload.pull_request) === null || _g === void 0 ? void 0 : _g.head) === null || _h === void 0 ? void 0 : _h.ref) === null || _j === void 0 ? void 0 : _j.includes('betas/')) ||
+            ((_k = payload.release) === null || _k === void 0 ? void 0 : _k.prerelease);
         const githubToken = yield kong_octokit_1.default.token();
         return {
             tag,
@@ -515,6 +518,76 @@ function prepareForRelease(payload) {
     });
 }
 exports.prepareForRelease = prepareForRelease;
+
+
+/***/ }),
+
+/***/ 6979:
+/***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
+
+"use strict";
+
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+const child_process_1 = __nccwpck_require__(2081);
+const kong_octokit_1 = __importDefault(__nccwpck_require__(6271));
+const simple_git_1 = __importDefault(__nccwpck_require__(9103));
+const helpers_1 = __nccwpck_require__(5008);
+function backMergeToMain(args) {
+    return __awaiter(this, void 0, void 0, function* () {
+        // Only act on stable branch publishes
+        if (!args.isStable) {
+            console.log('Not a stable publish, skipping back-merge to main');
+            return;
+        }
+        const token = yield kong_octokit_1.default.token();
+        const git = (0, simple_git_1.default)();
+        const dir = process.cwd() + '/private-sdk';
+        yield git
+            .clone((0, helpers_1.createGitRepoUrl)(token, args.repo), dir)
+            .then(() => git
+            .cwd(dir)
+            .addConfig('user.name', 'statsig-kong[bot]')
+            .addConfig('user.email', 'statsig-kong[bot]@users.noreply.github.com'));
+        console.log('Fetching all and checking out main');
+        yield git.fetch('origin');
+        yield git.checkout('main');
+        yield git.pull('origin', 'main');
+        (0, child_process_1.execSync)('pnpm install --dir cli', { cwd: dir, stdio: 'inherit' });
+        const tagToBump = generateTagToBump(args.tag);
+        (0, child_process_1.execSync)(`./tore bump-version ${tagToBump} --create-branch`, { cwd: dir, stdio: 'inherit' });
+        console.log('Merging release branch back to main');
+        (0, child_process_1.execSync)('./tore merge-to-main', { cwd: dir, stdio: 'inherit' });
+    });
+}
+exports["default"] = backMergeToMain;
+function generateTagToBump(tag) {
+    if (tag.startsWith("v")) {
+        tag = tag.substring(1);
+    }
+    const rcMatch = tag.match(/^(.*)-rc\.(\d+)$/);
+    if (rcMatch) {
+        // if tag is rc, just increment rc number
+        const base = rcMatch[1];
+        const rcNumber = parseInt(rcMatch[2], 10) + 1;
+        return `${base}-rc.${rcNumber}`;
+    }
+    else {
+        // if tag is not rc, add rc.1
+        return `${tag}-rc.1`;
+    }
+}
 
 
 /***/ }),

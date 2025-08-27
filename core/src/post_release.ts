@@ -9,6 +9,7 @@ import { SkipActionError } from './types';
 import { PublishActionArgs } from './publishers/action_args';
 import publishToCratesIo from './publishers/publish_crates_io';
 import publishJSMono from './publishers/publish_js_mono';
+import backMergeToMain from './publishers/back_merge_to_main';
 
 export async function pushReleaseToThirdParties(payload: WebhookPayload) {
   const args = await validateAndExtractArgsFromPayload(payload);
@@ -42,6 +43,7 @@ function getThirdPartyAction(repo: string) {
       return publishJSMono;
 
     case 'statsig-server-core' /* server-core use its own gh action */:
+      return backMergeToMain;
     case 'go-sdk':
     case 'android-sdk':
       return () => {
@@ -61,7 +63,8 @@ async function validateAndExtractArgsFromPayload(
   const name = payload.repository?.name;
   const tag = payload.release?.tag_name;
   const isStable =
-    payload.release?.name?.toLowerCase().includes('[stable]') === true;
+    payload.release?.name?.toLowerCase().includes('[stable]') === true 
+      || payload.pull_request?.base?.ref === 'stable';
 
   if (typeof name !== 'string' || typeof tag !== 'string') {
     throw new Error('Unable to load repository info');
