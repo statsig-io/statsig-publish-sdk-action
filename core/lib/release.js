@@ -170,11 +170,12 @@ function createPublicGithubRelease(args) {
 }
 function createPrivateGithubRelease(args) {
     return __awaiter(this, void 0, void 0, function* () {
-        const { title, version, body, privateRepo } = args;
+        const { title, version, body, privateRepo, isStable } = args;
         const response = yield kong_octokit_1.default.get().rest.repos.createRelease({
             owner: 'statsig-io',
             repo: privateRepo,
             tag_name: version,
+            target_commitish: isStable ? 'stable' : undefined,
             body,
             name: title,
             prerelease: args.isBeta || args.isRC,
