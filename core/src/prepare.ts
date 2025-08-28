@@ -201,7 +201,7 @@ export async function prepareForRelease(payload: WebhookPayload) {
     KongOctokit.get().pulls.update({
       owner: 'statsig-io',
       repo: payload.repository.name,
-      title: `${payload.pull_request.title} [Stable]`,
+      title: `${payload.pull_request.title} [stable]`,
       pull_number: payload.pull_request.number
     });
   }

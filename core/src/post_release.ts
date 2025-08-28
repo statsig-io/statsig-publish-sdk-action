@@ -61,7 +61,8 @@ async function validateAndExtractArgsFromPayload(
   const name = payload.repository?.name;
   const tag = payload.release?.tag_name;
   const isStable =
-    payload.release?.name?.toLowerCase().includes('[stable]') === true;
+    payload.release?.name?.toLowerCase().includes('[stable]') === true 
+      || payload.pull_request?.base?.ref === 'stable';
 
   if (typeof name !== 'string' || typeof tag !== 'string') {
     throw new Error('Unable to load repository info');

@@ -1,6 +1,76 @@
 require('./sourcemap-register.js');/******/ (() => { // webpackBootstrap
 /******/ 	var __webpack_modules__ = ({
 
+/***/ 1996:
+/***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
+
+"use strict";
+
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+const child_process_1 = __nccwpck_require__(2081);
+const kong_octokit_1 = __importDefault(__nccwpck_require__(6271));
+const simple_git_1 = __importDefault(__nccwpck_require__(9103));
+const helpers_1 = __nccwpck_require__(5008);
+function backMergeToMain(args) {
+    return __awaiter(this, void 0, void 0, function* () {
+        // Only act on stable branch publishes
+        if (!args.isStable) {
+            console.log('Not a stable publish, skipping back-merge to main');
+            return;
+        }
+        const token = yield kong_octokit_1.default.token();
+        const git = (0, simple_git_1.default)();
+        const dir = process.cwd() + '/private-sdk-back-merge';
+        yield git
+            .clone((0, helpers_1.createGitRepoUrl)(token, args.privateRepo), dir)
+            .then(() => git
+            .cwd(dir)
+            .addConfig('user.name', 'statsig-kong[bot]')
+            .addConfig('user.email', 'statsig-kong[bot]@users.noreply.github.com'));
+        console.log('Fetching all and checking out main');
+        yield git.fetch('origin');
+        yield git.checkout('main');
+        yield git.pull('origin', 'main');
+        (0, child_process_1.execSync)('pnpm install --dir cli', { cwd: dir, stdio: 'inherit' });
+        const tagToBump = generateTagToBump(args.version);
+        (0, child_process_1.execSync)(`./tore bump-version ${tagToBump} --create-branch`, { cwd: dir, stdio: 'inherit' });
+        console.log('Merging release branch back to main');
+        (0, child_process_1.execSync)('./tore merge-to-main', { cwd: dir, stdio: 'inherit' });
+    });
+}
+exports["default"] = backMergeToMain;
+function generateTagToBump(tag) {
+    if (tag.startsWith("v")) {
+        tag = tag.substring(1);
+    }
+    const rcMatch = tag.match(/^(.*)-rc\.(\d+)$/);
+    if (rcMatch) {
+        // if tag is rc, just increment rc number
+        const base = rcMatch[1];
+        const rcNumber = parseInt(rcMatch[2], 10) + 1;
+        return `${base}-rc.${rcNumber}`;
+    }
+    else {
+        // if tag is not rc, add rc.1
+        return `${tag}-rc.1`;
+    }
+}
+
+
+/***/ }),
+
 /***/ 5008:
 /***/ ((__unused_webpack_module, exports) => {
 
@@ -252,16 +322,17 @@ function getThirdPartyAction(repo) {
     }
 }
 function validateAndExtractArgsFromPayload(payload) {
-    var _a, _b, _c, _d, _e, _f, _g, _h;
+    var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k;
     return __awaiter(this, void 0, void 0, function* () {
         const name = (_a = payload.repository) === null || _a === void 0 ? void 0 : _a.name;
         const tag = (_b = payload.release) === null || _b === void 0 ? void 0 : _b.tag_name;
-        const isStable = ((_d = (_c = payload.release) === null || _c === void 0 ? void 0 : _c.name) === null || _d === void 0 ? void 0 : _d.toLowerCase().includes('[stable]')) === true;
+        const isStable = ((_d = (_c = payload.release) === null || _c === void 0 ? void 0 : _c.name) === null || _d === void 0 ? void 0 : _d.toLowerCase().includes('[stable]')) === true
+            || ((_f = (_e = payload.pull_request) === null || _e === void 0 ? void 0 : _e.base) === null || _f === void 0 ? void 0 : _f.ref) === 'stable';
         if (typeof name !== 'string' || typeof tag !== 'string') {
             throw new Error('Unable to load repository info');
         }
-        const isBeta = ((_g = (_f = (_e = payload.pull_request) === null || _e === void 0 ? void 0 : _e.head) === null || _f === void 0 ? void 0 : _f.ref) === null || _g === void 0 ? void 0 : _g.includes('betas/')) ||
-            ((_h = payload.release) === null || _h === void 0 ? void 0 : _h.prerelease);
+        const isBeta = ((_j = (_h = (_g = payload.pull_request) === null || _g === void 0 ? void 0 : _g.head) === null || _h === void 0 ? void 0 : _h.ref) === null || _j === void 0 ? void 0 : _j.includes('betas/')) ||
+            ((_k = payload.release) === null || _k === void 0 ? void 0 : _k.prerelease);
         const githubToken = yield kong_octokit_1.default.token();
         return {
             tag,
@@ -489,7 +560,7 @@ function prepareForRelease(payload) {
             kong_octokit_1.default.get().pulls.update({
                 owner: 'statsig-io',
                 repo: payload.repository.name,
-                title: `${payload.pull_request.title} [Stable]`,
+                title: `${payload.pull_request.title} [stable]`,
                 pull_number: payload.pull_request.number
             });
         }
@@ -1015,6 +1086,7 @@ const simple_git_1 = __nccwpck_require__(9103);
 const helpers_1 = __nccwpck_require__(5008);
 const types_1 = __nccwpck_require__(8164);
 const kong_octokit_1 = __importDefault(__nccwpck_require__(6271));
+const back_merge_to_main_1 = __importDefault(__nccwpck_require__(1996));
 const PRIV_TO_PUB_REPO_MAP = {
     'ios-client-sdk': 'statsig-kit',
     'private-android-local-eval': 'android-local-eval',
@@ -1045,8 +1117,16 @@ function syncReposAndCreateRelease(payload) {
         const args = validateAndExtractArgsFromPayload(payload);
         core.debug(`Extracted args: ${JSON.stringify(args)}`);
         payload.pull_request;
+        const isServerCore = args.privateRepo === 'private-statsig-server-core';
+        if (isServerCore) {
+            yield (0, back_merge_to_main_1.default)(args);
+        }
+        if (isServerCore && args.isRC) {
+            yield createPrivateGithubRelease(args);
+            return;
+        }
         yield pushToPublic(workingDir, args);
-        yield createGithubRelease(args);
+        yield createPublicGithubRelease(args);
     });
 }
 exports.syncReposAndCreateRelease = syncReposAndCreateRelease;
@@ -1082,6 +1162,7 @@ function validateAndExtractArgsFromPayload(payload) {
     const parts = title.split(' ').slice(1);
     const version = parts[0];
     const isRC = /releases\/\d+\.\d+\.\d+-rc\.\d+/.test(headRef);
+    const isStable = baseRef === 'stable';
     return {
         version,
         title: parts.join(' '),
@@ -1091,7 +1172,8 @@ function validateAndExtractArgsFromPayload(payload) {
         sha,
         isMain: baseRef === 'main',
         isBeta: headRef.includes('betas/'),
-        isRC
+        isRC,
+        isStable
     };
 }
 function pushToPublic(dir, args) {
@@ -1099,7 +1181,8 @@ function pushToPublic(dir, args) {
         const { title, version, privateRepo, publicRepo, sha } = args;
         const token = yield kong_octokit_1.default.token();
         const git = (0, simple_git_1.simpleGit)();
-        const base = args.isMain ? 'main' : 'stable';
+        // We always push to main
+        const base = 'main';
         yield git
             .clone((0, helpers_1.createGitRepoUrl)(token, privateRepo), dir)
             .then(() => git
@@ -1114,7 +1197,7 @@ function pushToPublic(dir, args) {
             .then(() => git.push('public', `releases/${version}`, ['--follow-tags']));
     });
 }
-function createGithubRelease(args) {
+function createPublicGithubRelease(args) {
     return __awaiter(this, void 0, void 0, function* () {
         const { title, version, body, publicRepo } = args;
         const response = yield kong_octokit_1.default.get().rest.repos.createRelease({
@@ -1125,7 +1208,23 @@ function createGithubRelease(args) {
             name: title,
             prerelease: args.isBeta || args.isRC,
             generate_release_notes: true,
-            make_latest: args.isMain ? 'true' : 'false'
+            make_latest: (args.isMain || args.isStable) ? 'true' : 'false'
+        });
+        console.log(`Released: ${JSON.stringify(response)}`);
+    });
+}
+function createPrivateGithubRelease(args) {
+    return __awaiter(this, void 0, void 0, function* () {
+        const { title, version, body, privateRepo } = args;
+        const response = yield kong_octokit_1.default.get().rest.repos.createRelease({
+            owner: 'statsig-io',
+            repo: privateRepo,
+            tag_name: version,
+            body,
+            name: title,
+            prerelease: args.isBeta || args.isRC,
+            generate_release_notes: true,
+            make_latest: (args.isMain || args.isStable) ? 'true' : 'false'
         });
         console.log(`Released: ${JSON.stringify(response)}`);
     });
