@@ -4,7 +4,6 @@ import { syncReposAndCreateRelease } from './release';
 import { SkipActionError } from './types';
 import { prepareForRelease } from './prepare';
 import { pushReleaseToThirdParties } from './post_release';
-import packageJson from '../package.json';
 
 /**
  * See also: test-sdk-repo-private and test-sdk-repo-public.
@@ -13,10 +12,8 @@ import packageJson from '../package.json';
 async function run(): Promise<void> {
   try {
     const payload = github.context.payload;
+    core.debug(`-- statsig-io/statsig-publish-sdk-action -- `);
     core.debug(`Payload: ${JSON.stringify(payload)}`);
-    core.debug(
-      `statsig-io/statsig-publish-sdk-action version: ${packageJson.version}`
-    );
 
     if (payload.pull_request) {
       switch (payload.action) {

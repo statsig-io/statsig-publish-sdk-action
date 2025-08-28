@@ -31,9 +31,6 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
 Object.defineProperty(exports, "__esModule", { value: true });
 const core = __importStar(require("@actions/core"));
 const github = __importStar(require("@actions/github"));
@@ -41,7 +38,6 @@ const release_1 = require("./release");
 const types_1 = require("./types");
 const prepare_1 = require("./prepare");
 const post_release_1 = require("./post_release");
-const package_json_1 = __importDefault(require("../package.json"));
 /**
  * See also: test-sdk-repo-private and test-sdk-repo-public.
  */
@@ -49,8 +45,8 @@ function run() {
     return __awaiter(this, void 0, void 0, function* () {
         try {
             const payload = github.context.payload;
+            core.debug(`-- statsig-io/statsig-publish-sdk-action -- `);
             core.debug(`Payload: ${JSON.stringify(payload)}`);
-            core.debug(`statsig-io/statsig-publish-sdk-action version: ${package_json_1.default.version}`);
             if (payload.pull_request) {
                 switch (payload.action) {
                     case 'opened':

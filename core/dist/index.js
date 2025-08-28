@@ -138,7 +138,7 @@ class KongOctokit {
             auth: {
                 appId: 229901,
                 installationId: 36921303,
-                privateKey: JSON.parse(token)
+                privateKey: token
             }
         });
     }
@@ -211,6 +211,7 @@ function run() {
     return __awaiter(this, void 0, void 0, function* () {
         try {
             const payload = github.context.payload;
+            core.debug(`-- statsig-io/statsig-publish-sdk-action -- `);
             core.debug(`Payload: ${JSON.stringify(payload)}`);
             if (payload.pull_request) {
                 switch (payload.action) {

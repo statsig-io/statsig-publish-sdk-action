@@ -1,6 +1,6 @@
 {
   "name": "statsig-publish-sdk-action",
-  "version": "1.0.1",
+  "version": "1.0.0",
   "private": true,
   "description": "TypeScript template action",
   "main": "lib/main.js",
