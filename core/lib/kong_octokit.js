@@ -46,7 +46,7 @@ class KongOctokit {
             auth: {
                 appId: 229901,
                 installationId: 36921303,
-                privateKey: JSON.parse(token)
+                privateKey: token
             }
         });
     }
