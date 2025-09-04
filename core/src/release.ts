@@ -135,7 +135,7 @@ async function pushToPublic(dir: string, args: ActionArgs) {
   const git: SimpleGit = simpleGit();
 
   // We always push to main
-  const base = args.isMain ? 'main' : 'stable';
+  const base = 'main';
 
   await git
     .clone(createGitRepoUrl(token, privateRepo), dir)
