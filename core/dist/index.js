@@ -725,7 +725,7 @@ const core = __importStar(__nccwpck_require__(2186));
 const child_process_1 = __nccwpck_require__(2081);
 function publishJSMono(args) {
     var _a, e_1, _b, _c;
-    var _d;
+    var _d, _e;
     return __awaiter(this, void 0, void 0, function* () {
         const NPM_TOKEN = (_d = core.getInput('npm-token')) !== null && _d !== void 0 ? _d : '';
         if (NPM_TOKEN === '') {
@@ -734,25 +734,30 @@ function publishJSMono(args) {
         const commands = [
             'pnpm install',
             `echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" > .npmrc`,
-            `pnpm exec nx run statsig:publish-all`,
+            `pnpm exec nx run statsig:publish-all --verbose`,
         ];
         const opts = {
             cwd: args.workingDir
         };
         try {
-            for (var _e = true, commands_1 = __asyncValues(commands), commands_1_1; commands_1_1 = yield commands_1.next(), _a = commands_1_1.done, !_a; _e = true) {
+            for (var _f = true, commands_1 = __asyncValues(commands), commands_1_1; commands_1_1 = yield commands_1.next(), _a = commands_1_1.done, !_a; _f = true) {
                 _c = commands_1_1.value;
-                _e = false;
+                _f = false;
                 const command = _c;
                 console.log(`[${command}] Executing...`);
-                const result = (0, child_process_1.execSync)(command, opts);
-                console.log(`[${command}] Done`, result);
+                try {
+                    const result = (0, child_process_1.execSync)(command, opts);
+                }
+                catch (error) {
+                    console.error(`[${command}] Error`, (_e = error.stdout) === null || _e === void 0 ? void 0 : _e.toString());
+                    throw error;
+                }
             }
         }
         catch (e_1_1) { e_1 = { error: e_1_1 }; }
         finally {
             try {
-                if (!_e && !_a && (_b = commands_1.return)) yield _b.call(commands_1);
+                if (!_f && !_a && (_b = commands_1.return)) yield _b.call(commands_1);
             }
             finally { if (e_1) throw e_1.error; }
         }

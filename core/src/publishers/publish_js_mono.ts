@@ -1,4 +1,5 @@
 import * as core from '@actions/core';
+
 import { PublishActionArgs } from './action_args';
 import { execSync } from 'child_process';
 
@@ -11,7 +12,7 @@ export default async function publishJSMono(args: PublishActionArgs) {
   const commands = [
     'pnpm install',
     `echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" > .npmrc`,
-    `pnpm exec nx run statsig:publish-all`,
+    `pnpm exec nx run statsig:publish-all --verbose`,
   ];
 
   const opts = {
@@ -20,8 +21,13 @@ export default async function publishJSMono(args: PublishActionArgs) {
 
   for await (const command of commands) {
     console.log(`[${command}] Executing...`);
-    const result = execSync(command, opts);
-    console.log(`[${command}] Done`, result);
+    try {
+      const result = execSync(command, opts);
+    } catch (error) {
+      console.error(`[${command}] Error`, (error as any).stdout?.toString());
+      throw error;
+    }
+    // console.log(`[${command}] Done`, result);
   }
 
   console.log('🎉 JS Mono Done!');
