@@ -1084,10 +1084,10 @@ Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.syncReposAndCreateRelease = void 0;
 const core = __importStar(__nccwpck_require__(2186));
 const simple_git_1 = __nccwpck_require__(9103);
-const helpers_1 = __nccwpck_require__(5008);
-const types_1 = __nccwpck_require__(8164);
 const kong_octokit_1 = __importDefault(__nccwpck_require__(6271));
+const types_1 = __nccwpck_require__(8164);
 const back_merge_to_main_1 = __importDefault(__nccwpck_require__(1996));
+const helpers_1 = __nccwpck_require__(5008);
 const PRIV_TO_PUB_REPO_MAP = {
     'ios-client-sdk': 'statsig-kit',
     'private-android-local-eval': 'android-local-eval',
@@ -1183,7 +1183,7 @@ function pushToPublic(dir, args) {
         const token = yield kong_octokit_1.default.token();
         const git = (0, simple_git_1.simpleGit)();
         // We always push to main
-        const base = 'main';
+        const base = args.isMain ? 'main' : 'stable';
         yield git
             .clone((0, helpers_1.createGitRepoUrl)(token, privateRepo), dir)
             .then(() => git

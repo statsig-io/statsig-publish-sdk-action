@@ -38,10 +38,10 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.syncReposAndCreateRelease = void 0;
 const core = __importStar(require("@actions/core"));
 const simple_git_1 = require("simple-git");
-const helpers_1 = require("./helpers");
-const types_1 = require("./types");
 const kong_octokit_1 = __importDefault(require("./kong_octokit"));
+const types_1 = require("./types");
 const back_merge_to_main_1 = __importDefault(require("./back_merge_to_main"));
+const helpers_1 = require("./helpers");
 const PRIV_TO_PUB_REPO_MAP = {
     'ios-client-sdk': 'statsig-kit',
     'private-android-local-eval': 'android-local-eval',
@@ -137,7 +137,7 @@ function pushToPublic(dir, args) {
         const token = yield kong_octokit_1.default.token();
         const git = (0, simple_git_1.simpleGit)();
         // We always push to main
-        const base = 'main';
+        const base = args.isMain ? 'main' : 'stable';
         yield git
             .clone((0, helpers_1.createGitRepoUrl)(token, privateRepo), dir)
             .then(() => git

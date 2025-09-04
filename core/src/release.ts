@@ -1,11 +1,12 @@
 import * as core from '@actions/core';
 
-import { WebhookPayload } from '@actions/github/lib/interfaces';
 import { SimpleGit, simpleGit } from 'simple-git';
-import { createGitRepoUrl } from './helpers';
-import { SkipActionError } from './types';
+
 import KongOctokit from './kong_octokit';
+import { SkipActionError } from './types';
+import { WebhookPayload } from '@actions/github/lib/interfaces';
 import backMergeToMain from './back_merge_to_main';
+import { createGitRepoUrl } from './helpers';
 
 export type ActionArgs = {
   version: string;
@@ -134,7 +135,7 @@ async function pushToPublic(dir: string, args: ActionArgs) {
   const git: SimpleGit = simpleGit();
 
   // We always push to main
-  const base = 'main';
+  const base = args.isMain ? 'main' : 'stable';
 
   await git
     .clone(createGitRepoUrl(token, privateRepo), dir)
