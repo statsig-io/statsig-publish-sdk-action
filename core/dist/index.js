@@ -733,6 +733,7 @@ function publishJSMono(args) {
         }
         const commands = [
             'pnpm install',
+            'npx nx --version',
             `echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" > .npmrc`,
             `pnpm exec nx run statsig:publish-all --verbose`,
         ];
