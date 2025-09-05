@@ -1201,12 +1201,13 @@ function pushToPublic(dir, args) {
 function createPublicGithubRelease(args) {
     return __awaiter(this, void 0, void 0, function* () {
         const { title, version, body, publicRepo } = args;
+        const releaseName = title.replace(/\[stable\]/gi, '').replace(/\s{2,}/g, ' ').trim();
         const response = yield kong_octokit_1.default.get().rest.repos.createRelease({
             owner: 'statsig-io',
             repo: publicRepo,
             tag_name: version,
             body,
-            name: title,
+            name: releaseName,
             prerelease: args.isBeta || args.isRC,
             generate_release_notes: true,
             make_latest: (args.isMain || args.isStable) ? 'true' : 'false'
@@ -1217,13 +1218,14 @@ function createPublicGithubRelease(args) {
 function createPrivateGithubRelease(args) {
     return __awaiter(this, void 0, void 0, function* () {
         const { title, version, body, privateRepo, isStable } = args;
+        const releaseName = title.replace(/\[stable\]/gi, '').replace(/\s{2,}/g, ' ').trim();
         const response = yield kong_octokit_1.default.get().rest.repos.createRelease({
             owner: 'statsig-io',
             repo: privateRepo,
             tag_name: version,
             target_commitish: isStable ? 'stable' : undefined,
             body,
-            name: title,
+            name: releaseName,
             prerelease: args.isBeta || args.isRC,
             generate_release_notes: true,
             make_latest: (args.isMain || args.isStable) ? 'true' : 'false'

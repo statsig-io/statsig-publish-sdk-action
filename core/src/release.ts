@@ -156,12 +156,14 @@ async function pushToPublic(dir: string, args: ActionArgs) {
 async function createPublicGithubRelease(args: ActionArgs) {
   const { title, version, body, publicRepo } = args;
 
+  const releaseName = title.replace(/\[stable\]/gi, '').replace(/\s{2,}/g, ' ').trim();
+
   const response = await KongOctokit.get().rest.repos.createRelease({
     owner: 'statsig-io',
     repo: publicRepo,
     tag_name: version,
     body,
-    name: title,
+    name: releaseName,
     prerelease: args.isBeta || args.isRC,
     generate_release_notes: true,
     make_latest: (args.isMain || args.isStable) ? 'true' : 'false'
@@ -173,13 +175,15 @@ async function createPublicGithubRelease(args: ActionArgs) {
 async function createPrivateGithubRelease(args: ActionArgs) {
   const { title, version, body, privateRepo, isStable } = args;
 
+  const releaseName = title.replace(/\[stable\]/gi, '').replace(/\s{2,}/g, ' ').trim();
+
   const response = await KongOctokit.get().rest.repos.createRelease({
     owner: 'statsig-io',
     repo: privateRepo,
     tag_name: version,
     target_commitish: isStable ? 'stable' : undefined,
     body,
-    name: title,
+    name: releaseName,
     prerelease: args.isBeta || args.isRC,
     generate_release_notes: true,
     make_latest: (args.isMain || args.isStable) ? 'true' : 'false'
