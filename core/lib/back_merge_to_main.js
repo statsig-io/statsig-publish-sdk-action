@@ -18,9 +18,9 @@ const simple_git_1 = __importDefault(require("simple-git"));
 const helpers_1 = require("./helpers");
 function backMergeToMain(args) {
     return __awaiter(this, void 0, void 0, function* () {
-        // Only act on stable branch publishes
-        if (!args.isStable) {
-            console.log('Not a stable publish, skipping back-merge to main');
+        // Only act on rc branch publishes
+        if (args.fromBranch !== 'rc') {
+            console.log('Not a rc branch publish, skipping back-merge to main');
             return;
         }
         const token = yield kong_octokit_1.default.token();

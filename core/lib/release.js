@@ -93,15 +93,15 @@ function validateAndExtractArgsFromPayload(payload) {
     if (typeof headRef !== 'string' || !headRef.startsWith('releases/')) {
         throw new types_1.SkipActionError('Not a branch on releases/*');
     }
-    if (baseRef !== 'main' && baseRef !== 'stable') {
+    if (baseRef !== 'main' && baseRef !== 'stable' && baseRef !== 'rc') {
         throw new types_1.SkipActionError('Pull request not against a valid branch');
     }
     if (((_j = payload.pull_request) === null || _j === void 0 ? void 0 : _j.merged) !== true) {
         throw new types_1.SkipActionError('Not a merged pull request');
     }
     const { title, body } = payload.pull_request;
-    if (typeof title !== 'string' || !title.startsWith('[release] ')) {
-        throw new types_1.SkipActionError('[release] not present in title');
+    if (typeof title !== 'string' || !title.startsWith('[release] ') || !title.startsWith('[rc] ')) {
+        throw new types_1.SkipActionError('[release] or [rc] not present in title');
     }
     if (!payload.repository) {
         throw new Error('Unable to load repository info');
@@ -118,6 +118,7 @@ function validateAndExtractArgsFromPayload(payload) {
     const version = parts[0];
     const isRC = /releases\/\d+\.\d+\.\d+-rc\.\d+/.test(headRef);
     const isStable = baseRef === 'stable';
+    const fromBranch = baseRef;
     return {
         version,
         title: parts.join(' '),
@@ -128,7 +129,8 @@ function validateAndExtractArgsFromPayload(payload) {
         isMain: baseRef === 'main',
         isBeta: headRef.includes('betas/'),
         isRC,
-        isStable
+        isStable,
+        fromBranch
     };
 }
 function pushToPublic(dir, args) {
@@ -155,7 +157,8 @@ function pushToPublic(dir, args) {
 function createPublicGithubRelease(args) {
     return __awaiter(this, void 0, void 0, function* () {
         const { title, version, body, publicRepo } = args;
-        const releaseName = title.replace(/\[stable\]/gi, '').replace(/\s{2,}/g, ' ').trim();
+        const releaseName = title.replace(/\[rc\]/gi, '').replace(/\s{2,}/g, ' ').trim();
+        const isFromRcBranch = args.fromBranch === 'rc';
         const response = yield kong_octokit_1.default.get().rest.repos.createRelease({
             owner: 'statsig-io',
             repo: publicRepo,
@@ -164,7 +167,7 @@ function createPublicGithubRelease(args) {
             name: releaseName,
             prerelease: args.isBeta || args.isRC,
             generate_release_notes: true,
-            make_latest: (args.isMain || args.isStable) ? 'true' : 'false'
+            make_latest: (args.isMain || isFromRcBranch) ? 'true' : 'false'
         });
         console.log(`Released: ${JSON.stringify(response)}`);
     });
@@ -172,7 +175,7 @@ function createPublicGithubRelease(args) {
 function createPrivateGithubRelease(args) {
     return __awaiter(this, void 0, void 0, function* () {
         const { title, version, body, privateRepo, isStable } = args;
-        const releaseName = title.replace(/\[stable\]/gi, '').replace(/\s{2,}/g, ' ').trim();
+        const releaseName = title.replace(/\[rc\]/gi, '').replace(/\s{2,}/g, ' ').trim();
         const response = yield kong_octokit_1.default.get().rest.repos.createRelease({
             owner: 'statsig-io',
             repo: privateRepo,
