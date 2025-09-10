@@ -91,8 +91,8 @@ function validateAndExtractArgsFromPayload(
   }
 
   const { title, body } = payload.pull_request;
-  if (typeof title !== 'string' || (!title.startsWith('[release] ') && !title.startsWith('[rc] '))) {
-    throw new SkipActionError('[release] or [rc] not present in title');
+  if (typeof title !== 'string' || !title.startsWith('[release] ')) {
+    throw new SkipActionError('[release] not present in title');
   }
 
   if (!payload.repository) {
