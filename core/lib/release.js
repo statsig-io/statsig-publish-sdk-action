@@ -100,8 +100,8 @@ function validateAndExtractArgsFromPayload(payload) {
         throw new types_1.SkipActionError('Not a merged pull request');
     }
     const { title, body } = payload.pull_request;
-    if (typeof title !== 'string' || (!title.startsWith('[release] ') && !title.startsWith('[rc] '))) {
-        throw new types_1.SkipActionError('[release] or [rc] not present in title');
+    if (typeof title !== 'string' || !title.startsWith('[release] ')) {
+        throw new types_1.SkipActionError('[release] not present in title');
     }
     if (!payload.repository) {
         throw new Error('Unable to load repository info');
