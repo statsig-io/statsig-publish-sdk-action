@@ -195,13 +195,13 @@ export async function prepareForRelease(payload: WebhookPayload) {
 
   const baseRef = payload.pull_request.base?.ref;
   if (
-    baseRef === 'stable' &&
-    !payload.pull_request.title?.toLowerCase()?.endsWith('[stable]')
+    baseRef === 'rc' &&
+    !payload.pull_request.title?.toLowerCase()?.startsWith('[rc]')
   ) {
     KongOctokit.get().pulls.update({
       owner: 'statsig-io',
       repo: payload.repository.name,
-      title: `${payload.pull_request.title} [stable]`,
+      title: `[rc] ${payload.pull_request.title}`,
       pull_number: payload.pull_request.number
     });
   }

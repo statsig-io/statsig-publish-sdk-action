@@ -192,12 +192,12 @@ function prepareForRelease(payload) {
             throw new Error('Failed to load pull_request information');
         }
         const baseRef = (_a = payload.pull_request.base) === null || _a === void 0 ? void 0 : _a.ref;
-        if (baseRef === 'stable' &&
-            !((_c = (_b = payload.pull_request.title) === null || _b === void 0 ? void 0 : _b.toLowerCase()) === null || _c === void 0 ? void 0 : _c.endsWith('[stable]'))) {
+        if (baseRef === 'rc' &&
+            !((_c = (_b = payload.pull_request.title) === null || _b === void 0 ? void 0 : _b.toLowerCase()) === null || _c === void 0 ? void 0 : _c.startsWith('[rc]'))) {
             kong_octokit_1.default.get().pulls.update({
                 owner: 'statsig-io',
                 repo: payload.repository.name,
-                title: `${payload.pull_request.title} [stable]`,
+                title: `[rc] ${payload.pull_request.title}`,
                 pull_number: payload.pull_request.number
             });
         }

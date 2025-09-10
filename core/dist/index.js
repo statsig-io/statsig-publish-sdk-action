@@ -25,9 +25,9 @@ const simple_git_1 = __importDefault(__nccwpck_require__(9103));
 const helpers_1 = __nccwpck_require__(5008);
 function backMergeToMain(args) {
     return __awaiter(this, void 0, void 0, function* () {
-        // Only act on stable branch publishes
-        if (!args.isStable) {
-            console.log('Not a stable publish, skipping back-merge to main');
+        // Only act on rc branch publishes
+        if (args.fromBranch !== 'rc') {
+            console.log('Not a rc branch publish, skipping back-merge to main');
             return;
         }
         const token = yield kong_octokit_1.default.token();
@@ -556,12 +556,12 @@ function prepareForRelease(payload) {
             throw new Error('Failed to load pull_request information');
         }
         const baseRef = (_a = payload.pull_request.base) === null || _a === void 0 ? void 0 : _a.ref;
-        if (baseRef === 'stable' &&
-            !((_c = (_b = payload.pull_request.title) === null || _b === void 0 ? void 0 : _b.toLowerCase()) === null || _c === void 0 ? void 0 : _c.endsWith('[stable]'))) {
+        if (baseRef === 'rc' &&
+            !((_c = (_b = payload.pull_request.title) === null || _b === void 0 ? void 0 : _b.toLowerCase()) === null || _c === void 0 ? void 0 : _c.startsWith('[rc]'))) {
             kong_octokit_1.default.get().pulls.update({
                 owner: 'statsig-io',
                 repo: payload.repository.name,
-                title: `${payload.pull_request.title} [stable]`,
+                title: `[rc] ${payload.pull_request.title}`,
                 pull_number: payload.pull_request.number
             });
         }
@@ -1139,15 +1139,15 @@ function validateAndExtractArgsFromPayload(payload) {
     if (typeof headRef !== 'string' || !headRef.startsWith('releases/')) {
         throw new types_1.SkipActionError('Not a branch on releases/*');
     }
-    if (baseRef !== 'main' && baseRef !== 'stable') {
+    if (baseRef !== 'main' && baseRef !== 'stable' && baseRef !== 'rc') {
         throw new types_1.SkipActionError('Pull request not against a valid branch');
     }
     if (((_j = payload.pull_request) === null || _j === void 0 ? void 0 : _j.merged) !== true) {
         throw new types_1.SkipActionError('Not a merged pull request');
     }
     const { title, body } = payload.pull_request;
-    if (typeof title !== 'string' || !title.startsWith('[release] ')) {
-        throw new types_1.SkipActionError('[release] not present in title');
+    if (typeof title !== 'string' || !title.startsWith('[release] ') || !title.startsWith('[rc] ')) {
+        throw new types_1.SkipActionError('[release] or [rc] not present in title');
     }
     if (!payload.repository) {
         throw new Error('Unable to load repository info');
@@ -1164,6 +1164,7 @@ function validateAndExtractArgsFromPayload(payload) {
     const version = parts[0];
     const isRC = /releases\/\d+\.\d+\.\d+-rc\.\d+/.test(headRef);
     const isStable = baseRef === 'stable';
+    const fromBranch = baseRef;
     return {
         version,
         title: parts.join(' '),
@@ -1174,7 +1175,8 @@ function validateAndExtractArgsFromPayload(payload) {
         isMain: baseRef === 'main',
         isBeta: headRef.includes('betas/'),
         isRC,
-        isStable
+        isStable,
+        fromBranch
     };
 }
 function pushToPublic(dir, args) {
@@ -1201,7 +1203,8 @@ function pushToPublic(dir, args) {
 function createPublicGithubRelease(args) {
     return __awaiter(this, void 0, void 0, function* () {
         const { title, version, body, publicRepo } = args;
-        const releaseName = title.replace(/\[stable\]/gi, '').replace(/\s{2,}/g, ' ').trim();
+        const releaseName = title.replace(/\[rc\]/gi, '').replace(/\s{2,}/g, ' ').trim();
+        const isFromRcBranch = args.fromBranch === 'rc';
         const response = yield kong_octokit_1.default.get().rest.repos.createRelease({
             owner: 'statsig-io',
             repo: publicRepo,
@@ -1210,7 +1213,7 @@ function createPublicGithubRelease(args) {
             name: releaseName,
             prerelease: args.isBeta || args.isRC,
             generate_release_notes: true,
-            make_latest: (args.isMain || args.isStable) ? 'true' : 'false'
+            make_latest: (args.isMain || isFromRcBranch) ? 'true' : 'false'
         });
         console.log(`Released: ${JSON.stringify(response)}`);
     });
@@ -1218,7 +1221,7 @@ function createPublicGithubRelease(args) {
 function createPrivateGithubRelease(args) {
     return __awaiter(this, void 0, void 0, function* () {
         const { title, version, body, privateRepo, isStable } = args;
-        const releaseName = title.replace(/\[stable\]/gi, '').replace(/\s{2,}/g, ' ').trim();
+        const releaseName = title.replace(/\[rc\]/gi, '').replace(/\s{2,}/g, ' ').trim();
         const response = yield kong_octokit_1.default.get().rest.repos.createRelease({
             owner: 'statsig-io',
             repo: privateRepo,

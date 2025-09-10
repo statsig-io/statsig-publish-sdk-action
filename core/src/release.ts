@@ -17,7 +17,8 @@ export type ActionArgs = {
   sha: string;
   isMain: boolean;
   isBeta: boolean;
-  isRC: boolean; // only used for server core for now
+  isRC: boolean; // only used for server core for now, is rc version or not, nothing related to branch name
+  fromBranch: string; // the branch that the release is being published from
   isStable: boolean;
 };
 
@@ -81,7 +82,7 @@ function validateAndExtractArgsFromPayload(
     throw new SkipActionError('Not a branch on releases/*');
   }
 
-  if (baseRef !== 'main' && baseRef !== 'stable') {
+  if (baseRef !== 'main' && baseRef !== 'stable' && baseRef !== 'rc') {
     throw new SkipActionError('Pull request not against a valid branch');
   }
 
@@ -90,8 +91,8 @@ function validateAndExtractArgsFromPayload(
   }
 
   const { title, body } = payload.pull_request;
-  if (typeof title !== 'string' || !title.startsWith('[release] ')) {
-    throw new SkipActionError('[release] not present in title');
+  if (typeof title !== 'string' || !title.startsWith('[release] ') || !title.startsWith('[rc] ')) {
+    throw new SkipActionError('[release] or [rc] not present in title');
   }
 
   if (!payload.repository) {
@@ -113,6 +114,7 @@ function validateAndExtractArgsFromPayload(
   const version = parts[0];
   const isRC = /releases\/\d+\.\d+\.\d+-rc\.\d+/.test(headRef);
   const isStable = baseRef === 'stable';
+  const fromBranch = baseRef;
 
   return {
     version,
@@ -124,7 +126,8 @@ function validateAndExtractArgsFromPayload(
     isMain: baseRef === 'main',
     isBeta: headRef.includes('betas/'),
     isRC,
-    isStable
+    isStable,
+    fromBranch
   };
 }
 
@@ -156,7 +159,8 @@ async function pushToPublic(dir: string, args: ActionArgs) {
 async function createPublicGithubRelease(args: ActionArgs) {
   const { title, version, body, publicRepo } = args;
 
-  const releaseName = title.replace(/\[stable\]/gi, '').replace(/\s{2,}/g, ' ').trim();
+  const releaseName = title.replace(/\[rc\]/gi, '').replace(/\s{2,}/g, ' ').trim();
+  const isFromRcBranch = args.fromBranch === 'rc';
 
   const response = await KongOctokit.get().rest.repos.createRelease({
     owner: 'statsig-io',
@@ -166,7 +170,7 @@ async function createPublicGithubRelease(args: ActionArgs) {
     name: releaseName,
     prerelease: args.isBeta || args.isRC,
     generate_release_notes: true,
-    make_latest: (args.isMain || args.isStable) ? 'true' : 'false'
+    make_latest: (args.isMain || isFromRcBranch) ? 'true' : 'false'
   });
 
   console.log(`Released: ${JSON.stringify(response)}`);
@@ -175,7 +179,7 @@ async function createPublicGithubRelease(args: ActionArgs) {
 async function createPrivateGithubRelease(args: ActionArgs) {
   const { title, version, body, privateRepo, isStable } = args;
 
-  const releaseName = title.replace(/\[stable\]/gi, '').replace(/\s{2,}/g, ' ').trim();
+  const releaseName = title.replace(/\[rc\]/gi, '').replace(/\s{2,}/g, ' ').trim();
 
   const response = await KongOctokit.get().rest.repos.createRelease({
     owner: 'statsig-io',
