@@ -214,6 +214,7 @@ export async function prepareForRelease(payload: WebhookPayload) {
     case 'private-node-js-lite-server-sdk':
     case 'private-react-sdk':
     case 'private-react-native':
+    case 'wizard':
       return runNpmInstall(payload);
 
     case 'private-js-client-monorepo':

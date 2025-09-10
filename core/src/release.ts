@@ -56,12 +56,13 @@ export async function syncReposAndCreateRelease(payload: WebhookPayload) {
   payload.pull_request;
 
   const isServerCore = args.privateRepo === 'private-statsig-server-core';
+  const isWizard = args.privateRepo === 'private-statsig-server-core';
 
   if (isServerCore) {
     await backMergeToMain(args);
   }
 
-  if (isServerCore && args.isRC) { 
+  if ((isServerCore && args.isRC) || isWizard) {
     await createPrivateGithubRelease(args);
     return;
   }
@@ -159,7 +160,10 @@ async function pushToPublic(dir: string, args: ActionArgs) {
 async function createPublicGithubRelease(args: ActionArgs) {
   const { title, version, body, publicRepo } = args;
 
-  const releaseName = title.replace(/\[rc\]/gi, '').replace(/\s{2,}/g, ' ').trim();
+  const releaseName = title
+    .replace(/\[rc\]/gi, '')
+    .replace(/\s{2,}/g, ' ')
+    .trim();
   const isFromRcBranch = args.fromBranch === 'rc';
 
   const response = await KongOctokit.get().rest.repos.createRelease({
@@ -170,7 +174,7 @@ async function createPublicGithubRelease(args: ActionArgs) {
     name: releaseName,
     prerelease: args.isBeta || args.isRC,
     generate_release_notes: true,
-    make_latest: (args.isMain || isFromRcBranch) ? 'true' : 'false'
+    make_latest: args.isMain || isFromRcBranch ? 'true' : 'false'
   });
 
   console.log(`Released: ${JSON.stringify(response)}`);
@@ -179,7 +183,10 @@ async function createPublicGithubRelease(args: ActionArgs) {
 async function createPrivateGithubRelease(args: ActionArgs) {
   const { title, version, body, privateRepo, isStable } = args;
 
-  const releaseName = title.replace(/\[rc\]/gi, '').replace(/\s{2,}/g, ' ').trim();
+  const releaseName = title
+    .replace(/\[rc\]/gi, '')
+    .replace(/\s{2,}/g, ' ')
+    .trim();
 
   const response = await KongOctokit.get().rest.repos.createRelease({
     owner: 'statsig-io',
@@ -190,7 +197,7 @@ async function createPrivateGithubRelease(args: ActionArgs) {
     name: releaseName,
     prerelease: args.isBeta || args.isRC,
     generate_release_notes: true,
-    make_latest: (args.isMain || args.isStable) ? 'true' : 'false'
+    make_latest: args.isMain || args.isStable ? 'true' : 'false'
   });
 
   console.log(`Released: ${JSON.stringify(response)}`);
