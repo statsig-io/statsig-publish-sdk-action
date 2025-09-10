@@ -557,11 +557,11 @@ function prepareForRelease(payload) {
         }
         const baseRef = (_a = payload.pull_request.base) === null || _a === void 0 ? void 0 : _a.ref;
         if (baseRef === 'rc' &&
-            !((_c = (_b = payload.pull_request.title) === null || _b === void 0 ? void 0 : _b.toLowerCase()) === null || _c === void 0 ? void 0 : _c.startsWith('[rc]'))) {
+            !((_c = (_b = payload.pull_request.title) === null || _b === void 0 ? void 0 : _b.toLowerCase()) === null || _c === void 0 ? void 0 : _c.endsWith('[rc]'))) {
             kong_octokit_1.default.get().pulls.update({
                 owner: 'statsig-io',
                 repo: payload.repository.name,
-                title: `[rc] ${payload.pull_request.title}`,
+                title: `${payload.pull_request.title} [rc]`,
                 pull_number: payload.pull_request.number
             });
         }
@@ -1146,8 +1146,8 @@ function validateAndExtractArgsFromPayload(payload) {
         throw new types_1.SkipActionError('Not a merged pull request');
     }
     const { title, body } = payload.pull_request;
-    if (typeof title !== 'string' || (!title.startsWith('[release] ') && !title.startsWith('[rc] '))) {
-        throw new types_1.SkipActionError('[release] or [rc] not present in title');
+    if (typeof title !== 'string' || !title.startsWith('[release] ')) {
+        throw new types_1.SkipActionError('[release] not present in title');
     }
     if (!payload.repository) {
         throw new Error('Unable to load repository info');
