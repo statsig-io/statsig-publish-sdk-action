@@ -5,6 +5,7 @@ import { SimpleGit, simpleGit } from 'simple-git';
 import { createGitRepoUrl } from './helpers';
 import KongOctokit from './kong_octokit';
 import { SkipActionError } from './types';
+import { identifyPackageManager } from './js_package_manager_helpers';
 
 async function runNpmInstall(payload: WebhookPayload) {
   const repo = payload.repository?.name;
@@ -13,8 +14,6 @@ async function runNpmInstall(payload: WebhookPayload) {
   if (!repo || !branch) {
     throw new Error('Missing required information');
   }
-
-  core.debug(`Running NPM Install: ${repo} ${branch}`);
 
   const token = await KongOctokit.token();
   const git: SimpleGit = simpleGit();
@@ -30,14 +29,22 @@ async function runNpmInstall(payload: WebhookPayload) {
     )
     .then(() => git.checkout(branch));
 
-  execSync('npm install', { cwd: dir });
+  const packageManager = await identifyPackageManager(dir);
+
+  core.debug(`Running ${packageManager} Install: ${repo} ${branch}`);
+
+  execSync(`${packageManager} install`, { cwd: dir });
 
   await git.status().then(status => {
     if (status.isClean()) {
       return;
     }
 
-    const supported = ['package-lock.json', 'src/SDKVersion.ts'];
+    const supported = [
+      'package-lock.json',
+      'pnpm-lock.yaml',
+      'src/SDKVersion.ts'
+    ];
     const files = status.files
       .filter(file => supported.includes(file.path))
       .map(file => file.path);

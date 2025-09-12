@@ -1,6 +1,7 @@
 import * as core from '@actions/core';
 import { PublishActionArgs } from './action_args';
 import { execSync } from 'child_process';
+import { identifyPackageManager } from '../js_package_manager_helpers';
 
 export default async function publishToNPM(args: PublishActionArgs) {
   const NPM_TOKEN = core.getInput('npm-token') ?? '';
@@ -8,8 +9,10 @@ export default async function publishToNPM(args: PublishActionArgs) {
     throw new Error('Call to NPM Publish without settng npm-token');
   }
 
+  const pkgManager = await identifyPackageManager(args.workingDir);
+
   const commands = [
-    'npm install',
+    `${pkgManager} install`,
     `npm config set //registry.npmjs.org/:_authToken ${NPM_TOKEN}`,
     args.isStable ? `npm publish --tag stable` : 'npm publish'
   ];
