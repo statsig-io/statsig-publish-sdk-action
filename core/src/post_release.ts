@@ -27,6 +27,7 @@ function getThirdPartyAction(repo: string) {
     case 'node-js-lite-server-sdk':
     case 'react-sdk':
     case 'react-native':
+    case 'wizard':
       return publishToNPM;
 
     case 'python-sdk':
@@ -37,7 +38,7 @@ function getThirdPartyAction(repo: string) {
 
     case 'rust-sdk':
       return publishToCratesIo;
-    
+
     case 'js-client-monorepo':
       return publishJSMono;
 
@@ -61,8 +62,8 @@ async function validateAndExtractArgsFromPayload(
   const name = payload.repository?.name;
   const tag = payload.release?.tag_name;
   const isStable =
-    payload.release?.name?.toLowerCase().includes('[stable]') === true 
-      || payload.pull_request?.base?.ref === 'stable';
+    payload.release?.name?.toLowerCase().includes('[stable]') === true ||
+    payload.pull_request?.base?.ref === 'stable';
 
   if (typeof name !== 'string' || typeof tag !== 'string') {
     throw new Error('Unable to load repository info');
