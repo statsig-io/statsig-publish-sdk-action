@@ -73,10 +73,11 @@ function syncReposAndCreateRelease(payload) {
         core.debug(`Extracted args: ${JSON.stringify(args)}`);
         payload.pull_request;
         const isServerCore = args.privateRepo === 'private-statsig-server-core';
+        const isWizard = args.privateRepo === 'wizard';
         if (isServerCore) {
             yield (0, back_merge_to_main_1.default)(args);
         }
-        if (isServerCore && args.isRC) {
+        if ((isServerCore && args.isRC) || isWizard) {
             yield createPrivateGithubRelease(args);
             return;
         }
@@ -111,9 +112,6 @@ function validateAndExtractArgsFromPayload(payload) {
     }
     const privateRepo = payload.repository.name;
     const publicRepo = PRIV_TO_PUB_REPO_MAP[privateRepo];
-    if (!publicRepo) {
-        throw new Error(`Unable to get public repo for ${privateRepo}`);
-    }
     const parts = title.split(' ').slice(1);
     const version = parts[0];
     const isRC = /releases\/\d+\.\d+\.\d+-rc\.\d+/.test(headRef);
@@ -136,6 +134,9 @@ function validateAndExtractArgsFromPayload(payload) {
 function pushToPublic(dir, args) {
     return __awaiter(this, void 0, void 0, function* () {
         const { title, version, privateRepo, publicRepo, sha } = args;
+        if (!publicRepo) {
+            throw new Error(`Unable to get public repo for ${privateRepo}`);
+        }
         const token = yield kong_octokit_1.default.token();
         const git = (0, simple_git_1.simpleGit)();
         // We always push to main
@@ -157,7 +158,13 @@ function pushToPublic(dir, args) {
 function createPublicGithubRelease(args) {
     return __awaiter(this, void 0, void 0, function* () {
         const { title, version, body, publicRepo } = args;
-        const releaseName = title.replace(/\[rc\]/gi, '').replace(/\s{2,}/g, ' ').trim();
+        if (!publicRepo) {
+            throw new Error(`Unable to get public repo for ${args.privateRepo}`);
+        }
+        const releaseName = title
+            .replace(/\[rc\]/gi, '')
+            .replace(/\s{2,}/g, ' ')
+            .trim();
         const isFromRcBranch = args.fromBranch === 'rc';
         const response = yield kong_octokit_1.default.get().rest.repos.createRelease({
             owner: 'statsig-io',
@@ -167,7 +174,7 @@ function createPublicGithubRelease(args) {
             name: releaseName,
             prerelease: args.isBeta || args.isRC,
             generate_release_notes: true,
-            make_latest: (args.isMain || isFromRcBranch) ? 'true' : 'false'
+            make_latest: args.isMain || isFromRcBranch ? 'true' : 'false'
         });
         console.log(`Released: ${JSON.stringify(response)}`);
     });
@@ -175,7 +182,10 @@ function createPublicGithubRelease(args) {
 function createPrivateGithubRelease(args) {
     return __awaiter(this, void 0, void 0, function* () {
         const { title, version, body, privateRepo, isStable } = args;
-        const releaseName = title.replace(/\[rc\]/gi, '').replace(/\s{2,}/g, ' ').trim();
+        const releaseName = title
+            .replace(/\[rc\]/gi, '')
+            .replace(/\s{2,}/g, ' ')
+            .trim();
         const response = yield kong_octokit_1.default.get().rest.repos.createRelease({
             owner: 'statsig-io',
             repo: privateRepo,
@@ -185,7 +195,7 @@ function createPrivateGithubRelease(args) {
             name: releaseName,
             prerelease: args.isBeta || args.isRC,
             generate_release_notes: true,
-            make_latest: (args.isMain || args.isStable) ? 'true' : 'false'
+            make_latest: args.isMain || args.isStable ? 'true' : 'false'
         });
         console.log(`Released: ${JSON.stringify(response)}`);
     });

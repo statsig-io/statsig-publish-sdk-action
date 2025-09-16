@@ -56,7 +56,7 @@ export async function syncReposAndCreateRelease(payload: WebhookPayload) {
   payload.pull_request;
 
   const isServerCore = args.privateRepo === 'private-statsig-server-core';
-  const isWizard = args.privateRepo === 'private-statsig-server-core';
+  const isWizard = args.privateRepo === 'wizard';
 
   if (isServerCore) {
     await backMergeToMain(args);
