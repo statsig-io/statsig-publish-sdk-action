@@ -86,6 +86,101 @@ exports.createGitRepoUrl = createGitRepoUrl;
 
 /***/ }),
 
+/***/ 3744:
+/***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
+
+"use strict";
+
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.identifyPackageManager = void 0;
+const promises_1 = __nccwpck_require__(3292);
+const path_1 = __nccwpck_require__(1017);
+// --- Types
+const SUPPORTED_PKG_MANAGER = ['npm', 'pnpm', 'yarn'];
+// --- Helpers
+function isValidPackageManager(value) {
+    return !!(value && SUPPORTED_PKG_MANAGER.includes(value));
+}
+function readFileIfExists(path) {
+    return __awaiter(this, void 0, void 0, function* () {
+        try {
+            return yield (0, promises_1.readFile)(path, 'utf-8');
+        }
+        catch (e) {
+            return undefined;
+        }
+    });
+}
+// --- package.json
+function readPackageJson(rootDir) {
+    return __awaiter(this, void 0, void 0, function* () {
+        const packageJsonPath = (0, path_1.join)(rootDir, 'package.json');
+        const packageJsonContent = yield readFileIfExists(packageJsonPath);
+        try {
+            return JSON.parse(packageJsonContent !== null && packageJsonContent !== void 0 ? packageJsonContent : '{}');
+        }
+        catch (e) {
+            console.error('Error parsing package.json', e);
+        }
+        return {};
+    });
+}
+// --- Package manager
+function parsePackageManager(packageJson) {
+    var _a, _b, _c;
+    const devEnginesName = (_b = (_a = packageJson.devEngines) === null || _a === void 0 ? void 0 : _a.packageManager) === null || _b === void 0 ? void 0 : _b.name;
+    if (isValidPackageManager(devEnginesName)) {
+        return devEnginesName;
+    }
+    const pkgManagerName = (_c = packageJson.packageManager) === null || _c === void 0 ? void 0 : _c.replace(/\@.*$/, '');
+    if (isValidPackageManager(pkgManagerName)) {
+        return pkgManagerName;
+    }
+    return undefined;
+}
+function inferPackageManagerFromLockfiles(rootDir) {
+    return __awaiter(this, void 0, void 0, function* () {
+        const files = yield (0, promises_1.readdir)(rootDir);
+        if (files.includes('package-lock.json')) {
+            return 'npm';
+        }
+        if (files.includes('pnpm-lock.yaml')) {
+            return 'pnpm';
+        }
+        if (files.includes('yarn.lock')) {
+            return 'yarn';
+        }
+        return undefined;
+    });
+}
+function identifyPackageManager(rootDir) {
+    return __awaiter(this, void 0, void 0, function* () {
+        const packageJson = yield readPackageJson(rootDir);
+        const packageJsonPkgManager = parsePackageManager(packageJson);
+        if (packageJsonPkgManager) {
+            return packageJsonPkgManager;
+        }
+        const lockfilePkgManager = yield inferPackageManagerFromLockfiles(rootDir);
+        if (lockfilePkgManager) {
+            return lockfilePkgManager;
+        }
+        return 'npm';
+    });
+}
+exports.identifyPackageManager = identifyPackageManager;
+
+
+/***/ }),
+
 /***/ 6271:
 /***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
 
@@ -303,6 +398,7 @@ function getThirdPartyAction(repo) {
         case 'node-js-lite-server-sdk':
         case 'react-sdk':
         case 'react-native':
+        case 'wizard':
             return publish_npm_1.default;
         case 'python-sdk':
             return publish_pypi_1.default;
@@ -327,8 +423,8 @@ function validateAndExtractArgsFromPayload(payload) {
     return __awaiter(this, void 0, void 0, function* () {
         const name = (_a = payload.repository) === null || _a === void 0 ? void 0 : _a.name;
         const tag = (_b = payload.release) === null || _b === void 0 ? void 0 : _b.tag_name;
-        const isStable = ((_d = (_c = payload.release) === null || _c === void 0 ? void 0 : _c.name) === null || _d === void 0 ? void 0 : _d.toLowerCase().includes('[stable]')) === true
-            || ((_f = (_e = payload.pull_request) === null || _e === void 0 ? void 0 : _e.base) === null || _f === void 0 ? void 0 : _f.ref) === 'stable';
+        const isStable = ((_d = (_c = payload.release) === null || _c === void 0 ? void 0 : _c.name) === null || _d === void 0 ? void 0 : _d.toLowerCase().includes('[stable]')) === true ||
+            ((_f = (_e = payload.pull_request) === null || _e === void 0 ? void 0 : _e.base) === null || _f === void 0 ? void 0 : _f.ref) === 'stable';
         if (typeof name !== 'string' || typeof tag !== 'string') {
             throw new Error('Unable to load repository info');
         }
@@ -406,6 +502,7 @@ const simple_git_1 = __nccwpck_require__(9103);
 const helpers_1 = __nccwpck_require__(5008);
 const kong_octokit_1 = __importDefault(__nccwpck_require__(6271));
 const types_1 = __nccwpck_require__(8164);
+const js_package_manager_helpers_1 = __nccwpck_require__(3744);
 function runNpmInstall(payload) {
     var _a, _b, _c;
     return __awaiter(this, void 0, void 0, function* () {
@@ -414,7 +511,6 @@ function runNpmInstall(payload) {
         if (!repo || !branch) {
             throw new Error('Missing required information');
         }
-        core.debug(`Running NPM Install: ${repo} ${branch}`);
         const token = yield kong_octokit_1.default.token();
         const git = (0, simple_git_1.simpleGit)();
         const dir = process.cwd() + '/private-sdk';
@@ -425,12 +521,18 @@ function runNpmInstall(payload) {
             .addConfig('user.name', 'statsig-kong[bot]')
             .addConfig('user.email', 'statsig-kong[bot]@users.noreply.github.com'))
             .then(() => git.checkout(branch));
-        (0, child_process_1.execSync)('npm install', { cwd: dir });
+        const packageManager = yield (0, js_package_manager_helpers_1.identifyPackageManager)(dir);
+        core.debug(`Running ${packageManager} Install: ${repo} ${branch}`);
+        (0, child_process_1.execSync)(`${packageManager} install`, { cwd: dir });
         yield git.status().then(status => {
             if (status.isClean()) {
                 return;
             }
-            const supported = ['package-lock.json', 'src/SDKVersion.ts'];
+            const supported = [
+                'package-lock.json',
+                'pnpm-lock.yaml',
+                'src/SDKVersion.ts'
+            ];
             const files = status.files
                 .filter(file => supported.includes(file.path))
                 .map(file => file.path);
@@ -573,6 +675,7 @@ function prepareForRelease(payload) {
             case 'private-node-js-lite-server-sdk':
             case 'private-react-sdk':
             case 'private-react-native':
+            case 'wizard':
                 return runNpmInstall(payload);
             case 'private-js-client-monorepo':
                 return runJsMonorepoVersionSync(payload);
@@ -811,6 +914,7 @@ var __asyncValues = (this && this.__asyncValues) || function (o) {
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 const core = __importStar(__nccwpck_require__(2186));
 const child_process_1 = __nccwpck_require__(2081);
+const js_package_manager_helpers_1 = __nccwpck_require__(3744);
 function publishToNPM(args) {
     var _a, e_1, _b, _c;
     var _d;
@@ -819,8 +923,9 @@ function publishToNPM(args) {
         if (NPM_TOKEN === '') {
             throw new Error('Call to NPM Publish without settng npm-token');
         }
+        const pkgManager = yield (0, js_package_manager_helpers_1.identifyPackageManager)(args.workingDir);
         const commands = [
-            'npm install',
+            `${pkgManager} install`,
             `npm config set //registry.npmjs.org/:_authToken ${NPM_TOKEN}`,
             args.isStable ? `npm publish --tag stable` : 'npm publish'
         ];
@@ -1119,10 +1224,11 @@ function syncReposAndCreateRelease(payload) {
         core.debug(`Extracted args: ${JSON.stringify(args)}`);
         payload.pull_request;
         const isServerCore = args.privateRepo === 'private-statsig-server-core';
+        const isWizard = args.privateRepo === 'wizard';
         if (isServerCore) {
             yield (0, back_merge_to_main_1.default)(args);
         }
-        if (isServerCore && args.isRC) {
+        if ((isServerCore && args.isRC) || isWizard) {
             yield createPrivateGithubRelease(args);
             return;
         }
@@ -1157,9 +1263,6 @@ function validateAndExtractArgsFromPayload(payload) {
     }
     const privateRepo = payload.repository.name;
     const publicRepo = PRIV_TO_PUB_REPO_MAP[privateRepo];
-    if (!publicRepo) {
-        throw new Error(`Unable to get public repo for ${privateRepo}`);
-    }
     const parts = title.split(' ').slice(1);
     const version = parts[0];
     const isRC = /releases\/\d+\.\d+\.\d+-rc\.\d+/.test(headRef);
@@ -1182,6 +1285,9 @@ function validateAndExtractArgsFromPayload(payload) {
 function pushToPublic(dir, args) {
     return __awaiter(this, void 0, void 0, function* () {
         const { title, version, privateRepo, publicRepo, sha } = args;
+        if (!publicRepo) {
+            throw new Error(`Unable to get public repo for ${privateRepo}`);
+        }
         const token = yield kong_octokit_1.default.token();
         const git = (0, simple_git_1.simpleGit)();
         // We always push to main
@@ -1203,7 +1309,13 @@ function pushToPublic(dir, args) {
 function createPublicGithubRelease(args) {
     return __awaiter(this, void 0, void 0, function* () {
         const { title, version, body, publicRepo } = args;
-        const releaseName = title.replace(/\[rc\]/gi, '').replace(/\s{2,}/g, ' ').trim();
+        if (!publicRepo) {
+            throw new Error(`Unable to get public repo for ${args.privateRepo}`);
+        }
+        const releaseName = title
+            .replace(/\[rc\]/gi, '')
+            .replace(/\s{2,}/g, ' ')
+            .trim();
         const isFromRcBranch = args.fromBranch === 'rc';
         const response = yield kong_octokit_1.default.get().rest.repos.createRelease({
             owner: 'statsig-io',
@@ -1213,7 +1325,7 @@ function createPublicGithubRelease(args) {
             name: releaseName,
             prerelease: args.isBeta || args.isRC,
             generate_release_notes: true,
-            make_latest: (args.isMain || isFromRcBranch) ? 'true' : 'false'
+            make_latest: args.isMain || isFromRcBranch ? 'true' : 'false'
         });
         console.log(`Released: ${JSON.stringify(response)}`);
     });
@@ -1221,7 +1333,10 @@ function createPublicGithubRelease(args) {
 function createPrivateGithubRelease(args) {
     return __awaiter(this, void 0, void 0, function* () {
         const { title, version, body, privateRepo, isStable } = args;
-        const releaseName = title.replace(/\[rc\]/gi, '').replace(/\s{2,}/g, ' ').trim();
+        const releaseName = title
+            .replace(/\[rc\]/gi, '')
+            .replace(/\s{2,}/g, ' ')
+            .trim();
         const response = yield kong_octokit_1.default.get().rest.repos.createRelease({
             owner: 'statsig-io',
             repo: privateRepo,
@@ -1231,7 +1346,7 @@ function createPrivateGithubRelease(args) {
             name: releaseName,
             prerelease: args.isBeta || args.isRC,
             generate_release_notes: true,
-            make_latest: (args.isMain || args.isStable) ? 'true' : 'false'
+            make_latest: args.isMain || args.isStable ? 'true' : 'false'
         });
         console.log(`Released: ${JSON.stringify(response)}`);
     });
@@ -47082,6 +47197,14 @@ module.exports = require("events");
 
 "use strict";
 module.exports = require("fs");
+
+/***/ }),
+
+/***/ 3292:
+/***/ ((module) => {
+
+"use strict";
+module.exports = require("fs/promises");
 
 /***/ }),
 

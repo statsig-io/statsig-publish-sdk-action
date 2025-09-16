@@ -41,6 +41,7 @@ function getThirdPartyAction(repo) {
         case 'node-js-lite-server-sdk':
         case 'react-sdk':
         case 'react-native':
+        case 'wizard':
             return publish_npm_1.default;
         case 'python-sdk':
             return publish_pypi_1.default;
@@ -65,8 +66,8 @@ function validateAndExtractArgsFromPayload(payload) {
     return __awaiter(this, void 0, void 0, function* () {
         const name = (_a = payload.repository) === null || _a === void 0 ? void 0 : _a.name;
         const tag = (_b = payload.release) === null || _b === void 0 ? void 0 : _b.tag_name;
-        const isStable = ((_d = (_c = payload.release) === null || _c === void 0 ? void 0 : _c.name) === null || _d === void 0 ? void 0 : _d.toLowerCase().includes('[stable]')) === true
-            || ((_f = (_e = payload.pull_request) === null || _e === void 0 ? void 0 : _e.base) === null || _f === void 0 ? void 0 : _f.ref) === 'stable';
+        const isStable = ((_d = (_c = payload.release) === null || _c === void 0 ? void 0 : _c.name) === null || _d === void 0 ? void 0 : _d.toLowerCase().includes('[stable]')) === true ||
+            ((_f = (_e = payload.pull_request) === null || _e === void 0 ? void 0 : _e.base) === null || _f === void 0 ? void 0 : _f.ref) === 'stable';
         if (typeof name !== 'string' || typeof tag !== 'string') {
             throw new Error('Unable to load repository info');
         }

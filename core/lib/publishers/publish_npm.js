@@ -41,6 +41,7 @@ var __asyncValues = (this && this.__asyncValues) || function (o) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const core = __importStar(require("@actions/core"));
 const child_process_1 = require("child_process");
+const js_package_manager_helpers_1 = require("../js_package_manager_helpers");
 function publishToNPM(args) {
     var _a, e_1, _b, _c;
     var _d;
@@ -49,8 +50,9 @@ function publishToNPM(args) {
         if (NPM_TOKEN === '') {
             throw new Error('Call to NPM Publish without settng npm-token');
         }
+        const pkgManager = yield (0, js_package_manager_helpers_1.identifyPackageManager)(args.workingDir);
         const commands = [
-            'npm install',
+            `${pkgManager} install`,
             `npm config set //registry.npmjs.org/:_authToken ${NPM_TOKEN}`,
             args.isStable ? `npm publish --tag stable` : 'npm publish'
         ];

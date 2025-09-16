@@ -12,7 +12,7 @@ export type ActionArgs = {
   version: string;
   title: string;
   body: string;
-  publicRepo: string;
+  publicRepo: string | undefined;
   privateRepo: string;
   sha: string;
   isMain: boolean;
@@ -56,7 +56,7 @@ export async function syncReposAndCreateRelease(payload: WebhookPayload) {
   payload.pull_request;
 
   const isServerCore = args.privateRepo === 'private-statsig-server-core';
-  const isWizard = args.privateRepo === 'private-statsig-server-core';
+  const isWizard = args.privateRepo === 'wizard';
 
   if (isServerCore) {
     await backMergeToMain(args);
@@ -107,10 +107,6 @@ function validateAndExtractArgsFromPayload(
   const privateRepo = payload.repository.name;
   const publicRepo = PRIV_TO_PUB_REPO_MAP[privateRepo];
 
-  if (!publicRepo) {
-    throw new Error(`Unable to get public repo for ${privateRepo}`);
-  }
-
   const parts = title.split(' ').slice(1);
   const version = parts[0];
   const isRC = /releases\/\d+\.\d+\.\d+-rc\.\d+/.test(headRef);
@@ -134,6 +130,10 @@ function validateAndExtractArgsFromPayload(
 
 async function pushToPublic(dir: string, args: ActionArgs) {
   const { title, version, privateRepo, publicRepo, sha } = args;
+
+  if (!publicRepo) {
+    throw new Error(`Unable to get public repo for ${privateRepo}`);
+  }
 
   const token = await KongOctokit.token();
   const git: SimpleGit = simpleGit();
@@ -159,6 +159,10 @@ async function pushToPublic(dir: string, args: ActionArgs) {
 
 async function createPublicGithubRelease(args: ActionArgs) {
   const { title, version, body, publicRepo } = args;
+
+  if (!publicRepo) {
+    throw new Error(`Unable to get public repo for ${args.privateRepo}`);
+  }
 
   const releaseName = title
     .replace(/\[rc\]/gi, '')

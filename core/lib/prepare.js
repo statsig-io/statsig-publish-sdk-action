@@ -42,6 +42,7 @@ const simple_git_1 = require("simple-git");
 const helpers_1 = require("./helpers");
 const kong_octokit_1 = __importDefault(require("./kong_octokit"));
 const types_1 = require("./types");
+const js_package_manager_helpers_1 = require("./js_package_manager_helpers");
 function runNpmInstall(payload) {
     var _a, _b, _c;
     return __awaiter(this, void 0, void 0, function* () {
@@ -50,7 +51,6 @@ function runNpmInstall(payload) {
         if (!repo || !branch) {
             throw new Error('Missing required information');
         }
-        core.debug(`Running NPM Install: ${repo} ${branch}`);
         const token = yield kong_octokit_1.default.token();
         const git = (0, simple_git_1.simpleGit)();
         const dir = process.cwd() + '/private-sdk';
@@ -61,12 +61,18 @@ function runNpmInstall(payload) {
             .addConfig('user.name', 'statsig-kong[bot]')
             .addConfig('user.email', 'statsig-kong[bot]@users.noreply.github.com'))
             .then(() => git.checkout(branch));
-        (0, child_process_1.execSync)('npm install', { cwd: dir });
+        const packageManager = yield (0, js_package_manager_helpers_1.identifyPackageManager)(dir);
+        core.debug(`Running ${packageManager} Install: ${repo} ${branch}`);
+        (0, child_process_1.execSync)(`${packageManager} install`, { cwd: dir });
         yield git.status().then(status => {
             if (status.isClean()) {
                 return;
             }
-            const supported = ['package-lock.json', 'src/SDKVersion.ts'];
+            const supported = [
+                'package-lock.json',
+                'pnpm-lock.yaml',
+                'src/SDKVersion.ts'
+            ];
             const files = status.files
                 .filter(file => supported.includes(file.path))
                 .map(file => file.path);
@@ -209,6 +215,7 @@ function prepareForRelease(payload) {
             case 'private-node-js-lite-server-sdk':
             case 'private-react-sdk':
             case 'private-react-native':
+            case 'wizard':
                 return runNpmInstall(payload);
             case 'private-js-client-monorepo':
                 return runJsMonorepoVersionSync(payload);
