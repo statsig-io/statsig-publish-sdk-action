@@ -2,11 +2,11 @@ import * as core from '@actions/core';
 
 import { SimpleGit, simpleGit } from 'simple-git';
 
-import KongOctokit from './kong_octokit';
-import { SkipActionError } from './types';
 import { WebhookPayload } from '@actions/github/lib/interfaces';
 import backMergeToMain from './back_merge_to_main';
 import { createGitRepoUrl } from './helpers';
+import KongOctokit from './kong_octokit';
+import { SkipActionError } from './types';
 
 export type ActionArgs = {
   version: string;
@@ -57,12 +57,13 @@ export async function syncReposAndCreateRelease(payload: WebhookPayload) {
 
   const isServerCore = args.privateRepo === 'private-statsig-server-core';
   const isWizard = args.privateRepo === 'wizard';
+  const isStatsigAI = args.privateRepo === 'statsig-ai';
 
   if (isServerCore) {
     await backMergeToMain(args);
   }
 
-  if ((isServerCore && args.isRC) || isWizard) {
+  if ((isServerCore && args.isRC) || isWizard || isStatsigAI) {
     await createPrivateGithubRelease(args);
     return;
   }
