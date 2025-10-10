@@ -54,7 +54,11 @@ function publishToNPM(args) {
         const commands = [
             `${pkgManager} install`,
             `npm config set //registry.npmjs.org/:_authToken ${NPM_TOKEN}`,
-            args.isStable ? `npm publish --tag stable` : 'npm publish'
+            args.repo === 'wizard'
+                ? 'pnpm publish -r'
+                : args.isStable
+                    ? `npm publish --tag stable`
+                    : 'npm publish'
         ];
         const opts = {
             cwd: args.workingDir
