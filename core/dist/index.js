@@ -1336,7 +1336,7 @@ function createPublicGithubRelease(args) {
 }
 function createPrivateGithubRelease(args) {
     return __awaiter(this, void 0, void 0, function* () {
-        const { title, version, body, privateRepo, isStable } = args;
+        const { title, version, body, privateRepo, isRC } = args;
         const releaseName = title
             .replace(/\[rc\]/gi, '')
             .replace(/\s{2,}/g, ' ')
@@ -1345,7 +1345,7 @@ function createPrivateGithubRelease(args) {
             owner: 'statsig-io',
             repo: privateRepo,
             tag_name: version,
-            target_commitish: isStable ? 'stable' : undefined,
+            target_commitish: isRC ? 'rc' : undefined,
             body,
             name: releaseName,
             prerelease: args.isBeta || args.isRC,

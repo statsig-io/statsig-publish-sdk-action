@@ -185,7 +185,7 @@ async function createPublicGithubRelease(args: ActionArgs) {
 }
 
 async function createPrivateGithubRelease(args: ActionArgs) {
-  const { title, version, body, privateRepo, isStable } = args;
+  const { title, version, body, privateRepo, isRC } = args;
 
   const releaseName = title
     .replace(/\[rc\]/gi, '')
@@ -196,7 +196,7 @@ async function createPrivateGithubRelease(args: ActionArgs) {
     owner: 'statsig-io',
     repo: privateRepo,
     tag_name: version,
-    target_commitish: isStable ? 'stable' : undefined,
+    target_commitish: isRC ? 'rc' : undefined,
     body,
     name: releaseName,
     prerelease: args.isBeta || args.isRC,
