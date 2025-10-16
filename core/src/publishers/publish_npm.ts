@@ -1,6 +1,6 @@
 import * as core from '@actions/core';
 import { PublishActionArgs } from './action_args';
-import { execSync } from 'child_process';
+import { execSync, ExecSyncOptionsWithStringEncoding } from 'child_process';
 import { identifyPackageManager } from '../js_package_manager_helpers';
 
 export default async function publishToNPM(args: PublishActionArgs) {
@@ -21,8 +21,9 @@ export default async function publishToNPM(args: PublishActionArgs) {
       : 'npm publish'
   ];
 
-  const opts = {
-    cwd: args.workingDir
+  const opts: ExecSyncOptionsWithStringEncoding = {
+    cwd: args.workingDir,
+    encoding: 'utf8'
   };
 
   for await (const command of commands) {

@@ -1,6 +1,6 @@
 import * as core from '@actions/core';
 import { PublishActionArgs } from './action_args';
-import { execSync } from 'child_process';
+import { execSync, ExecSyncOptionsWithStringEncoding } from 'child_process';
 
 export default async function publishToCratesIo(args: PublishActionArgs) {
   const CARGO_REGISTRY_TOKEN = core.getInput('cargo-token') ?? '';
@@ -10,8 +10,9 @@ export default async function publishToCratesIo(args: PublishActionArgs) {
 
   const commands = ['cargo publish'];
 
-  const opts = {
+  const opts: ExecSyncOptionsWithStringEncoding = {
     cwd: args.workingDir,
+    encoding: 'utf8',
     env: { ...process.env, CARGO_REGISTRY_TOKEN }
   };
 
