@@ -2,13 +2,13 @@ import { WebhookPayload } from '@actions/github/lib/interfaces';
 import { SimpleGit, simpleGit } from 'simple-git';
 import { createGitRepoUrl } from './helpers';
 import KongOctokit from './kong_octokit';
+import { PublishActionArgs } from './publishers/action_args';
+import publishToCratesIo from './publishers/publish_crates_io';
+import publishJSMono from './publishers/publish_js_mono';
 import publishToNPM from './publishers/publish_npm';
 import publishToPyPI from './publishers/publish_pypi';
 import publishToRubyGems from './publishers/publish_rubygems';
 import { SkipActionError } from './types';
-import { PublishActionArgs } from './publishers/action_args';
-import publishToCratesIo from './publishers/publish_crates_io';
-import publishJSMono from './publishers/publish_js_mono';
 
 export async function pushReleaseToThirdParties(payload: WebhookPayload) {
   const args = await validateAndExtractArgsFromPayload(payload);
@@ -28,6 +28,7 @@ function getThirdPartyAction(repo: string) {
     case 'react-sdk':
     case 'react-native':
     case 'wizard':
+    case 'statsig-ai':
       return publishToNPM;
 
     case 'python-sdk':
