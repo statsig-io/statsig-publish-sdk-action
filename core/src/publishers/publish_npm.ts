@@ -10,6 +10,7 @@ export default async function publishToNPM(args: PublishActionArgs) {
   }
 
   const pkgManager = await identifyPackageManager(args.workingDir);
+  const addprovenance = args.repo === 'statsig-ai-node' ? '--provenance' : '';
 
   const commands = [
     `${pkgManager} install`,
@@ -17,8 +18,8 @@ export default async function publishToNPM(args: PublishActionArgs) {
     args.repo === 'wizard'
       ? 'pnpm publish -r'
       : args.isStable
-      ? `npm publish --tag stable`
-      : 'npm publish'
+      ? `npm publish --tag stable ${addprovenance}`
+      : `npm publish ${addprovenance}`
   ];
 
   const opts: ExecSyncOptionsWithStringEncoding = {

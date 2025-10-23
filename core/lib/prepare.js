@@ -215,6 +215,7 @@ function prepareForRelease(payload) {
             case 'private-node-js-lite-server-sdk':
             case 'private-react-sdk':
             case 'private-react-native':
+            case 'private-statsig-ai-node':
             case 'wizard':
                 return runNpmInstall(payload);
             case 'private-js-client-monorepo':

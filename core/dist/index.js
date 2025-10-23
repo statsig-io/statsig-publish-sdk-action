@@ -398,6 +398,7 @@ function getThirdPartyAction(repo) {
         case 'node-js-lite-server-sdk':
         case 'react-sdk':
         case 'react-native':
+        case 'statsig-ai-node':
         case 'wizard':
             return publish_npm_1.default;
         case 'python-sdk':
@@ -675,6 +676,7 @@ function prepareForRelease(payload) {
             case 'private-node-js-lite-server-sdk':
             case 'private-react-sdk':
             case 'private-react-native':
+            case 'private-statsig-ai-node':
             case 'wizard':
                 return runNpmInstall(payload);
             case 'private-js-client-monorepo':
@@ -752,6 +754,7 @@ function publishToCratesIo(args) {
         const commands = ['cargo publish'];
         const opts = {
             cwd: args.workingDir,
+            encoding: 'utf8',
             env: Object.assign(Object.assign({}, process.env), { CARGO_REGISTRY_TOKEN })
         };
         try {
@@ -837,10 +840,11 @@ function publishJSMono(args) {
         const commands = [
             'pnpm install',
             `echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" > .npmrc`,
-            `pnpm exec nx run statsig:publish-all --verbose`,
+            `pnpm exec nx run statsig:publish-all --verbose`
         ];
         const opts = {
-            cwd: args.workingDir
+            cwd: args.workingDir,
+            encoding: 'utf8'
         };
         try {
             for (var _e = true, commands_1 = __asyncValues(commands), commands_1_1; commands_1_1 = yield commands_1.next(), _a = commands_1_1.done, !_a; _e = true) {
@@ -924,17 +928,19 @@ function publishToNPM(args) {
             throw new Error('Call to NPM Publish without settng npm-token');
         }
         const pkgManager = yield (0, js_package_manager_helpers_1.identifyPackageManager)(args.workingDir);
+        const addprovenance = args.repo === 'statsig-ai-node' ? '--provenance' : '';
         const commands = [
             `${pkgManager} install`,
             `npm config set //registry.npmjs.org/:_authToken ${NPM_TOKEN}`,
             args.repo === 'wizard'
                 ? 'pnpm publish -r'
                 : args.isStable
-                    ? `npm publish --tag stable`
-                    : 'npm publish'
+                    ? `npm publish --tag stable ${addprovenance}`
+                    : `npm publish ${addprovenance}`
         ];
         const opts = {
-            cwd: args.workingDir
+            cwd: args.workingDir,
+            encoding: 'utf8'
         };
         try {
             for (var _e = true, commands_1 = __asyncValues(commands), commands_1_1; commands_1_1 = yield commands_1.next(), _a = commands_1_1.done, !_a; _e = true) {
@@ -1219,6 +1225,7 @@ const PRIV_TO_PUB_REPO_MAP = {
     'private-swift-on-device-evaluations-sdk': 'swift-on-device-evaluations-sdk',
     'private-unity-sdk': 'unity-sdk',
     'private-js-client-monorepo': 'js-client-monorepo',
+    'private-statsig-ai-node': 'statsig-ai-node',
     'test-sdk-repo-private': 'test-sdk-repo-public'
 };
 function syncReposAndCreateRelease(payload) {

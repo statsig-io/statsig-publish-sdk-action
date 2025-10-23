@@ -52,10 +52,11 @@ function publishJSMono(args) {
         const commands = [
             'pnpm install',
             `echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" > .npmrc`,
-            `pnpm exec nx run statsig:publish-all --verbose`,
+            `pnpm exec nx run statsig:publish-all --verbose`
         ];
         const opts = {
-            cwd: args.workingDir
+            cwd: args.workingDir,
+            encoding: 'utf8'
         };
         try {
             for (var _e = true, commands_1 = __asyncValues(commands), commands_1_1; commands_1_1 = yield commands_1.next(), _a = commands_1_1.done, !_a; _e = true) {
