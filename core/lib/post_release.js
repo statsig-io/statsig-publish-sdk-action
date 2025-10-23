@@ -41,6 +41,7 @@ function getThirdPartyAction(repo) {
         case 'node-js-lite-server-sdk':
         case 'react-sdk':
         case 'react-native':
+        case 'statsig-ai-node':
         case 'wizard':
             return publish_npm_1.default;
         case 'python-sdk':

@@ -52,6 +52,7 @@ function publishToCratesIo(args) {
         const commands = ['cargo publish'];
         const opts = {
             cwd: args.workingDir,
+            encoding: 'utf8',
             env: Object.assign(Object.assign({}, process.env), { CARGO_REGISTRY_TOKEN })
         };
         try {

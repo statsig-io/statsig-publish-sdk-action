@@ -51,17 +51,19 @@ function publishToNPM(args) {
             throw new Error('Call to NPM Publish without settng npm-token');
         }
         const pkgManager = yield (0, js_package_manager_helpers_1.identifyPackageManager)(args.workingDir);
+        const addprovenance = args.repo === 'statsig-ai-node' ? '--provenance' : '';
         const commands = [
             `${pkgManager} install`,
             `npm config set //registry.npmjs.org/:_authToken ${NPM_TOKEN}`,
             args.repo === 'wizard'
                 ? 'pnpm publish -r'
                 : args.isStable
-                    ? `npm publish --tag stable`
-                    : 'npm publish'
+                    ? `npm publish --tag stable ${addprovenance}`
+                    : `npm publish ${addprovenance}`
         ];
         const opts = {
-            cwd: args.workingDir
+            cwd: args.workingDir,
+            encoding: 'utf8'
         };
         try {
             for (var _e = true, commands_1 = __asyncValues(commands), commands_1_1; commands_1_1 = yield commands_1.next(), _a = commands_1_1.done, !_a; _e = true) {

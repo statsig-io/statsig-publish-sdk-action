@@ -27,6 +27,7 @@ function getThirdPartyAction(repo: string) {
     case 'node-js-lite-server-sdk':
     case 'react-sdk':
     case 'react-native':
+    case 'statsig-ai-node':
     case 'wizard':
       return publishToNPM;
 

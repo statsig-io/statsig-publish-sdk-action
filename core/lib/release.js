@@ -64,6 +64,7 @@ const PRIV_TO_PUB_REPO_MAP = {
     'private-swift-on-device-evaluations-sdk': 'swift-on-device-evaluations-sdk',
     'private-unity-sdk': 'unity-sdk',
     'private-js-client-monorepo': 'js-client-monorepo',
+    'private-statsig-ai-node': 'statsig-ai-node',
     'test-sdk-repo-private': 'test-sdk-repo-public'
 };
 function syncReposAndCreateRelease(payload) {
