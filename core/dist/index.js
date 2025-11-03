@@ -1249,18 +1249,20 @@ function syncReposAndCreateRelease(payload) {
 }
 exports.syncReposAndCreateRelease = syncReposAndCreateRelease;
 function validateAndExtractArgsFromPayload(payload) {
-    var _a, _b, _c, _d, _e, _f, _g, _h, _j;
+    var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l;
     const headRef = (_b = (_a = payload.pull_request) === null || _a === void 0 ? void 0 : _a.head) === null || _b === void 0 ? void 0 : _b.ref;
     const baseRef = (_d = (_c = payload.pull_request) === null || _c === void 0 ? void 0 : _c.base) === null || _d === void 0 ? void 0 : _d.ref;
     const sha = (_f = (_e = payload.pull_request) === null || _e === void 0 ? void 0 : _e.merge_commit_sha) !== null && _f !== void 0 ? _f : (_h = (_g = payload.pull_request) === null || _g === void 0 ? void 0 : _g.head) === null || _h === void 0 ? void 0 : _h.sha;
+    const isAIRepo = (_k = (_j = payload.repository) === null || _j === void 0 ? void 0 : _j.name) === null || _k === void 0 ? void 0 : _k.includes('statsig-ai');
     if (typeof headRef !== 'string' ||
-        (!headRef.startsWith('releases/') && !headRef.startsWith('betas/'))) {
-        throw new types_1.SkipActionError('Not a branch on releases/* or betas/*');
+        !headRef.startsWith('releases/') ||
+        !(isAIRepo && headRef.startsWith('betas/'))) {
+        throw new types_1.SkipActionError('Not a branch on releases/*');
     }
     if (baseRef !== 'main' && baseRef !== 'stable' && baseRef !== 'rc') {
         throw new types_1.SkipActionError('Pull request not against a valid branch');
     }
-    if (((_j = payload.pull_request) === null || _j === void 0 ? void 0 : _j.merged) !== true) {
+    if (((_l = payload.pull_request) === null || _l === void 0 ? void 0 : _l.merged) !== true) {
         throw new types_1.SkipActionError('Not a merged pull request');
     }
     const { title, body } = payload.pull_request;
@@ -1291,7 +1293,8 @@ function validateAndExtractArgsFromPayload(payload) {
         isBeta: headRef.includes('betas/'),
         isRC,
         isStable,
-        fromBranch
+        fromBranch,
+        isAIRepo
     };
 }
 function pushToPublic(dir, args) {
@@ -1337,7 +1340,7 @@ function createPublicGithubRelease(args) {
             name: releaseName,
             prerelease: args.isBeta || args.isRC,
             generate_release_notes: true,
-            make_latest: args.isMain || isFromRcBranch ? 'true' : 'false'
+            make_latest: args.isMain || isFromRcBranch || args.isAIRepo ? 'true' : 'false'
         });
         console.log(`Released: ${JSON.stringify(response)}`);
     });

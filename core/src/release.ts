@@ -20,6 +20,7 @@ export type ActionArgs = {
   isRC: boolean; // only used for server core for now, is rc version or not, nothing related to branch name
   fromBranch: string; // the branch that the release is being published from
   isStable: boolean;
+  isAIRepo: boolean;
 };
 
 const PRIV_TO_PUB_REPO_MAP: Record<string, string> = {
@@ -79,12 +80,14 @@ function validateAndExtractArgsFromPayload(
   const baseRef = payload.pull_request?.base?.ref;
   const sha =
     payload.pull_request?.merge_commit_sha ?? payload.pull_request?.head?.sha;
+  const isAIRepo = payload.repository?.name?.includes('statsig-ai');
 
   if (
     typeof headRef !== 'string' ||
-    (!headRef.startsWith('releases/') && !headRef.startsWith('betas/'))
+    !headRef.startsWith('releases/') ||
+    !(isAIRepo && headRef.startsWith('betas/'))
   ) {
-    throw new SkipActionError('Not a branch on releases/* or betas/*');
+    throw new SkipActionError('Not a branch on releases/*');
   }
 
   if (baseRef !== 'main' && baseRef !== 'stable' && baseRef !== 'rc') {
@@ -128,7 +131,8 @@ function validateAndExtractArgsFromPayload(
     isBeta: headRef.includes('betas/'),
     isRC,
     isStable,
-    fromBranch
+    fromBranch,
+    isAIRepo
   };
 }
 
@@ -182,7 +186,8 @@ async function createPublicGithubRelease(args: ActionArgs) {
     name: releaseName,
     prerelease: args.isBeta || args.isRC,
     generate_release_notes: true,
-    make_latest: args.isMain || isFromRcBranch ? 'true' : 'false'
+    make_latest:
+      args.isMain || isFromRcBranch || args.isAIRepo ? 'true' : 'false'
   });
 
   console.log(`Released: ${JSON.stringify(response)}`);
