@@ -80,14 +80,14 @@ function validateAndExtractArgsFromPayload(
   const baseRef = payload.pull_request?.base?.ref;
   const sha =
     payload.pull_request?.merge_commit_sha ?? payload.pull_request?.head?.sha;
-  const isAIRepo = payload.repository?.name?.includes('statsig-ai');
+  const isAIRepo = payload.repository?.name?.includes('statsig-ai') ?? false;
 
   if (
     typeof headRef !== 'string' ||
-    !headRef.startsWith('releases/') ||
-    !(isAIRepo && headRef.startsWith('betas/'))
+    (!headRef.startsWith('releases/') &&
+      !(isAIRepo && headRef.startsWith('betas/')))
   ) {
-    throw new SkipActionError('Not a branch on releases/*');
+    throw new SkipActionError('Not a branch on releases/* or betas/*');
   }
 
   if (baseRef !== 'main' && baseRef !== 'stable' && baseRef !== 'rc') {
