@@ -177,9 +177,9 @@ function createPublicGithubRelease(args) {
             tag_name: version,
             body,
             name: releaseName,
-            prerelease: args.isBeta || args.isRC,
+            prerelease: (args.isBeta && !args.isAIRepo) || args.isRC,
             generate_release_notes: true,
-            make_latest: args.isMain || isFromRcBranch || args.isAIRepo ? 'true' : 'false'
+            make_latest: args.isMain || isFromRcBranch ? 'true' : 'false'
         });
         console.log(`Released: ${JSON.stringify(response)}`);
     });
