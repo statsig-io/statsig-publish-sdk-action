@@ -93,8 +93,7 @@ function validateAndExtractArgsFromPayload(payload) {
     const baseRef = (_d = (_c = payload.pull_request) === null || _c === void 0 ? void 0 : _c.base) === null || _d === void 0 ? void 0 : _d.ref;
     const sha = (_f = (_e = payload.pull_request) === null || _e === void 0 ? void 0 : _e.merge_commit_sha) !== null && _f !== void 0 ? _f : (_h = (_g = payload.pull_request) === null || _g === void 0 ? void 0 : _g.head) === null || _h === void 0 ? void 0 : _h.sha;
     if (typeof headRef !== 'string' ||
-        !headRef.startsWith('releases/') ||
-        !headRef.includes('betas/')) {
+        (!headRef.startsWith('releases/') && !headRef.startsWith('betas/'))) {
         throw new types_1.SkipActionError('Not a branch on releases/* or betas/*');
     }
     if (baseRef !== 'main' && baseRef !== 'stable' && baseRef !== 'rc') {

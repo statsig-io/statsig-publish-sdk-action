@@ -82,8 +82,7 @@ function validateAndExtractArgsFromPayload(
 
   if (
     typeof headRef !== 'string' ||
-    !headRef.startsWith('releases/') ||
-    !headRef.includes('betas/')
+    (!headRef.startsWith('releases/') && !headRef.startsWith('betas/'))
   ) {
     throw new SkipActionError('Not a branch on releases/* or betas/*');
   }
