@@ -80,8 +80,12 @@ function validateAndExtractArgsFromPayload(
   const sha =
     payload.pull_request?.merge_commit_sha ?? payload.pull_request?.head?.sha;
 
-  if (typeof headRef !== 'string' || !headRef.startsWith('releases/')) {
-    throw new SkipActionError('Not a branch on releases/*');
+  if (
+    typeof headRef !== 'string' ||
+    !headRef.startsWith('releases/') ||
+    !headRef.includes('betas/')
+  ) {
+    throw new SkipActionError('Not a branch on releases/* or betas/*');
   }
 
   if (baseRef !== 'main' && baseRef !== 'stable' && baseRef !== 'rc') {
