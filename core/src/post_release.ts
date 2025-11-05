@@ -75,6 +75,8 @@ async function validateAndExtractArgsFromPayload(
     payload.release?.prerelease;
   const githubToken = await KongOctokit.token();
 
+  console.log('head ref', payload.pull_request?.head?.ref);
+
   return {
     tag,
     repo: name,
