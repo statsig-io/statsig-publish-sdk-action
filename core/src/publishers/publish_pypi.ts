@@ -8,7 +8,6 @@ const execPromise = promisify(exec);
 
 export default async function publishToPyPI(args: PublishActionArgs) {
   const isBeta = args.isBeta;
-  console.log('isBeta', isBeta);
   const tokenName = isBeta ? 'pypi-beta-token' : 'pypi-token';
   const aiRepo = args.repo === 'statsig-ai-python';
 
@@ -18,7 +17,7 @@ export default async function publishToPyPI(args: PublishActionArgs) {
   }
 
   let version = args.tag.replace('v', '');
-  if (isBeta) {
+  if (isBeta || version.includes('-beta.')) {
     version = version.replace(/-beta\.(\d+)/i, 'b$1');
   }
 

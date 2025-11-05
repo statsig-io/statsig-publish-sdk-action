@@ -421,7 +421,7 @@ function getThirdPartyAction(repo) {
     }
 }
 function validateAndExtractArgsFromPayload(payload) {
-    var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l, _m;
+    var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k;
     return __awaiter(this, void 0, void 0, function* () {
         const name = (_a = payload.repository) === null || _a === void 0 ? void 0 : _a.name;
         const tag = (_b = payload.release) === null || _b === void 0 ? void 0 : _b.tag_name;
@@ -433,7 +433,6 @@ function validateAndExtractArgsFromPayload(payload) {
         const isBeta = ((_j = (_h = (_g = payload.pull_request) === null || _g === void 0 ? void 0 : _g.head) === null || _h === void 0 ? void 0 : _h.ref) === null || _j === void 0 ? void 0 : _j.includes('betas/')) ||
             ((_k = payload.release) === null || _k === void 0 ? void 0 : _k.prerelease);
         const githubToken = yield kong_octokit_1.default.token();
-        console.log('head ref', (_m = (_l = payload.pull_request) === null || _l === void 0 ? void 0 : _l.head) === null || _m === void 0 ? void 0 : _m.ref);
         return {
             tag,
             repo: name,
@@ -1024,7 +1023,6 @@ function publishToPyPI(args) {
     var _d;
     return __awaiter(this, void 0, void 0, function* () {
         const isBeta = args.isBeta;
-        console.log('isBeta', isBeta);
         const tokenName = isBeta ? 'pypi-beta-token' : 'pypi-token';
         const aiRepo = args.repo === 'statsig-ai-python';
         const PYPI_TOKEN = (_d = core.getInput(tokenName)) !== null && _d !== void 0 ? _d : '';
@@ -1032,7 +1030,7 @@ function publishToPyPI(args) {
             throw new Error('Call to PyPI Publish without settng pypi-token');
         }
         let version = args.tag.replace('v', '');
-        if (isBeta) {
+        if (isBeta || version.includes('-beta.')) {
             version = version.replace(/-beta\.(\d+)/i, 'b$1');
         }
         const commands = aiRepo

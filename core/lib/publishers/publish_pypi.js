@@ -48,7 +48,6 @@ function publishToPyPI(args) {
     var _d;
     return __awaiter(this, void 0, void 0, function* () {
         const isBeta = args.isBeta;
-        console.log('isBeta', isBeta);
         const tokenName = isBeta ? 'pypi-beta-token' : 'pypi-token';
         const aiRepo = args.repo === 'statsig-ai-python';
         const PYPI_TOKEN = (_d = core.getInput(tokenName)) !== null && _d !== void 0 ? _d : '';
@@ -56,7 +55,7 @@ function publishToPyPI(args) {
             throw new Error('Call to PyPI Publish without settng pypi-token');
         }
         let version = args.tag.replace('v', '');
-        if (isBeta) {
+        if (isBeta || version.includes('-beta.')) {
             version = version.replace(/-beta\.(\d+)/i, 'b$1');
         }
         const commands = aiRepo
