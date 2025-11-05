@@ -49,22 +49,27 @@ function publishToPyPI(args) {
     return __awaiter(this, void 0, void 0, function* () {
         const isBeta = args.isBeta;
         const tokenName = isBeta ? 'pypi-beta-token' : 'pypi-token';
+        const aiRepo = args.repo === 'statsig-ai-python';
         const PYPI_TOKEN = (_d = core.getInput(tokenName)) !== null && _d !== void 0 ? _d : '';
         if (PYPI_TOKEN === '') {
             throw new Error('Call to PyPI Publish without settng pypi-token');
         }
         const version = args.tag.replace('v', '');
-        let uploadCommand = `twine upload --skip-existing dist/statsig-${version}.tar.gz dist/statsig-${version}-py3-none-any.whl --verbose -u __token__ -p ${PYPI_TOKEN}`;
-        if (isBeta) {
-            uploadCommand += ' --repository-url https://test.pypi.org/legacy/';
-        }
-        const commands = [
-            'python3 setup.py sdist bdist_wheel',
-            'twine check dist/*',
-            `tar tzf dist/statsig-${version}.tar.gz`,
-            `unzip -l dist/statsig-${version}-py3-none-any.whl`,
-            uploadCommand
-        ];
+        const commands = aiRepo
+            ? [
+                'python3 setup.py sdist bdist_wheel',
+                'twine check dist/*',
+                `tar tzf dist/statsig_ai-${version}.tar.gz`,
+                `unzip -l dist/statsig_ai-${version}-py3-none-any.whl`,
+                `twine upload --skip-existing dist/statsig_ai-${version}.tar.gz dist/statsig_ai-${version}-py3-none-any.whl --verbose -u __token__ -p ${PYPI_TOKEN}`
+            ]
+            : [
+                'python3 setup.py sdist bdist_wheel',
+                'twine check dist/*',
+                `tar tzf dist/statsig-${version}.tar.gz`,
+                `unzip -l dist/statsig-${version}-py3-none-any.whl`,
+                `twine upload --skip-existing dist/statsig-${version}.tar.gz dist/statsig-${version}-py3-none-any.whl --verbose -u __token__ -p ${PYPI_TOKEN}`
+            ];
         const opts = {
             cwd: args.workingDir
         };

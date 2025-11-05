@@ -32,6 +32,7 @@ function getThirdPartyAction(repo: string) {
       return publishToNPM;
 
     case 'python-sdk':
+    case 'statsig-ai-python':
       return publishToPyPI;
 
     case 'ruby-sdk':

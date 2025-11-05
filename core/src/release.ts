@@ -46,6 +46,7 @@ const PRIV_TO_PUB_REPO_MAP: Record<string, string> = {
   'private-unity-sdk': 'unity-sdk',
   'private-js-client-monorepo': 'js-client-monorepo',
   'private-statsig-ai-node': 'statsig-ai-node',
+  'private-statsig-ai-python': 'statsig-ai-python',
   'test-sdk-repo-private': 'test-sdk-repo-public'
 };
 

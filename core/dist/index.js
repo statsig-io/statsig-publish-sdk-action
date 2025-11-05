@@ -402,6 +402,7 @@ function getThirdPartyAction(repo) {
         case 'wizard':
             return publish_npm_1.default;
         case 'python-sdk':
+        case 'statsig-ai-python':
             return publish_pypi_1.default;
         case 'ruby-sdk':
             return publish_rubygems_1.default;
@@ -685,6 +686,7 @@ function prepareForRelease(payload) {
                 return runServerCoreSyncVersion(payload);
             case 'private-python-sdk':
             case 'private-go-sdk':
+            case 'private-statsig-ai-python':
                 throw new types_1.SkipActionError(`Prepare not neccessary for repository: ${(_f = (_e = payload.repository) === null || _e === void 0 ? void 0 : _e.name) !== null && _f !== void 0 ? _f : null}`);
             default:
                 throw new types_1.SkipActionError(`Prepare not supported for repository: ${(_h = (_g = payload.repository) === null || _g === void 0 ? void 0 : _g.name) !== null && _h !== void 0 ? _h : null}`);
@@ -1022,22 +1024,27 @@ function publishToPyPI(args) {
     return __awaiter(this, void 0, void 0, function* () {
         const isBeta = args.isBeta;
         const tokenName = isBeta ? 'pypi-beta-token' : 'pypi-token';
+        const aiRepo = args.repo === 'statsig-ai-python';
         const PYPI_TOKEN = (_d = core.getInput(tokenName)) !== null && _d !== void 0 ? _d : '';
         if (PYPI_TOKEN === '') {
             throw new Error('Call to PyPI Publish without settng pypi-token');
         }
         const version = args.tag.replace('v', '');
-        let uploadCommand = `twine upload --skip-existing dist/statsig-${version}.tar.gz dist/statsig-${version}-py3-none-any.whl --verbose -u __token__ -p ${PYPI_TOKEN}`;
-        if (isBeta) {
-            uploadCommand += ' --repository-url https://test.pypi.org/legacy/';
-        }
-        const commands = [
-            'python3 setup.py sdist bdist_wheel',
-            'twine check dist/*',
-            `tar tzf dist/statsig-${version}.tar.gz`,
-            `unzip -l dist/statsig-${version}-py3-none-any.whl`,
-            uploadCommand
-        ];
+        const commands = aiRepo
+            ? [
+                'python3 setup.py sdist bdist_wheel',
+                'twine check dist/*',
+                `tar tzf dist/statsig_ai-${version}.tar.gz`,
+                `unzip -l dist/statsig_ai-${version}-py3-none-any.whl`,
+                `twine upload --skip-existing dist/statsig_ai-${version}.tar.gz dist/statsig_ai-${version}-py3-none-any.whl --verbose -u __token__ -p ${PYPI_TOKEN}`
+            ]
+            : [
+                'python3 setup.py sdist bdist_wheel',
+                'twine check dist/*',
+                `tar tzf dist/statsig-${version}.tar.gz`,
+                `unzip -l dist/statsig-${version}-py3-none-any.whl`,
+                `twine upload --skip-existing dist/statsig-${version}.tar.gz dist/statsig-${version}-py3-none-any.whl --verbose -u __token__ -p ${PYPI_TOKEN}`
+            ];
         const opts = {
             cwd: args.workingDir
         };
@@ -1226,6 +1233,7 @@ const PRIV_TO_PUB_REPO_MAP = {
     'private-unity-sdk': 'unity-sdk',
     'private-js-client-monorepo': 'js-client-monorepo',
     'private-statsig-ai-node': 'statsig-ai-node',
+    'private-statsig-ai-python': 'statsig-ai-python',
     'test-sdk-repo-private': 'test-sdk-repo-public'
 };
 function syncReposAndCreateRelease(payload) {

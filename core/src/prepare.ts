@@ -233,6 +233,7 @@ export async function prepareForRelease(payload: WebhookPayload) {
 
     case 'private-python-sdk':
     case 'private-go-sdk':
+    case 'private-statsig-ai-python':
       throw new SkipActionError(
         `Prepare not neccessary for repository: ${
           payload.repository?.name ?? null

@@ -45,6 +45,7 @@ function getThirdPartyAction(repo) {
         case 'wizard':
             return publish_npm_1.default;
         case 'python-sdk':
+        case 'statsig-ai-python':
             return publish_pypi_1.default;
         case 'ruby-sdk':
             return publish_rubygems_1.default;
