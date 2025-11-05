@@ -1023,13 +1023,17 @@ function publishToPyPI(args) {
     var _d;
     return __awaiter(this, void 0, void 0, function* () {
         const isBeta = args.isBeta;
+        console.log('isBeta', isBeta);
         const tokenName = isBeta ? 'pypi-beta-token' : 'pypi-token';
         const aiRepo = args.repo === 'statsig-ai-python';
         const PYPI_TOKEN = (_d = core.getInput(tokenName)) !== null && _d !== void 0 ? _d : '';
         if (PYPI_TOKEN === '') {
             throw new Error('Call to PyPI Publish without settng pypi-token');
         }
-        const version = args.tag.replace('v', '');
+        let version = args.tag.replace('v', '');
+        if (isBeta) {
+            version = version.replace(/-beta\.(\d+)/i, 'b$1');
+        }
         const commands = aiRepo
             ? [
                 'python3 setup.py sdist bdist_wheel',
