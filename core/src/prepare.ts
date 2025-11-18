@@ -162,7 +162,8 @@ async function runServerCoreSyncVersion(payload: WebhookPayload) {
       'post-install.php',
       'Directory.Build.props',
       'main.go',
-      'mix.exs'
+      'mix.exs',
+      "CMakeLists.txt"
     ];
 
     const originalCount = status.files.length;
