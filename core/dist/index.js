@@ -631,7 +631,8 @@ function runServerCoreSyncVersion(payload) {
                 'post-install.php',
                 'Directory.Build.props',
                 'main.go',
-                'mix.exs'
+                'mix.exs',
+                "CMakeLists.txt"
             ];
             const originalCount = status.files.length;
             const files = status.files
