@@ -3,9 +3,9 @@ import { WebhookPayload } from '@actions/github/lib/interfaces';
 import { execSync } from 'child_process';
 import { SimpleGit, simpleGit } from 'simple-git';
 import { createGitRepoUrl } from './helpers';
+import { identifyPackageManager } from './js_package_manager_helpers';
 import KongOctokit from './kong_octokit';
 import { SkipActionError } from './types';
-import { identifyPackageManager } from './js_package_manager_helpers';
 
 async function runNpmInstall(payload: WebhookPayload) {
   const repo = payload.repository?.name;
@@ -224,6 +224,7 @@ export async function prepareForRelease(payload: WebhookPayload) {
     case 'private-react-native':
     case 'private-statsig-ai-node':
     case 'wizard':
+    case 'statsig-ai':
       return runNpmInstall(payload);
 
     case 'private-js-client-monorepo':
