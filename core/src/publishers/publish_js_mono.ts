@@ -1,7 +1,14 @@
 import * as core from '@actions/core';
 
 import { PublishActionArgs } from './action_args';
-import { execSync, ExecSyncOptionsWithStringEncoding } from 'child_process';
+import {
+  exec as execCallback,
+  execSync,
+  ExecSyncOptionsWithStringEncoding
+} from 'child_process';
+import { promisify } from 'util';
+
+const exec = promisify(execCallback);
 
 export default async function publishJSMono(args: PublishActionArgs) {
   const NPM_TOKEN = core.getInput('npm-token') ?? '';
@@ -22,8 +29,23 @@ export default async function publishJSMono(args: PublishActionArgs) {
 
   for await (const command of commands) {
     console.log(`[${command}] Executing...`);
-    const result = execSync(command, opts);
-    console.log(`[${command}] Done`, result);
+    const promise = exec(command, opts);
+    const { child } = promise;
+    const output = await promise;
+
+    if (output.stdout) {
+      console.log(`[${command}] stdout:`);
+      console.log(output.stdout);
+    }
+    if (output.stderr) {
+      console.log(`[${command}] stderr:`);
+      console.error(output.stderr);
+    }
+
+    if (child.exitCode) {
+      throw new Error(`[${command}] Error! Exit code: ${child.exitCode}`);
+    }
+    console.log(`[${command}] Done`);
   }
 
   console.log('🎉 JS Mono Done!');
