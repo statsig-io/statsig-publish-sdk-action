@@ -832,6 +832,8 @@ var __asyncValues = (this && this.__asyncValues) || function (o) {
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 const core = __importStar(__nccwpck_require__(2186));
 const child_process_1 = __nccwpck_require__(2081);
+const util_1 = __nccwpck_require__(3837);
+const exec = (0, util_1.promisify)(child_process_1.exec);
 function publishJSMono(args) {
     var _a, e_1, _b, _c;
     var _d;
@@ -855,8 +857,21 @@ function publishJSMono(args) {
                 _e = false;
                 const command = _c;
                 console.log(`[${command}] Executing...`);
-                const result = (0, child_process_1.execSync)(command, opts);
-                console.log(`[${command}] Done`, result);
+                const promise = exec(command, opts);
+                const { child } = promise;
+                const output = yield promise;
+                if (output.stdout) {
+                    console.log(`[${command}] stdout:`);
+                    console.log(output.stdout);
+                }
+                if (output.stderr) {
+                    console.log(`[${command}] stderr:`);
+                    console.error(output.stderr);
+                }
+                if (child.exitCode) {
+                    throw new Error(`[${command}] Error! Exit code: ${child.exitCode}`);
+                }
+                console.log(`[${command}] Done`);
             }
         }
         catch (e_1_1) { e_1 = { error: e_1_1 }; }
