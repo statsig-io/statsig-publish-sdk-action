@@ -41,8 +41,6 @@ var __asyncValues = (this && this.__asyncValues) || function (o) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const core = __importStar(require("@actions/core"));
 const child_process_1 = require("child_process");
-const util_1 = require("util");
-const exec = (0, util_1.promisify)(child_process_1.exec);
 function publishJSMono(args) {
     var _a, e_1, _b, _c;
     var _d;
@@ -58,7 +56,8 @@ function publishJSMono(args) {
         ];
         const opts = {
             cwd: args.workingDir,
-            encoding: 'utf8'
+            encoding: 'utf8',
+            stdio: ['ignore', 'inherit', 'inherit']
         };
         try {
             for (var _e = true, commands_1 = __asyncValues(commands), commands_1_1; commands_1_1 = yield commands_1.next(), _a = commands_1_1.done, !_a; _e = true) {
@@ -66,19 +65,12 @@ function publishJSMono(args) {
                 _e = false;
                 const command = _c;
                 console.log(`[${command}] Executing...`);
-                const promise = exec(command, opts);
-                const { child } = promise;
-                const output = yield promise;
-                if (output.stdout) {
-                    console.log(`[${command}] stdout:`);
-                    console.log(output.stdout);
+                try {
+                    (0, child_process_1.execSync)(command, opts);
                 }
-                if (output.stderr) {
-                    console.log(`[${command}] stderr:`);
-                    console.error(output.stderr);
-                }
-                if (child.exitCode) {
-                    throw new Error(`[${command}] Error! Exit code: ${child.exitCode}`);
+                catch (e) {
+                    console.log(`[${command}] Error!`);
+                    throw e;
                 }
                 console.log(`[${command}] Done`);
             }
