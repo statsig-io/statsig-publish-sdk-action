@@ -232,6 +232,7 @@ export async function prepareForRelease(payload: WebhookPayload) {
     case 'private-statsig-server-core':
       return runServerCoreSyncVersion(payload);
 
+    case 'private-dart-sdk':
     case 'private-python-sdk':
     case 'private-go-sdk':
     case 'private-statsig-ai-python':

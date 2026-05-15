@@ -56,6 +56,7 @@ function getThirdPartyAction(repo) {
         case 'statsig-server-core' /* server-core use its own gh action */:
         case 'go-sdk':
         case 'android-sdk':
+        case 'dart-sdk' /* dart-sdk uses its own publish.yml workflow */:
             return () => {
                 // noop
             };
