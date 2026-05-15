@@ -223,6 +223,7 @@ function prepareForRelease(payload) {
                 return runJsMonorepoVersionSync(payload);
             case 'private-statsig-server-core':
                 return runServerCoreSyncVersion(payload);
+            case 'private-dart-sdk':
             case 'private-python-sdk':
             case 'private-go-sdk':
             case 'private-statsig-ai-python':
