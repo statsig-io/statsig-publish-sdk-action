@@ -83,8 +83,8 @@ function createGitRepoUrl(token, repo) {
 }
 exports.createGitRepoUrl = createGitRepoUrl;
 function hasOIDCEnv() {
-    return process.env.ACTIONS_ID_TOKEN_REQUEST_URL !== undefined &&
-        process.env.ACTIONS_ID_TOKEN_REQUEST_TOKEN !== undefined;
+    return !!process.env.ACTIONS_ID_TOKEN_REQUEST_URL &&
+        !!process.env.ACTIONS_ID_TOKEN_REQUEST_TOKEN;
 }
 exports.hasOIDCEnv = hasOIDCEnv;
 
@@ -418,6 +418,7 @@ function getThirdPartyAction(repo) {
         case 'statsig-server-core' /* server-core use its own gh action */:
         case 'go-sdk':
         case 'android-sdk':
+        case 'dart-sdk' /* dart-sdk uses its own publish.yml workflow */:
             return () => {
                 // noop
             };
@@ -690,6 +691,7 @@ function prepareForRelease(payload) {
                 return runJsMonorepoVersionSync(payload);
             case 'private-statsig-server-core':
                 return runServerCoreSyncVersion(payload);
+            case 'private-dart-sdk':
             case 'private-python-sdk':
             case 'private-go-sdk':
             case 'private-statsig-ai-python':
@@ -1232,6 +1234,7 @@ const PRIV_TO_PUB_REPO_MAP = {
     'ios-client-sdk': 'statsig-kit',
     'private-android-local-eval': 'android-local-eval',
     'private-android-sdk': 'android-sdk',
+    'private-dart-sdk': 'dart-sdk',
     'private-dotnet-sdk': 'dotnet-sdk',
     'private-go-sdk': 'go-sdk',
     'private-java-server-sdk': 'java-server-sdk',

@@ -6,7 +6,7 @@ function createGitRepoUrl(token, repo) {
 }
 exports.createGitRepoUrl = createGitRepoUrl;
 function hasOIDCEnv() {
-    return process.env.ACTIONS_ID_TOKEN_REQUEST_URL !== undefined &&
-        process.env.ACTIONS_ID_TOKEN_REQUEST_TOKEN !== undefined;
+    return !!process.env.ACTIONS_ID_TOKEN_REQUEST_URL &&
+        !!process.env.ACTIONS_ID_TOKEN_REQUEST_TOKEN;
 }
 exports.hasOIDCEnv = hasOIDCEnv;
