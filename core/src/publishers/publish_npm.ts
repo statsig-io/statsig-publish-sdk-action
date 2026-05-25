@@ -11,13 +11,13 @@ export default async function publishToNPM(args: PublishActionArgs) {
 
   const commands = [
     `${pkgManager} install`,
-    `npm config set //registry.npmjs.org/:_authToken ${NPM_TOKEN}`,
+    NPM_TOKEN ? `npm config set //registry.npmjs.org/:_authToken ${NPM_TOKEN}` : '',
     args.repo === 'wizard'
       ? 'pnpm publish -r'
       : args.isStable
       ? `npm publish --tag stable ${addprovenance}`
       : `npm publish ${addprovenance}`
-  ];
+  ].filter(Boolean);
 
   const opts: ExecSyncOptionsWithStringEncoding = {
     cwd: args.workingDir,
