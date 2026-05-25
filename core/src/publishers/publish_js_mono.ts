@@ -12,7 +12,8 @@ export default async function publishJSMono(args: PublishActionArgs) {
 
   const commands = [
     'pnpm install',
-    NPM_TOKEN ? `echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" > .npmrc` : '',
+    NPM_TOKEN ? `echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" > .npmrc` :
+      'echo "//registry.npmjs.org/" > .npmrc',
     `pnpm exec nx run statsig:publish-all --verbose`
   ].filter(Boolean);
 

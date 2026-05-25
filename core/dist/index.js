@@ -850,7 +850,8 @@ function publishJSMono(args) {
         }
         const commands = [
             'pnpm install',
-            NPM_TOKEN ? `echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" > .npmrc` : '',
+            NPM_TOKEN ? `echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" > .npmrc` :
+                'echo "//registry.npmjs.org/" > .npmrc',
             `pnpm exec nx run statsig:publish-all --verbose`
         ].filter(Boolean);
         const opts = {
@@ -950,7 +951,8 @@ function publishToNPM(args) {
         const addprovenance = args.repo === 'statsig-ai-node' ? '--provenance' : '';
         const commands = [
             `${pkgManager} install`,
-            NPM_TOKEN ? `npm config set //registry.npmjs.org/:_authToken ${NPM_TOKEN}` : '',
+            NPM_TOKEN ? `npm config set //registry.npmjs.org/:_authToken ${NPM_TOKEN}` :
+                'npm config set //registry.npmjs.org/',
             args.repo === 'wizard'
                 ? 'pnpm publish -r'
                 : args.isStable
