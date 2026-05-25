@@ -2,9 +2,13 @@ import * as core from '@actions/core';
 import { PublishActionArgs } from './action_args';
 import { execSync, ExecSyncOptionsWithStringEncoding } from 'child_process';
 import { identifyPackageManager } from '../js_package_manager_helpers';
+import { hasOIDCEnv } from '../helpers';
 
 export default async function publishToNPM(args: PublishActionArgs) {
   const NPM_TOKEN = core.getInput('npm-token') ?? '';
+  if (!hasOIDCEnv() && NPM_TOKEN === '') {
+    throw new Error('Call to NPM Publish without settng npm-token');
+  }
 
   const pkgManager = await identifyPackageManager(args.workingDir);
   const addprovenance = args.repo === 'statsig-ai-node' ? '--provenance' : '';

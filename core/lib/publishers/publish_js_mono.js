@@ -41,11 +41,15 @@ var __asyncValues = (this && this.__asyncValues) || function (o) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const core = __importStar(require("@actions/core"));
 const child_process_1 = require("child_process");
+const helpers_1 = require("../helpers");
 function publishJSMono(args) {
     var _a, e_1, _b, _c;
     var _d;
     return __awaiter(this, void 0, void 0, function* () {
         const NPM_TOKEN = (_d = core.getInput('npm-token')) !== null && _d !== void 0 ? _d : '';
+        if (!(0, helpers_1.hasOIDCEnv)() && NPM_TOKEN === '') {
+            throw new Error('Call to NPM Publish without settng npm-token');
+        }
         const commands = [
             'pnpm install',
             NPM_TOKEN ? `echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" > .npmrc` : '',
