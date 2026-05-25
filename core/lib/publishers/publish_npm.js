@@ -42,25 +42,26 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const core = __importStar(require("@actions/core"));
 const child_process_1 = require("child_process");
 const js_package_manager_helpers_1 = require("../js_package_manager_helpers");
+const helpers_1 = require("../helpers");
 function publishToNPM(args) {
     var _a, e_1, _b, _c;
     var _d;
     return __awaiter(this, void 0, void 0, function* () {
-        const NPM_TOKEN = (_d = core.getInput('npm-token')) !== null && _d !== void 0 ? _d : '';
-        if (NPM_TOKEN === '') {
+        const NPM_TOKEN = ((_d = core.getInput('npm-token')) !== null && _d !== void 0 ? _d : '').trim();
+        if (!(0, helpers_1.hasOIDCEnv)() && NPM_TOKEN === '') {
             throw new Error('Call to NPM Publish without settng npm-token');
         }
         const pkgManager = yield (0, js_package_manager_helpers_1.identifyPackageManager)(args.workingDir);
         const addprovenance = args.repo === 'statsig-ai-node' ? '--provenance' : '';
         const commands = [
             `${pkgManager} install`,
-            `npm config set //registry.npmjs.org/:_authToken ${NPM_TOKEN}`,
+            NPM_TOKEN ? `npm config set //registry.npmjs.org/:_authToken ${NPM_TOKEN}` : '',
             args.repo === 'wizard'
                 ? 'pnpm publish -r'
                 : args.isStable
                     ? `npm publish --tag stable ${addprovenance}`
                     : `npm publish ${addprovenance}`
-        ];
+        ].filter(Boolean);
         const opts = {
             cwd: args.workingDir,
             encoding: 'utf8'

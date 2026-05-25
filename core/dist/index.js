@@ -77,11 +77,16 @@ function generateTagToBump(tag) {
 "use strict";
 
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.createGitRepoUrl = void 0;
+exports.hasOIDCEnv = exports.createGitRepoUrl = void 0;
 function createGitRepoUrl(token, repo) {
     return `https://oauth2:${token}@github.com/statsig-io/${repo}.git`;
 }
 exports.createGitRepoUrl = createGitRepoUrl;
+function hasOIDCEnv() {
+    return !!process.env.ACTIONS_ID_TOKEN_REQUEST_URL &&
+        !!process.env.ACTIONS_ID_TOKEN_REQUEST_TOKEN;
+}
+exports.hasOIDCEnv = hasOIDCEnv;
 
 
 /***/ }),
@@ -834,19 +839,20 @@ var __asyncValues = (this && this.__asyncValues) || function (o) {
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 const core = __importStar(__nccwpck_require__(2186));
 const child_process_1 = __nccwpck_require__(2081);
+const helpers_1 = __nccwpck_require__(5008);
 function publishJSMono(args) {
     var _a, e_1, _b, _c;
     var _d;
     return __awaiter(this, void 0, void 0, function* () {
-        const NPM_TOKEN = (_d = core.getInput('npm-token')) !== null && _d !== void 0 ? _d : '';
-        if (NPM_TOKEN === '') {
+        const NPM_TOKEN = ((_d = core.getInput('npm-token')) !== null && _d !== void 0 ? _d : '').trim();
+        if (!(0, helpers_1.hasOIDCEnv)() && NPM_TOKEN === '') {
             throw new Error('Call to NPM Publish without settng npm-token');
         }
         const commands = [
             'pnpm install',
-            `echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" > .npmrc`,
+            NPM_TOKEN ? `echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" > .npmrc` : '',
             `pnpm exec nx run statsig:publish-all --verbose`
-        ];
+        ].filter(Boolean);
         const opts = {
             cwd: args.workingDir,
             encoding: 'utf8',
@@ -931,25 +937,26 @@ Object.defineProperty(exports, "__esModule", ({ value: true }));
 const core = __importStar(__nccwpck_require__(2186));
 const child_process_1 = __nccwpck_require__(2081);
 const js_package_manager_helpers_1 = __nccwpck_require__(3744);
+const helpers_1 = __nccwpck_require__(5008);
 function publishToNPM(args) {
     var _a, e_1, _b, _c;
     var _d;
     return __awaiter(this, void 0, void 0, function* () {
-        const NPM_TOKEN = (_d = core.getInput('npm-token')) !== null && _d !== void 0 ? _d : '';
-        if (NPM_TOKEN === '') {
+        const NPM_TOKEN = ((_d = core.getInput('npm-token')) !== null && _d !== void 0 ? _d : '').trim();
+        if (!(0, helpers_1.hasOIDCEnv)() && NPM_TOKEN === '') {
             throw new Error('Call to NPM Publish without settng npm-token');
         }
         const pkgManager = yield (0, js_package_manager_helpers_1.identifyPackageManager)(args.workingDir);
         const addprovenance = args.repo === 'statsig-ai-node' ? '--provenance' : '';
         const commands = [
             `${pkgManager} install`,
-            `npm config set //registry.npmjs.org/:_authToken ${NPM_TOKEN}`,
+            NPM_TOKEN ? `npm config set //registry.npmjs.org/:_authToken ${NPM_TOKEN}` : '',
             args.repo === 'wizard'
                 ? 'pnpm publish -r'
                 : args.isStable
                     ? `npm publish --tag stable ${addprovenance}`
                     : `npm publish ${addprovenance}`
-        ];
+        ].filter(Boolean);
         const opts = {
             cwd: args.workingDir,
             encoding: 'utf8'

@@ -2,10 +2,11 @@ import * as core from '@actions/core';
 import { PublishActionArgs } from './action_args';
 import { execSync, ExecSyncOptionsWithStringEncoding } from 'child_process';
 import { identifyPackageManager } from '../js_package_manager_helpers';
+import { hasOIDCEnv } from '../helpers';
 
 export default async function publishToNPM(args: PublishActionArgs) {
-  const NPM_TOKEN = core.getInput('npm-token') ?? '';
-  if (NPM_TOKEN === '') {
+  const NPM_TOKEN = (core.getInput('npm-token') ?? '').trim();
+  if (!hasOIDCEnv() && NPM_TOKEN === '') {
     throw new Error('Call to NPM Publish without settng npm-token');
   }
 
@@ -14,13 +15,13 @@ export default async function publishToNPM(args: PublishActionArgs) {
 
   const commands = [
     `${pkgManager} install`,
-    `npm config set //registry.npmjs.org/:_authToken ${NPM_TOKEN}`,
+    NPM_TOKEN ? `npm config set //registry.npmjs.org/:_authToken ${NPM_TOKEN}` : '',
     args.repo === 'wizard'
       ? 'pnpm publish -r'
       : args.isStable
       ? `npm publish --tag stable ${addprovenance}`
       : `npm publish ${addprovenance}`
-  ];
+  ].filter(Boolean);
 
   const opts: ExecSyncOptionsWithStringEncoding = {
     cwd: args.workingDir,
