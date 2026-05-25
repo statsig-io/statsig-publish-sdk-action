@@ -5,15 +5,12 @@ import { execSync, ExecSyncOptionsWithStringEncoding } from 'child_process';
 
 export default async function publishJSMono(args: PublishActionArgs) {
   const NPM_TOKEN = core.getInput('npm-token') ?? '';
-  if (NPM_TOKEN === '') {
-    throw new Error('Call to NPM Publish without settng npm-token');
-  }
-
+  
   const commands = [
     'pnpm install',
-    `echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" > .npmrc`,
+    NPM_TOKEN ? `echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" > .npmrc` : '',
     `pnpm exec nx run statsig:publish-all --verbose`
-  ];
+  ].filter(Boolean);
 
   const opts: ExecSyncOptionsWithStringEncoding = {
     cwd: args.workingDir,
