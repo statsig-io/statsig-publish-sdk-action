@@ -47,7 +47,7 @@ function publishToNPM(args) {
     var _a, e_1, _b, _c;
     var _d;
     return __awaiter(this, void 0, void 0, function* () {
-        const NPM_TOKEN = (_d = core.getInput('npm-token')) !== null && _d !== void 0 ? _d : '';
+        const NPM_TOKEN = ((_d = core.getInput('npm-token')) !== null && _d !== void 0 ? _d : '').trim();
         if (!(0, helpers_1.hasOIDCEnv)() && NPM_TOKEN === '') {
             throw new Error('Call to NPM Publish without settng npm-token');
         }

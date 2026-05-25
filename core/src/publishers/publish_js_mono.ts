@@ -5,7 +5,7 @@ import { execSync, ExecSyncOptionsWithStringEncoding } from 'child_process';
 import { hasOIDCEnv } from '../helpers';
 
 export default async function publishJSMono(args: PublishActionArgs) {
-  const NPM_TOKEN = core.getInput('npm-token') ?? '';
+  const NPM_TOKEN = (core.getInput('npm-token') ?? '').trim();
   if (!hasOIDCEnv() && NPM_TOKEN === '') {
     throw new Error('Call to NPM Publish without settng npm-token');
   }
