@@ -837,14 +837,11 @@ function publishJSMono(args) {
     var _d;
     return __awaiter(this, void 0, void 0, function* () {
         const NPM_TOKEN = (_d = core.getInput('npm-token')) !== null && _d !== void 0 ? _d : '';
-        if (NPM_TOKEN === '') {
-            throw new Error('Call to NPM Publish without settng npm-token');
-        }
         const commands = [
             'pnpm install',
-            `echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" > .npmrc`,
+            NPM_TOKEN ? `echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" > .npmrc` : '',
             `pnpm exec nx run statsig:publish-all --verbose`
-        ];
+        ].filter(Boolean);
         const opts = {
             cwd: args.workingDir,
             encoding: 'utf8',
@@ -934,20 +931,17 @@ function publishToNPM(args) {
     var _d;
     return __awaiter(this, void 0, void 0, function* () {
         const NPM_TOKEN = (_d = core.getInput('npm-token')) !== null && _d !== void 0 ? _d : '';
-        if (NPM_TOKEN === '') {
-            throw new Error('Call to NPM Publish without settng npm-token');
-        }
         const pkgManager = yield (0, js_package_manager_helpers_1.identifyPackageManager)(args.workingDir);
         const addprovenance = args.repo === 'statsig-ai-node' ? '--provenance' : '';
         const commands = [
             `${pkgManager} install`,
-            `npm config set //registry.npmjs.org/:_authToken ${NPM_TOKEN}`,
+            NPM_TOKEN ? `npm config set //registry.npmjs.org/:_authToken ${NPM_TOKEN}` : '',
             args.repo === 'wizard'
                 ? 'pnpm publish -r'
                 : args.isStable
                     ? `npm publish --tag stable ${addprovenance}`
                     : `npm publish ${addprovenance}`
-        ];
+        ].filter(Boolean);
         const opts = {
             cwd: args.workingDir,
             encoding: 'utf8'

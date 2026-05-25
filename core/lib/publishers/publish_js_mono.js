@@ -46,14 +46,11 @@ function publishJSMono(args) {
     var _d;
     return __awaiter(this, void 0, void 0, function* () {
         const NPM_TOKEN = (_d = core.getInput('npm-token')) !== null && _d !== void 0 ? _d : '';
-        if (NPM_TOKEN === '') {
-            throw new Error('Call to NPM Publish without settng npm-token');
-        }
         const commands = [
             'pnpm install',
-            `echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" > .npmrc`,
+            NPM_TOKEN ? `echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" > .npmrc` : '',
             `pnpm exec nx run statsig:publish-all --verbose`
-        ];
+        ].filter(Boolean);
         const opts = {
             cwd: args.workingDir,
             encoding: 'utf8',
