@@ -55,7 +55,8 @@ function publishToNPM(args) {
         const addprovenance = args.repo === 'statsig-ai-node' ? '--provenance' : '';
         const commands = [
             `${pkgManager} install`,
-            NPM_TOKEN ? `npm config set //registry.npmjs.org/:_authToken ${NPM_TOKEN}` : '',
+            NPM_TOKEN ? `npm config set //registry.npmjs.org/:_authToken ${NPM_TOKEN}` :
+                'npm config set //registry.npmjs.org/',
             args.repo === 'wizard'
                 ? 'pnpm publish -r'
                 : args.isStable

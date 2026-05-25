@@ -15,7 +15,8 @@ export default async function publishToNPM(args: PublishActionArgs) {
 
   const commands = [
     `${pkgManager} install`,
-    NPM_TOKEN ? `npm config set //registry.npmjs.org/:_authToken ${NPM_TOKEN}` : '',
+    NPM_TOKEN ? `npm config set //registry.npmjs.org/:_authToken ${NPM_TOKEN}` :
+      'npm config set //registry.npmjs.org/',
     args.repo === 'wizard'
       ? 'pnpm publish -r'
       : args.isStable
