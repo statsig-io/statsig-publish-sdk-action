@@ -419,6 +419,7 @@ function getThirdPartyAction(repo) {
         case 'go-sdk':
         case 'android-sdk':
         case 'dart-sdk' /* dart-sdk uses its own publish.yml workflow */:
+        case 'statsig-ai-java' /* statsig-ai-java uses its own publish.yml workflow */:
             return () => {
                 // noop
             };
@@ -695,6 +696,7 @@ function prepareForRelease(payload) {
             case 'private-python-sdk':
             case 'private-go-sdk':
             case 'private-statsig-ai-python':
+            case 'private-statsig-ai-java':
                 throw new types_1.SkipActionError(`Prepare not neccessary for repository: ${(_f = (_e = payload.repository) === null || _e === void 0 ? void 0 : _e.name) !== null && _f !== void 0 ? _f : null}`);
             default:
                 throw new types_1.SkipActionError(`Prepare not supported for repository: ${(_h = (_g = payload.repository) === null || _g === void 0 ? void 0 : _g.name) !== null && _h !== void 0 ? _h : null}`);
@@ -1257,6 +1259,7 @@ const PRIV_TO_PUB_REPO_MAP = {
     'private-js-client-monorepo': 'js-client-monorepo',
     'private-statsig-ai-node': 'statsig-ai-node',
     'private-statsig-ai-python': 'statsig-ai-python',
+    'private-statsig-ai-java': 'statsig-ai-java',
     'test-sdk-repo-private': 'test-sdk-repo-public'
 };
 function syncReposAndCreateRelease(payload) {

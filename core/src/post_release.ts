@@ -48,6 +48,7 @@ function getThirdPartyAction(repo: string) {
     case 'go-sdk':
     case 'android-sdk':
     case 'dart-sdk' /* dart-sdk uses its own publish.yml workflow */:
+    case 'statsig-ai-java' /* statsig-ai-java uses its own publish.yml workflow */:
       return () => {
         // noop
       };
