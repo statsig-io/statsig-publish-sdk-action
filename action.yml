@@ -48,6 +48,28 @@ runs:
     #   shell: bash
     #   run: echo "${{ toJson(github) }}"
 
+    - name: Check Node
+      id: node-check
+      if: contains(fromJson('["push", "pull_request", "release"]'), github.event_name)
+      shell: bash
+      run: |
+        major=0
+        if command -v node >/dev/null 2>&1; then
+          echo "Found node $(node --version) at $(command -v node)"
+          major=$(node -p 'process.versions.node.split(".")[0]')
+        fi
+        if [ "$major" -ge 20 ]; then
+          echo "setup-needed=false" >> "$GITHUB_OUTPUT"
+        else
+          echo "setup-needed=true" >> "$GITHUB_OUTPUT"
+        fi
+
+    - name: Setup Node
+      if: steps.node-check.outputs.setup-needed == 'true'
+      uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+      with:
+        node-version: 20
+
     - name: Run Core
       if: contains(fromJson('["push", "pull_request", "release"]'), github.event_name)
       shell: bash
