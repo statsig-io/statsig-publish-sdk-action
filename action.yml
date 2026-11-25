@@ -58,7 +58,7 @@ runs:
           echo "Found node $(node --version) at $(command -v node)"
           major=$(node -p 'process.versions.node.split(".")[0]')
         fi
-        if [ "$major" -ge 20 ]; then
+        if [ "$major" -ge 22 ]; then
           echo "setup-needed=false" >> "$GITHUB_OUTPUT"
         else
           echo "setup-needed=true" >> "$GITHUB_OUTPUT"
@@ -68,7 +68,7 @@ runs:
       if: steps.node-check.outputs.setup-needed == 'true'
       uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
       with:
-        node-version: 20
+        node-version: 22
 
     - name: Run Core
       if: contains(fromJson('["push", "pull_request", "release"]'), github.event_name)
